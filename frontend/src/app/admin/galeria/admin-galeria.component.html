@@ -1,0 +1,258 @@
+<div class="admin-shell">
+  <!-- Top bar -->
+  <header class="admin-bar">
+    <span class="admin-bar__brand">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Panel admin
+    </span>
+    <nav class="admin-bar__nav">
+      <a routerLink="/admin/opiniones"     mat-button>Opiniones</a>
+      <a routerLink="/admin/galeria"        mat-button class="active">Galería</a>
+      <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
+      <a routerLink="/admin/promociones"    mat-button>Promociones</a>
+    </nav>
+    <div class="admin-bar__actions">
+      <a routerLink="/galeria" mat-button target="_blank">
+        <mat-icon>open_in_new</mat-icon> Ver galería
+      </a>
+      <a routerLink="/" mat-button>
+        <mat-icon>home</mat-icon> Sitio
+      </a>
+      <button mat-stroked-button (click)="auth.logout()">
+        <mat-icon>logout</mat-icon> Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+
+    <!-- Upload form -->
+    <section class="upload-section" aria-label="Subir nuevo contenido">
+      <h2 class="upload-section__title">Subir foto o video</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="upload-form">
+
+        <!-- File drop zone -->
+        <label class="file-drop" [class.file-drop--has-preview]="preview()">
+          @if (preview()) {
+            <img [src]="preview()!" alt="Vista previa" class="file-drop__preview" />
+            <span class="file-drop__change">Cambiar archivo</span>
+          } @else {
+            <mat-icon aria-hidden="true">cloud_upload</mat-icon>
+            <span>Arrastra un archivo o haz clic para seleccionar</span>
+            <small>JPG, PNG, WebP o MP4 — máx. 50 MB</small>
+          }
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime"
+            class="file-drop__input"
+            (change)="onFileChange($event)"
+            aria-label="Seleccionar archivo"
+          />
+        </label>
+
+        <mat-form-field appearance="outline" class="upload-form__field">
+          <mat-label>Título</mat-label>
+          <input matInput formControlName="titulo" placeholder="Ej: Tratamiento de reflexología" />
+          @if (form.get('titulo')?.invalid && form.get('titulo')?.touched) {
+            <mat-error>El título es obligatorio (mínimo 2 caracteres)</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="upload-form__field">
+          <mat-label>Descripción (opcional)</mat-label>
+          <textarea matInput formControlName="descripcion" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="publicar" class="upload-form__checkbox">
+          Publicar automáticamente en Facebook e Instagram
+        </mat-checkbox>
+
+        <button
+          mat-raised-button
+          type="submit"
+          class="upload-form__submit"
+          [disabled]="uploading() || form.invalid || !preview()"
+          aria-label="Subir contenido"
+        >
+          @if (uploading()) {
+            <ng-container>
+              <mat-icon class="spin">sync</mat-icon>
+              Subiendo…
+            </ng-container>
+          } @else {
+            <ng-container>
+              <mat-icon>upload</mat-icon>
+              Subir contenido
+            </ng-container>
+          }
+        </button>
+      </form>
+    </section>
+
+    <!-- Posts list -->
+    <section class="posts-section" aria-label="Posts publicados">
+      <h2 class="posts-section__title">
+        Contenido publicado
+        <span class="posts-section__count">({{ posts().length }})</span>
+      </h2>
+
+      @if (loading()) {
+        <p class="info-text">Cargando…</p>
+      } @else if (posts().length === 0) {
+        <p class="info-text">Aún no hay contenido publicado.</p>
+      } @else {
+        <div class="posts-grid">
+          @for (post of posts(); track post.id) {
+            <article class="post-card">
+              <div class="post-card__thumb">
+                @if (post.media_type === 'video') {
+                  <video [src]="mediaUrl(post)" class="post-card__img" muted preload="metadata"></video>
+                  <div class="post-card__play" aria-hidden="true"><mat-icon>play_circle</mat-icon></div>
+                } @else {
+                  <img [src]="mediaUrl(post)" [alt]="post.titulo" class="post-card__img" loading="lazy" />
+                }
+                @if (post.published) {
+                  <span class="post-card__badge post-card__badge--published">Publicado</span>
+                } @else {
+                  <span class="post-card__badge">Sin publicar</span>
+                }
+              </div>
+
+              <div class="post-card__info">
+                <h3 class="post-card__title">{{ post.titulo }}</h3>
+                @if (post.descripcion) {
+                  <p class="post-card__desc">{{ post.descripcion }}</p>
+                }
+                <time class="post-card__date">{{ post.created_at | date:'d MMM yyyy' }}</time>
+              </div>
+
+              <div class="post-card__actions">
+                @if (!post.published) {
+                  <button
+                    mat-stroked-button
+                    class="post-card__btn post-card__btn--publish"
+                    [disabled]="publishing() === post.id"
+                    (click)="openCaptionPanel(post)"
+                    aria-label="Publicar en redes sociales"
+                  >
+                    <mat-icon>auto_awesome</mat-icon>
+                    Publicar con IA
+                  </button>
+                }
+                <button
+                  mat-icon-button
+                  class="post-card__btn--delete"
+                  [disabled]="deleting() === post.id"
+                  (click)="deletePost(post)"
+                  [attr.aria-label]="'Eliminar ' + post.titulo"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+  </main>
+</div>
+
+<!-- ── AI Caption Panel (slide-in overlay) ── -->
+@if (captionPost()) {
+  <div class="caption-overlay" role="dialog" aria-modal="true" aria-label="Generar caption con IA">
+    <div class="caption-panel">
+
+      <header class="caption-panel__header">
+        <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+        <h2 class="caption-panel__title">Caption con IA para redes sociales</h2>
+        <button mat-icon-button (click)="closeCaptionPanel()" aria-label="Cerrar panel">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <div class="caption-panel__post-info">
+        <strong>{{ captionPost()!.titulo }}</strong>
+        @if (captionPost()!.descripcion) {
+          <span class="caption-panel__post-desc"> — {{ captionPost()!.descripcion }}</span>
+        }
+      </div>
+
+      <div class="caption-panel__row">
+        <mat-form-field appearance="outline" class="caption-panel__field">
+          <mat-label>Tono deseado (opcional)</mat-label>
+          <input
+            matInput
+            [value]="captionTono()"
+            (input)="captionTono.set($any($event.target).value)"
+            placeholder="Ej: festivo, profesional, íntimo…"
+          />
+          <mat-icon matPrefix aria-hidden="true">tune</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="caption-panel__field">
+          <mat-label>Contexto extra (opcional)</mat-label>
+          <input
+            matInput
+            [value]="captionContexto()"
+            (input)="captionContexto.set($any($event.target).value)"
+            placeholder="Ej: promoción de invierno, descuento 20%…"
+          />
+          <mat-icon matPrefix aria-hidden="true">info_outline</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <button
+        mat-stroked-button
+        class="caption-panel__btn-generate"
+        (click)="generateAiCaption()"
+        [disabled]="generatingCaption()"
+        aria-label="Generar caption con inteligencia artificial"
+      >
+        @if (generatingCaption()) {
+          <mat-icon class="spin" aria-hidden="true">sync</mat-icon>
+          Generando…
+        } @else {
+          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
+          Generar con IA
+        }
+      </button>
+
+      <mat-form-field appearance="outline" class="caption-panel__field caption-panel__field--full">
+        <mat-label>Caption para publicar</mat-label>
+        <textarea
+          matInput
+          rows="6"
+          [value]="captionText()"
+          (input)="captionText.set($any($event.target).value)"
+          placeholder="El caption aparecerá aquí. Puedes editarlo antes de publicar."
+          aria-label="Caption editable para publicar"
+        ></textarea>
+        @if (aiGenerated()) {
+          <mat-hint>✨ Generado con IA — puedes editarlo antes de publicar</mat-hint>
+        }
+      </mat-form-field>
+
+      <div class="caption-panel__actions">
+        <button mat-button (click)="closeCaptionPanel()">Cancelar</button>
+        <button
+          mat-raised-button
+          class="caption-panel__btn-publish"
+          (click)="confirmPublish()"
+          [disabled]="publishing() === captionPost()!.id || !captionText()"
+          aria-label="Confirmar y publicar en redes sociales"
+        >
+          @if (publishing() === captionPost()!.id) {
+            <mat-icon class="spin" aria-hidden="true">sync</mat-icon>
+            Publicando…
+          } @else {
+            <mat-icon aria-hidden="true">share</mat-icon>
+            Publicar en redes
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

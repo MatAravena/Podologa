@@ -1,0 +1,241 @@
+<div class="admin-shell">
+  <!-- Top bar -->
+  <header class="admin-bar">
+    <span class="admin-bar__brand">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Panel admin
+    </span>
+    <nav class="admin-bar__nav">
+      <a routerLink="/admin/opiniones"      mat-button>Opiniones</a>
+      <a routerLink="/admin/galeria"         mat-button>Galería</a>
+      <a routerLink="/admin/disponibilidad"  mat-button class="active">Disponibilidad</a>
+      <a routerLink="/admin/promociones"     mat-button>Promociones</a>
+    </nav>
+    <div class="admin-bar__actions">
+      <a routerLink="/" mat-button>
+        <mat-icon>home</mat-icon> Sitio
+      </a>
+      <button mat-stroked-button (click)="auth.logout()">
+        <mat-icon>logout</mat-icon> Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+
+    @if (loading()) {
+      <p class="info-text">Cargando…</p>
+    } @else {
+
+      <mat-tab-group animationDuration="200ms">
+
+        <!-- ══ TAB 1: Horario semanal ══ -->
+        <mat-tab label="Horario semanal">
+          <div class="tab-content">
+
+            <!-- Add block form -->
+            <section class="form-section" aria-label="Agregar bloque horario">
+              <h2 class="section-title">
+                <mat-icon aria-hidden="true">schedule</mat-icon>
+                Agregar bloque horario
+              </h2>
+
+              <form [formGroup]="bloqueForm" (ngSubmit)="agregarBloque()" novalidate class="bloque-form">
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo de bloque</mat-label>
+                  <mat-select formControlName="tipo">
+                    <mat-option value="semanal">Recurrente (día de la semana)</mat-option>
+                    <mat-option value="especifico">Fecha específica</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                @if (bloqueForm.get('tipo')?.value === 'semanal') {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Día de la semana</mat-label>
+                    <mat-select formControlName="dia_semana">
+                      @for (op of diaOpciones; track op.value) {
+                        <mat-option [value]="op.value">{{ op.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                } @else {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Fecha específica</mat-label>
+                    <input matInput type="date" formControlName="fecha_especifica" />
+                  </mat-form-field>
+                }
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Hora inicio</mat-label>
+                  <input matInput type="time" formControlName="hora_inicio" />
+                  <mat-hint>Ej: 09:00</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Hora fin</mat-label>
+                  <input matInput type="time" formControlName="hora_fin" />
+                  <mat-hint>Ej: 19:00</mat-hint>
+                </mat-form-field>
+
+                <button
+                  mat-raised-button
+                  type="submit"
+                  class="submit-btn"
+                  [disabled]="saving() || bloqueForm.invalid"
+                >
+                  <mat-icon>add</mat-icon>
+                  @if (saving()) { Guardando… } @else { Agregar bloque }
+                </button>
+
+              </form>
+            </section>
+
+            <!-- Weekly blocks list -->
+            <section class="list-section" aria-label="Horario semanal configurado">
+              <h2 class="section-title">
+                <mat-icon aria-hidden="true">calendar_today</mat-icon>
+                Horario semanal activo
+              </h2>
+
+              @if (bloquesSemanal().length === 0) {
+                <p class="info-text">No hay bloques horarios semanales configurados.</p>
+              } @else {
+                <div class="schedule-grid">
+                  @for (grupo of bloquesSemanal(); track grupo.dia) {
+                    <div class="schedule-day">
+                      <h3 class="schedule-day__name">{{ grupo.nombre }}</h3>
+                      <ul class="schedule-day__slots" role="list">
+                        @for (bloque of grupo.bloques; track bloque.id) {
+                          <li class="slot-chip">
+                            <mat-icon aria-hidden="true">schedule</mat-icon>
+                            {{ formatHora(bloque.hora_inicio) }} – {{ formatHora(bloque.hora_fin) }}
+                            <button
+                              mat-icon-button
+                              class="slot-chip__delete"
+                              [disabled]="deletingBloque() === bloque.id"
+                              (click)="eliminarBloque(bloque.id)"
+                              [attr.aria-label]="'Eliminar bloque ' + formatHora(bloque.hora_inicio)"
+                            >
+                              <mat-icon>close</mat-icon>
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Specific-date overrides -->
+              @if (bloquesEspecificos().length > 0) {
+                <h3 class="section-subtitle">
+                  <mat-icon aria-hidden="true">event</mat-icon>
+                  Fechas con horario especial
+                </h3>
+                <ul class="bloqueo-list" role="list">
+                  @for (b of bloquesEspecificos(); track b.id) {
+                    <li class="bloqueo-item">
+                      <mat-icon aria-hidden="true">event_available</mat-icon>
+                      <span class="bloqueo-item__fecha">{{ b.fecha_especifica | date:'EEEE d MMM yyyy' : '' : 'es-CL' }}</span>
+                      <span class="bloqueo-item__hora">{{ formatHora(b.hora_inicio) }} – {{ formatHora(b.hora_fin) }}</span>
+                      <button
+                        mat-icon-button
+                        class="bloqueo-item__delete"
+                        [disabled]="deletingBloque() === b.id"
+                        (click)="eliminarBloque(b.id)"
+                        aria-label="Eliminar bloque especial"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+
+          </div>
+        </mat-tab>
+
+        <!-- ══ TAB 2: Fechas bloqueadas ══ -->
+        <mat-tab label="Días bloqueados">
+          <div class="tab-content">
+
+            <!-- Add blocked date form -->
+            <section class="form-section" aria-label="Bloquear una fecha">
+              <h2 class="section-title">
+                <mat-icon aria-hidden="true">event_busy</mat-icon>
+                Bloquear fecha completa
+              </h2>
+              <p class="section-desc">Los clientes no podrán reservar en este día.</p>
+
+              <form [formGroup]="bloqueoForm" (ngSubmit)="agregarBloqueo()" novalidate class="bloque-form">
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha a bloquear</mat-label>
+                  <input matInput type="date" formControlName="fecha" />
+                  @if (bloqueoForm.get('fecha')?.invalid && bloqueoForm.get('fecha')?.touched) {
+                    <mat-error>Debes seleccionar una fecha</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Motivo (opcional)</mat-label>
+                  <input matInput formControlName="motivo" placeholder="Ej: Feriado, vacaciones…" />
+                </mat-form-field>
+
+                <button
+                  mat-raised-button
+                  type="submit"
+                  class="submit-btn submit-btn--danger"
+                  [disabled]="saving() || bloqueoForm.invalid"
+                >
+                  <mat-icon>block</mat-icon>
+                  @if (saving()) { Guardando… } @else { Bloquear fecha }
+                </button>
+
+              </form>
+            </section>
+
+            <!-- Blocked dates list -->
+            <section class="list-section" aria-label="Fechas bloqueadas">
+              <h2 class="section-title">
+                <mat-icon aria-hidden="true">event_busy</mat-icon>
+                Fechas bloqueadas
+                <span class="count">({{ bloqueos().length }})</span>
+              </h2>
+
+              @if (bloqueos().length === 0) {
+                <p class="info-text">No hay fechas bloqueadas.</p>
+              } @else {
+                <ul class="bloqueo-list" role="list">
+                  @for (b of bloqueos(); track b.id) {
+                    <li class="bloqueo-item bloqueo-item--blocked">
+                      <mat-icon aria-hidden="true">event_busy</mat-icon>
+                      <span class="bloqueo-item__fecha">{{ b.fecha | date:'EEEE d MMM yyyy' : '' : 'es-CL' }}</span>
+                      @if (b.motivo) {
+                        <span class="bloqueo-item__motivo">{{ b.motivo }}</span>
+                      }
+                      <button
+                        mat-icon-button
+                        class="bloqueo-item__delete"
+                        [disabled]="deletingBloqueo() === b.id"
+                        (click)="eliminarBloqueo(b.id)"
+                        [attr.aria-label]="'Desbloquear ' + b.fecha"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+
+    }
+  </main>
+</div>

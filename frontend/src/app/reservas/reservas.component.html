@@ -1,0 +1,302 @@
+<!-- ============================================================
+     RESERVAS — Formulario de solicitud de turno
+     Libélula Podología y Terapias
+     ============================================================ -->
+
+<!-- ── Header de la página ── -->
+<header class="page-header" role="banner">
+  <div class="page-header__inner">
+    <a routerLink="/" mat-icon-button class="page-header__back" aria-label="Volver al inicio">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div class="page-header__brand">
+      <span class="page-header__name">Libélula</span>
+      <span class="page-header__sub">Podología y Terapias</span>
+    </div>
+  </div>
+</header>
+
+<main class="reservas-page">
+
+  <!-- ── Hero compacto de la sección ── -->
+  <section class="reservas-hero" aria-label="Reserva de turno">
+    <div class="reservas-hero__content">
+      <span class="section-label">Turnos online</span>
+      <h1 class="reservas-hero__title">Reserva tu hora</h1>
+      <p class="reservas-hero__subtitle">
+        Completa el formulario y te contactaremos para confirmar el horario
+        disponible que mejor se adapte a ti.
+      </p>
+    </div>
+    <!-- Ola de transición -->
+    <div class="reservas-hero__wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF6F0"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── Layout principal ── -->
+  <div class="reservas-layout">
+
+    <!-- Columna izquierda: info de contacto y servicios -->
+    <aside class="reservas-info" aria-label="Información de contacto">
+
+      <div class="info-card">
+        <div class="info-card__icon" aria-hidden="true">
+          <mat-icon>place</mat-icon>
+        </div>
+        <div>
+          <h3 class="info-card__title">Ubicación</h3>
+          <p class="info-card__text">Santiago, Chile<br><em>(dirección exacta al confirmar hora)</em></p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card__icon" aria-hidden="true">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div>
+          <h3 class="info-card__title">Horarios de atención</h3>
+          <p class="info-card__text">
+            Lunes a Viernes: 9:00 – 19:00 hs<br>
+            Sábados: 9:00 – 13:00 hs
+          </p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card__icon info-card__icon--green" aria-hidden="true">
+          <mat-icon>phone</mat-icon>
+        </div>
+        <div>
+          <h3 class="info-card__title">Consultas por WhatsApp</h3>
+          <a href="https://wa.me/569XXXXXXXX" class="info-card__link" aria-label="Escribir por WhatsApp">
+            +56 9 XXXX XXXX
+          </a>
+        </div>
+      </div>
+
+      <!-- Servicios disponibles (resumen) -->
+      <div class="info-services">
+        <h3 class="info-services__title">Servicios disponibles</h3>
+        <ul class="info-services__list" aria-label="Lista de servicios disponibles">
+          @for (s of servicios(); track s.id) {
+            <li class="info-services__item">
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+              {{ s.nombre }}
+            </li>
+          }
+        </ul>
+      </div>
+
+    </aside>
+
+    <!-- Columna derecha: formulario -->
+    <section class="reservas-form-wrap" aria-label="Formulario de reserva">
+
+      <!-- Estado: enviado con éxito -->
+      @if (enviado()) {
+        <div class="success-state" role="alert" aria-live="polite">
+          <div class="success-state__icon" aria-hidden="true">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <h2 class="success-state__title">¡Solicitud enviada!</h2>
+          <p class="success-state__text">
+            Recibimos tu solicitud de turno. Te contactaremos a la brevedad para
+            confirmar el horario y darte todos los detalles.
+          </p>
+          <button mat-raised-button class="btn-primary" (click)="resetForm()">
+            <mat-icon aria-hidden="true">add</mat-icon>
+            Nueva reserva
+          </button>
+          <a mat-stroked-button routerLink="/" class="btn-outline" aria-label="Volver al inicio">
+            Volver al inicio
+          </a>
+        </div>
+      }
+
+      <!-- Formulario principal -->
+      @if (!enviado()) {
+        <form
+          [formGroup]="form"
+          (ngSubmit)="onSubmit()"
+          class="reservas-form"
+          novalidate
+          aria-label="Formulario para solicitar un turno"
+        >
+          <h2 class="reservas-form__title">Datos de contacto</h2>
+
+          <!-- Nombre -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Nombre completo</mat-label>
+            <input
+              matInput
+              formControlName="nombre"
+              type="text"
+              autocomplete="name"
+              placeholder="Ej: María García"
+              [attr.aria-describedby]="errores().nombre ? 'error-nombre' : null"
+            />
+            <mat-icon matPrefix aria-hidden="true">person</mat-icon>
+            @if (errores().nombre) {
+              <mat-error id="error-nombre" role="alert">{{ errores().nombre }}</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+              placeholder="Ej: maria@email.com"
+              [attr.aria-describedby]="errores().email ? 'error-email' : null"
+            />
+            <mat-icon matPrefix aria-hidden="true">email</mat-icon>
+            @if (errores().email) {
+              <mat-error id="error-email" role="alert">{{ errores().email }}</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Teléfono -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Teléfono / WhatsApp</mat-label>
+            <input
+              matInput
+              formControlName="telefono"
+              type="tel"
+              autocomplete="tel"
+              placeholder="Ej: +54 11 1234-5678"
+              [attr.aria-describedby]="errores().telefono ? 'error-telefono' : null"
+            />
+            <mat-icon matPrefix aria-hidden="true">phone</mat-icon>
+            @if (errores().telefono) {
+              <mat-error id="error-telefono" role="alert">{{ errores().telefono }}</mat-error>
+            }
+          </mat-form-field>
+
+          <h2 class="reservas-form__title reservas-form__title--spaced">Detalle del turno</h2>
+
+          <!-- Servicio -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Servicio solicitado</mat-label>
+            <mat-select
+              formControlName="servicio_id"
+              [attr.aria-describedby]="errores().servicio_id ? 'error-servicio' : null"
+            >
+              @for (s of servicios(); track s.id) {
+                <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon matPrefix aria-hidden="true">spa</mat-icon>
+            @if (errores().servicio_id) {
+              <mat-error id="error-servicio" role="alert">{{ errores().servicio_id }}</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Promotion badge — shown when the selected service has an active promo -->
+          @if (promociones().length > 0) {
+            <div class="promo-badge" role="alert" aria-live="polite">
+              @for (promo of promociones(); track promo.id) {
+                <span class="promo-badge__item">
+                  🏷️ <strong>{{ promo.porcentaje_descuento }}% de descuento</strong>
+                  @if (promo.descripcion) { — {{ promo.descripcion }} }
+                  @if (promo.hora_inicio && promo.hora_fin) {
+                    <span class="promo-badge__hours">
+                      ({{ promo.hora_inicio.slice(0,5) }}–{{ promo.hora_fin.slice(0,5) }} hs)
+                    </span>
+                  }
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Fecha y horario (en fila) -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Fecha preferida</mat-label>
+              <input
+                matInput
+                formControlName="fecha"
+                type="date"
+                [min]="fechaMin"
+                [attr.aria-describedby]="errores().fecha ? 'error-fecha' : null"
+              />
+              <mat-icon matPrefix aria-hidden="true">calendar_today</mat-icon>
+              @if (errores().fecha) {
+                <mat-error id="error-fecha" role="alert">{{ errores().fecha }}</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>
+                Horario preferido
+                @if (cargandoHorarios()) { <span> — cargando…</span> }
+              </mat-label>
+              <mat-select
+                formControlName="hora"
+                [attr.aria-describedby]="errores().hora ? 'error-horario' : null"
+                [disabled]="cargandoHorarios()"
+              >
+                @for (h of horariosDisponibles(); track h.hora) {
+                  <mat-option [value]="h.hora">{{ h.hora }} hs</mat-option>
+                }
+              </mat-select>
+              <mat-icon matPrefix aria-hidden="true">access_time</mat-icon>
+              @if (errores().hora) {
+                <mat-error id="error-horario" role="alert">{{ errores().hora }}</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <!-- Notas adicionales (opcional) -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Notas adicionales <span class="label-optional">(opcional)</span></mat-label>
+            <textarea
+              matInput
+              formControlName="notas"
+              rows="4"
+              placeholder="Cuéntanos si tienes alguna condición de salud relevante, consulta previa, o comentario..."
+              aria-label="Notas adicionales opcionales"
+            ></textarea>
+            <mat-icon matPrefix aria-hidden="true">notes</mat-icon>
+            <mat-hint>Esta información ayuda a preparar mejor tu consulta.</mat-hint>
+          </mat-form-field>
+
+          <!-- Aviso de privacidad -->
+          <p class="form-privacy" aria-label="Aviso de privacidad">
+            <mat-icon aria-hidden="true">lock</mat-icon>
+            Tu información es confidencial y solo se usa para gestionar tu turno.
+          </p>
+
+          <!-- Botón de envío -->
+          <button
+            mat-raised-button
+            type="submit"
+            class="btn-primary form-submit"
+            [class.btn-loading]="enviando()"
+            [disabled]="enviando()"
+            aria-label="Enviar solicitud de turno"
+          >
+            @if (enviando()) {
+              <ng-container>
+                <mat-icon aria-hidden="true" class="icon-spin">sync</mat-icon>
+                Enviando...
+              </ng-container>
+            } @else {
+              <ng-container>
+                <mat-icon aria-hidden="true">send</mat-icon>
+                Enviar solicitud
+              </ng-container>
+            }
+          </button>
+
+        </form>
+      }
+
+    </section>
+  </div>
+</main>

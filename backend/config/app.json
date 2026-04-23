@@ -1,0 +1,25 @@
+{
+  "_comment": "General application settings. Change APP_ENV in .env to switch profiles.",
+  "app_name": "Libélula Podología y Terapias",
+  "contact": {
+    "phone": "+56 9 XXXX XXXX",
+    "email": "contacto@libelula.cl",
+    "address": "Santiago, Chile",
+    "instagram": "@libelula.podologia",
+    "facebook": "libelulapodologia"
+  },
+  "business_hours": {
+    "monday_friday": { "open": "09:00", "close": "19:00" },
+    "saturday":      { "open": "09:00", "close": "13:00" },
+    "sunday":        null
+  },
+  "booking": {
+    "slot_duration_default_minutes": 60,
+    "advance_booking_days_max": 60,
+    "advance_booking_days_min": 1
+  },
+  "cors_origins": [
+    "http://localhost:4200",
+    "http://localhost:4000"
+  ]
+}

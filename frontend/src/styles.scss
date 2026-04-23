@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+
+// Angular Material theme — aligned with uipro Beauty & Spa palette
+// Primary: pink, Tertiary: green (sage)
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$rose-palette,
+        tertiary: mat.$green-palette,
+      ),
+      typography: 'Inter',
+      density: 0,
+    )
+  );
+}
+
+body {
+  color-scheme: light;
+  background-color: #fff5f5; // uipro --bg
+  color: #2d2d2d;            // uipro --text
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  height: 100%;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// Anchor scroll offset — keeps section headings below the fixed navbar
+// Navbar pill + padding ≈ 88px; add 16px breathing room
+section[id] {
+  scroll-margin-top: 104px;
+}

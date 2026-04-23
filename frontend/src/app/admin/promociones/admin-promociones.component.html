@@ -1,0 +1,199 @@
+<div class="admin-shell">
+  <!-- Top bar -->
+  <header class="admin-bar">
+    <span class="admin-bar__brand">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Panel admin
+    </span>
+    <nav class="admin-bar__nav">
+      <a routerLink="/admin/opiniones"     mat-button>Opiniones</a>
+      <a routerLink="/admin/galeria"        mat-button>Galería</a>
+      <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
+      <a routerLink="/admin/promociones"    mat-button class="active">Promociones</a>
+    </nav>
+    <div class="admin-bar__actions">
+      <a routerLink="/" mat-button>
+        <mat-icon>home</mat-icon> Sitio
+      </a>
+      <button mat-stroked-button (click)="auth.logout()">
+        <mat-icon>logout</mat-icon> Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+
+    <!-- Nueva Promoción -->
+    <section class="promo-form-section" aria-label="Nueva promoción">
+      <h2 class="section-title">Nueva promoción</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="promo-form">
+
+        <div class="form-row">
+          <!-- Servicio -->
+          <mat-form-field appearance="outline" class="form-field form-field--wide">
+            <mat-label>Servicio</mat-label>
+            <mat-select formControlName="servicio_id">
+              @for (s of servicios(); track s.id) {
+                <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+              }
+            </mat-select>
+            @if (form.get('servicio_id')?.invalid && form.get('servicio_id')?.touched) {
+              <mat-error>Selecciona un servicio</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Descuento % -->
+          <mat-form-field appearance="outline" class="form-field form-field--short">
+            <mat-label>Descuento %</mat-label>
+            <input
+              matInput
+              type="number"
+              min="1"
+              max="100"
+              formControlName="porcentaje_descuento"
+              placeholder="20"
+            />
+            <span matSuffix>%</span>
+            @if (form.get('porcentaje_descuento')?.invalid && form.get('porcentaje_descuento')?.touched) {
+              <mat-error>Entre 1 y 100</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Descripción -->
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Descripción (opcional)</mat-label>
+          <input matInput formControlName="descripcion" placeholder="Ej: Promoción de invierno" />
+        </mat-form-field>
+
+        <div class="form-row">
+          <!-- Fechas -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Fecha inicio</mat-label>
+            <input matInput type="date" formControlName="fecha_inicio" />
+            @if (form.get('fecha_inicio')?.invalid && form.get('fecha_inicio')?.touched) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Fecha fin</mat-label>
+            <input matInput type="date" formControlName="fecha_fin" />
+            @if (form.get('fecha_fin')?.invalid && form.get('fecha_fin')?.touched) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Rango horario opcional -->
+        <p class="form-hint">
+          <mat-icon aria-hidden="true">info</mat-icon>
+          Rango horario opcional — si se define, el descuento solo aplica durante esas horas.
+        </p>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Hora inicio (opcional)</mat-label>
+            <input matInput type="time" formControlName="hora_inicio" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Hora fin (opcional)</mat-label>
+            <input matInput type="time" formControlName="hora_fin" />
+          </mat-form-field>
+        </div>
+
+        <button
+          mat-raised-button
+          type="submit"
+          class="submit-btn"
+          [disabled]="saving() || form.invalid"
+        >
+          @if (saving()) {
+            <mat-icon class="spin">sync</mat-icon>
+            Guardando…
+          } @else {
+            <mat-icon>local_offer</mat-icon>
+            Crear promoción
+          }
+        </button>
+
+      </form>
+    </section>
+
+    <!-- Lista de Promociones -->
+    <section class="promos-section" aria-label="Promociones existentes">
+      <h2 class="section-title">
+        Promociones
+        <span class="count">({{ promociones().length }})</span>
+      </h2>
+
+      @if (loading()) {
+        <p class="info-text">Cargando…</p>
+      } @else if (promociones().length === 0) {
+        <p class="info-text">No hay promociones creadas aún.</p>
+      } @else {
+        <div class="promos-grid">
+          @for (promo of promociones(); track promo.id) {
+            <article class="promo-card" [class.promo-card--inactive]="!promo.activo">
+
+              <div class="promo-card__header">
+                <span class="promo-card__discount">
+                  <mat-icon aria-hidden="true">local_offer</mat-icon>
+                  {{ promo.porcentaje_descuento }}% off
+                </span>
+                <span
+                  class="promo-card__status"
+                  [class.promo-card__status--active]="isVigente(promo)"
+                >
+                  {{ isVigente(promo) ? 'Vigente' : promo.activo ? 'Inactiva (fuera de rango)' : 'Desactivada' }}
+                </span>
+              </div>
+
+              <h3 class="promo-card__service">{{ promo.servicio.nombre }}</h3>
+              @if (promo.descripcion) {
+                <p class="promo-card__desc">{{ promo.descripcion }}</p>
+              }
+
+              <div class="promo-card__dates">
+                <mat-icon aria-hidden="true">date_range</mat-icon>
+                {{ promo.fecha_inicio | date:'d MMM yyyy' }} — {{ promo.fecha_fin | date:'d MMM yyyy' }}
+                @if (promo.hora_inicio && promo.hora_fin) {
+                  <span class="promo-card__hours">
+                    · {{ promo.hora_inicio.slice(0, 5) }} – {{ promo.hora_fin.slice(0, 5) }} hs
+                  </span>
+                }
+              </div>
+
+              <div class="promo-card__actions">
+                <button
+                  mat-stroked-button
+                  class="promo-card__toggle"
+                  [class.promo-card__toggle--off]="promo.activo"
+                  (click)="toggleActivo(promo)"
+                  [attr.aria-label]="(promo.activo ? 'Desactivar' : 'Activar') + ' promoción'"
+                >
+                  <mat-icon>{{ promo.activo ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                  {{ promo.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+
+                <button
+                  mat-icon-button
+                  class="promo-card__delete"
+                  [disabled]="deleting() === promo.id"
+                  (click)="deletePromo(promo)"
+                  [attr.aria-label]="'Eliminar promoción de ' + promo.servicio.nombre"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+  </main>
+</div>

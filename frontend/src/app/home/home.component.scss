@@ -1,0 +1,1507 @@
+// ================================================================
+// HOME — Libélula Podología y Terapias
+// Design system: uipro Beauty & Spa (uupm.cc/demo/beauty-spa)
+// Tokens extracted from CSS chunk 21fb408dd0a2d70b.css
+// ================================================================
+
+
+// ================================================================
+// DESIGN TOKENS — uipro Beauty & Spa
+// ================================================================
+
+// ── Color palette ────────────────────────────────────────────────
+// Pinks (--primary, --primary-dark)
+$pink:         #ffb6c1;   // uipro --primary (light pink)
+$pink-dark:    #f5a0ab;   // uipro --primary-dark (rose pink)
+$pink-deep:    #d4697e;   // deepened for readable text accents
+$pink-pale:    #fff0f3;   // very pale pink — hover states
+$pink-muted:   #fde0e6;   // soft backgrounds
+
+// Sage green (--secondary)
+$sage:         #7dba7d;   // muted from uipro #90ee90
+$sage-dark:    #4a8a4a;   // readable on white
+
+// Gold CTA (--cta, --cta-dark)
+$gold:         #d4a017;   // warm gold (more legible than pure #ffd700)
+$gold-dark:    #b88810;   // hover
+$gold-light:   #f5cd6a;   // decorative tint
+
+// Backgrounds (--bg, --bg-white)
+$bg:           #fff5f5;   // uipro --bg
+$bg-white:     #ffffff;   // uipro --bg-white
+$bg-card:      #fffafa;   // cards (very slightly tinted)
+
+// Borders (--border)
+$border:       #f3e8e8;   // uipro --border (nude/beige)
+$border-pink:  #ffd0d8;   // active / focus state
+
+// Text (--text, --text-muted)
+$text:         #2d2d2d;   // uipro --text
+$text-mid:     #6b7280;   // uipro --text-muted
+$text-light:   #9ca3af;   // subtle labels
+
+$white: #ffffff;
+
+// ── Typography ───────────────────────────────────────────────────
+// Headings: Playfair Display (serif, editorial)
+// Body: Inter (clean, readable)
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body:    'Inter', system-ui, sans-serif;
+
+// ── Spacing scale (4/8pt) ────────────────────────────────────────
+$s1: 8px;   $s2: 16px;  $s3: 24px;  $s4: 32px;
+$s5: 40px;  $s6: 48px;  $s8: 64px;  $s10: 80px; $s12: 96px;
+
+// ── Border radius (uipro) ────────────────────────────────────────
+$r-sm:   8px;
+$r-md:   12px;
+$r-lg:   20px;
+$r-xl:   24px;    // cards
+$r-full: 50px;    // pills / buttons
+
+// ── Shadow system (extracted from uipro CSS) ─────────────────────
+// Neumorphic — raised element on $bg background
+$shadow-nm:       8px 8px 16px rgba(200, 180, 180, 0.30),
+                  -8px -8px 16px rgba(255, 255, 255, 0.85);
+$shadow-nm-hover: 4px 4px 8px rgba(200, 180, 180, 0.30),
+                  -4px -4px 8px rgba(255, 255, 255, 0.85);
+
+// Soft elevated (for hover state transition)
+$shadow-card:     0 4px 20px rgba(0, 0, 0, 0.05);
+$shadow-card-h:   0 8px 30px rgba(0, 0, 0, 0.10);
+
+// Colored
+$shadow-pink:     0 8px 24px rgba(245, 160, 171, 0.40);
+$shadow-pink-lg:  0 12px 40px rgba(245, 160, 171, 0.45);
+$shadow-gold:     0 8px 20px rgba(212, 160, 23, 0.40);
+$shadow-sage:     0 6px 16px rgba(125, 186, 125, 0.30);
+
+// ── Gradients ────────────────────────────────────────────────────
+$grad-pink:   linear-gradient(135deg, $pink 0%, $pink-dark 100%);
+$grad-gold:   linear-gradient(135deg, $gold 0%, #e8be4a 100%);
+$grad-sage:   linear-gradient(135deg, $sage 0%, $sage-dark 100%);
+$grad-hero:   linear-gradient(150deg, #fff5f5 0%, #fff0f3 55%, #ffeef5 100%);
+$grad-why:    linear-gradient(145deg, #2d1218 0%, #4a1e28 60%, #3a1520 100%);
+
+// ── Transitions ──────────────────────────────────────────────────
+$t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-slow:   350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+
+// ================================================================
+// MIXINS
+// ================================================================
+
+@mixin gradient-text($gradient) {
+  background: $gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin glass($bg: rgba($white, 0.65), $blur: 12px) {
+  background: $bg;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+}
+
+@mixin pill-button {
+  border-radius: $r-full !important;
+  font-family: $font-body !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  height: 54px !important;
+  padding: 0 $s4 !important;
+  transition: transform $t-fast, box-shadow $t-normal, filter $t-normal !important;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: box-shadow $t-fast !important;
+    &:hover { transform: none; }
+  }
+}
+
+
+// ================================================================
+// GLOBAL HELPERS
+// ================================================================
+
+.section-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $s8 $s2;
+
+  @media (min-width: 768px)  { padding: $s10 $s4; }
+  @media (min-width: 1024px) { padding: $s12 $s6; }
+
+  &--center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+// Section category pill
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: $font-body;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $pink-deep;
+  background: $pink-muted;
+  border: 1px solid rgba($pink-dark, 0.25);
+  border-radius: $r-full;
+  padding: 6px 16px;
+  margin-bottom: $s2;
+
+  &--light {
+    color: rgba($white, 0.92);
+    background: rgba($white, 0.10);
+    border-color: rgba($white, 0.20);
+  }
+}
+
+// Section heading
+.section-title {
+  font-family: $font-heading;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: $text;
+  line-height: 1.2;
+  margin: 0 0 $s2;
+
+  em {
+    font-style: italic;
+    @include gradient-text($grad-pink);
+  }
+
+  &--light {
+    color: $white;
+
+    em {
+      @include gradient-text(linear-gradient(135deg, $pink 0%, $gold-light 100%));
+    }
+  }
+}
+
+// Section subheading
+.section-subtitle {
+  font-family: $font-body;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: $text-mid;
+  max-width: 580px;
+  margin: 0 0 $s6;
+}
+
+
+// ================================================================
+// BUTTONS
+// ================================================================
+
+// Gold primary CTA (uipro --cta)
+.btn-gold.mat-mdc-raised-button {
+  @include pill-button;
+  background: $grad-gold !important;
+  color: $white !important;
+  box-shadow: $shadow-gold !important;
+  font-size: 0.9375rem !important;
+
+  mat-icon { margin-right: 6px; }
+
+  &:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 12px 32px rgba(212, 160, 23, 0.50) !important;
+  }
+}
+
+// Pink outline secondary
+.btn-outline-pink.mat-mdc-stroked-button {
+  @include pill-button;
+  --mdc-outlined-button-outline-color: #{$pink-dark};
+  color: $pink-deep !important;
+  font-size: 0.9375rem !important;
+  background: $bg-white !important;
+
+  &:hover {
+    background: $pink-pale !important;
+    box-shadow: $shadow-card !important;
+  }
+}
+
+
+// ================================================================
+// 1. HERO
+// ================================================================
+
+.hero {
+  position: relative;
+  background: $grad-hero;
+  overflow: hidden;
+
+  // Decorative blobs
+  &__blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+
+    &--1 {
+      top: -160px;
+      right: -160px;
+      width: 560px;
+      height: 560px;
+      background: radial-gradient(circle, rgba($pink, 0.28) 0%, transparent 70%);
+    }
+
+    &--2 {
+      bottom: 80px;
+      left: -100px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba($sage, 0.18) 0%, transparent 70%);
+    }
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $s6;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $s8 $s2 $s4;
+    position: relative;
+    z-index: 1;
+
+    @media (min-width: 768px)  { padding: $s10 $s4 $s4; }
+    @media (min-width: 1024px) {
+      flex-direction: row;
+      align-items: center;
+      gap: $s8;
+      padding: $s12 $s6 $s4;
+    }
+  }
+
+  // ── Content (left) ─────────────────────────────────────────────
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $s3;
+    max-width: 560px;
+
+    @media (max-width: 1023px) {
+      align-items: center;
+      text-align: center;
+      max-width: 100%;
+    }
+  }
+
+  // Category badge pill
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: $font-body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $pink-deep;
+    @include glass(rgba($white, 0.78));
+    border: 1px solid rgba($pink-dark, 0.22);
+    border-radius: $r-full;
+    padding: 8px 18px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: $pink-dark;
+    }
+  }
+
+  // Main heading
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(2.5rem, 7vw, 4.25rem);
+    font-weight: 700;
+    color: $text;
+    line-height: 1.10;
+    margin: 0;
+
+    em {
+      font-style: italic;
+      @include gradient-text(linear-gradient(135deg, $pink-deep 0%, $pink 100%));
+    }
+  }
+
+  // Subtitle / tagline
+  &__subtitle {
+    font-family: $font-body;
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    line-height: 1.75;
+    color: $text-mid;
+    margin: 0;
+  }
+
+  // CTA row
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $s2;
+    margin-top: $s1;
+
+    @media (max-width: 1023px) { justify-content: center; }
+  }
+
+  // ── Visual (right) ─────────────────────────────────────────────
+  &__visual {
+    flex-shrink: 0;
+    position: relative;
+    width: 300px;
+    height: 300px;
+
+    @media (min-width: 600px)  { width: 360px; height: 360px; }
+    @media (min-width: 1024px) { width: 460px; height: 460px; }
+  }
+
+  // Neumorphic image circle
+  &__visual-frame {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: $bg;
+    box-shadow: $shadow-nm;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba($white, 0.90);
+  }
+
+  &__visual-img {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+  }
+
+  // Floating decorative petals
+  &__petal {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) { animation: none; }
+
+    &--1 {
+      width: 64px;
+      height: 64px;
+      background: $grad-pink;
+      opacity: 0.22;
+      top: -12px;
+      right: 16px;
+      animation-delay: 0s;
+    }
+
+    &--2 {
+      width: 40px;
+      height: 40px;
+      background: $grad-gold;
+      opacity: 0.28;
+      bottom: 20px;
+      left: -8px;
+      animation-delay: -2s;
+    }
+
+    &--3 {
+      width: 24px;
+      height: 24px;
+      background: $grad-sage;
+      opacity: 0.35;
+      top: 44%;
+      right: -12px;
+      animation-delay: -4s;
+    }
+  }
+
+  // Floating info chip
+  &__chip {
+    position: absolute;
+    bottom: 16px;
+    right: -8px;
+    @include glass(rgba($white, 0.88));
+    border: 1px solid $border;
+    border-radius: $r-md;
+    padding: 10px 16px;
+    box-shadow: $shadow-card;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: $font-body;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $text;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: $pink-deep;
+    }
+
+    @media (max-width: 599px) { display: none; }
+  }
+
+  // ── Stats strip ────────────────────────────────────────────────
+  &__stats {
+    background: $bg-white;
+    border-top: 1px solid $border;
+    border-bottom: 1px solid $border;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 -4px 20px rgba(200, 180, 180, 0.12);
+  }
+
+  &__stats-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: $s3 $s4;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: $border;
+
+    @media (min-width: 640px)  { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: $s2 $s3;
+    background: $bg-white;
+    text-align: center;
+  }
+
+  &__stat-value {
+    font-family: $font-heading;
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1;
+    @include gradient-text($grad-pink);
+  }
+
+  &__stat-label {
+    font-family: $font-body;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $text-mid;
+    line-height: 1.3;
+  }
+
+  // Wave transition
+  &__wave {
+    line-height: 0;
+    position: relative;
+    z-index: 1;
+
+    svg { display: block; width: 100%; height: 72px; }
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+
+// ================================================================
+// 2. ABOUT
+// ================================================================
+
+.about {
+  background: $bg-white;
+
+  .section-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $s6;
+    align-items: center;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 380px 1fr;
+      gap: $s10;
+    }
+  }
+
+  // ── Image column ───────────────────────────────────────────────
+  &__image-col {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-bottom: $s3;
+  }
+
+  // Neumorphic asymmetric frame
+  &__frame {
+    width: 280px;
+    height: 360px;
+    border-radius: $r-xl $r-xl $r-xl $r-sm;
+    overflow: hidden;
+    box-shadow: $shadow-nm;
+    background: $bg;
+    position: relative;
+
+    // Subtle inner ring
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 3px solid rgba($white, 0.9);
+      pointer-events: none;
+    }
+
+    @media (min-width: 600px) { width: 320px; height: 400px; }
+  }
+
+  &__frame-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    background: linear-gradient(150deg, $pink-muted, $bg);
+  }
+
+  // Floating chips
+  &__chip {
+    position: absolute;
+    background: $bg-white;
+    border: 1px solid $border;
+    border-radius: $r-md;
+    box-shadow: $shadow-card;
+    display: flex;
+    align-items: center;
+    gap: $s1;
+    font-family: $font-body;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+    &--top {
+      top: -$s2;
+      left: calc(50% - 160px);
+      background: $grad-pink;
+      color: $white;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      box-shadow: $shadow-pink;
+
+      mat-icon { color: $white; }
+
+      @media (min-width: 600px) { left: calc(50% - 180px); }
+    }
+
+    &--bottom {
+      bottom: 0;
+      right: calc(50% - 160px);
+      padding: $s2 $s3;
+
+      @media (min-width: 600px) { right: calc(50% - 180px); }
+    }
+  }
+
+  &__chip-number {
+    font-family: $font-heading;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    @include gradient-text($grad-pink);
+  }
+
+  &__chip-text {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: $text-mid;
+    font-weight: 500;
+  }
+
+  // ── Content (right) ────────────────────────────────────────────
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $s2;
+  }
+
+  &__text {
+    font-family: $font-body;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: $text-mid;
+    margin: 0;
+
+    strong {
+      color: $text;
+      font-weight: 600;
+    }
+  }
+
+  &__values {
+    list-style: none;
+    padding: 0;
+    margin: $s1 0 $s3;
+    display: flex;
+    flex-direction: column;
+    gap: $s2;
+  }
+
+  &__value-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: $font-body;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: $text;
+  }
+
+  &__value-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: $grad-sage;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-sage;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: $white;
+    }
+  }
+}
+
+
+// ================================================================
+// 3. SERVICES
+// ================================================================
+
+.services {
+  background: $bg;
+
+  // Subtle dot pattern background
+  background-image: radial-gradient(
+    circle,
+    rgba($pink-dark, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $s3;
+    width: 100%;
+    margin-top: $s3;
+
+    @media (min-width: 600px)  { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); gap: $s4; }
+
+    // Center last card when it's alone in the row of 3
+    @media (min-width: 1024px) {
+      > :last-child:nth-child(3n + 1) { grid-column: 2; }
+    }
+  }
+}
+
+// Service card — neumorphic elevation
+.service-card {
+  background: $bg !important;
+  border: 1px solid rgba($border, 0.7) !important;
+  border-radius: $r-xl !important;
+  box-shadow: $shadow-nm !important;
+  transition: box-shadow $t-normal, border-color $t-normal, transform $t-normal !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative;
+  cursor: pointer;
+
+  // Accent line on top (hidden by default)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: $grad-pink;
+    opacity: 0;
+    transition: opacity $t-normal;
+  }
+
+  &:hover,
+  &:focus-within {
+    box-shadow: $shadow-card-h !important;
+    border-color: rgba($pink-dark, 0.30) !important;
+    transform: translateY(-4px);
+
+    &::before { opacity: 1; }
+
+    .service-card__icon-wrap {
+      background: linear-gradient(135deg, rgba($pink, 0.22), rgba($gold-light, 0.20));
+    }
+  }
+
+  &:focus-within {
+    outline: 2px solid $pink-dark;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: box-shadow $t-fast !important;
+    &:hover { transform: none; }
+  }
+
+  mat-card-content {
+    flex: 1 !important;
+    padding: $s4 $s3 $s2 !important;
+    position: relative;
+  }
+
+  mat-card-actions {
+    padding: 0 $s3 $s3 !important;
+  }
+
+  // Service number (top-right, watermark style)
+  &__num {
+    position: absolute;
+    top: $s3;
+    right: $s3;
+    font-family: $font-heading;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba($pink, 0.25);
+    user-select: none;
+  }
+
+  // Icon container — neumorphic circle
+  &__icon-wrap {
+    width: 60px;
+    height: 60px;
+    border-radius: $r-lg;
+    background: linear-gradient(135deg, $pink-pale, rgba($gold-light, 0.25));
+    border: 1px solid rgba($pink-dark, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: $s2;
+    transition: background $t-normal;
+    box-shadow: $shadow-nm;
+  }
+
+  &__icon {
+    font-size: 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+    color: $pink-deep !important;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.1875rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 $s1;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    font-family: $font-body;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: $text-mid;
+    margin: 0;
+  }
+
+  &__link.mat-mdc-button {
+    font-family: $font-body;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: $pink-deep !important;
+    padding: 0;
+    min-width: 0;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-left: 4px;
+      transition: transform $t-fast;
+    }
+
+    &:hover {
+      color: $gold !important;
+
+      mat-icon { transform: translateX(4px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      mat-icon { transition: none; }
+    }
+  }
+}
+
+
+// ================================================================
+// 4. WHY CHOOSE US
+// ================================================================
+
+.why-us {
+  background: $grad-why;
+  position: relative;
+  overflow: hidden;
+
+  // Decorative radial glows
+  &::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba($pink, 0.10), transparent 70%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba($gold, 0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .section-container { position: relative; z-index: 1; }
+
+  &__header {
+    text-align: center;
+    margin-bottom: $s6;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $s3;
+
+    @media (min-width: 600px)  { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); gap: $s4; }
+  }
+}
+
+// Glass card on dark background
+.why-card {
+  @include glass(rgba($white, 0.06), 16px);
+  border: 1px solid rgba($white, 0.12);
+  border-radius: $r-xl;
+  padding: $s4 $s3;
+  text-align: center;
+  transition: background $t-normal, border-color $t-normal, transform $t-normal;
+
+  &:hover {
+    background: rgba($white, 0.10);
+    border-color: rgba($pink, 0.35);
+    transform: translateY(-4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: background $t-fast;
+    &:hover { transform: none; }
+  }
+
+  &__icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $grad-pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $s3;
+    box-shadow: $shadow-pink;
+  }
+
+  &__icon {
+    font-size: 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+    color: $white !important;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: $white;
+    margin: 0 0 $s1;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    font-family: $font-body;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: rgba($white, 0.80);
+    margin: 0;
+  }
+}
+
+
+// ================================================================
+// 5. CTA FINAL
+// ================================================================
+
+.cta-final {
+  position: relative;
+  background: linear-gradient(160deg, $pink-muted 0%, $bg 40%, #fff0f8 100%);
+  overflow: hidden;
+
+  // Decorative circles
+  &__circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+
+    &--tl {
+      top: -120px;
+      left: -120px;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba($pink, 0.20), transparent 65%);
+    }
+
+    &--br {
+      bottom: -80px;
+      right: -80px;
+      width: 340px;
+      height: 340px;
+      background: radial-gradient(circle, rgba($gold, 0.14), transparent 65%);
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: $s3;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: $s10 $s2 $s12;
+
+    @media (min-width: 768px) { padding: $s12 $s4; }
+  }
+
+  // Gradient icon circle
+  &__icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: $grad-pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-pink;
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+      color: $white;
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: $text;
+    line-height: 1.2;
+    margin: 0;
+
+    em {
+      font-style: italic;
+      @include gradient-text($grad-pink);
+    }
+  }
+
+  &__subtitle {
+    font-family: $font-body;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: $text-mid;
+    margin: 0;
+
+    strong { color: $pink-deep; }
+  }
+
+  // Oversized gold CTA
+  &__btn.mat-mdc-raised-button {
+    height: 62px !important;
+    font-size: 1.0625rem !important;
+    padding: 0 $s8 !important;
+    box-shadow: 0 12px 36px rgba(212, 160, 23, 0.45) !important;
+
+    &:hover {
+      box-shadow: 0 16px 48px rgba(212, 160, 23, 0.55) !important;
+    }
+  }
+
+  &__note {
+    font-family: $font-body;
+    font-size: 0.9rem;
+    color: $text-light;
+    margin: 0;
+  }
+
+  &__link {
+    color: $pink-deep;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color $t-fast;
+
+    &:hover { color: $gold; }
+
+    &:focus-visible {
+      outline: 2px solid $pink-deep;
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
+}
+
+
+// ================================================================
+// 6. TESTIMONIALS — grid of review cards
+// ================================================================
+
+.testimonials {
+  background: $bg-white;
+
+  &__summary {
+    display: flex;
+    align-items: center;
+    gap: $s2;
+    margin-bottom: $s6;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__summary-count {
+    font-family: $font-body;
+    font-size: 0.9rem;
+    color: $text-mid;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $s3;
+    width: 100%;
+
+    @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); gap: $s4; }
+  }
+
+  &__cta {
+    margin-top: $s6;
+  }
+}
+
+// Individual testimonial card
+.t-card {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $r-xl;
+  padding: $s4 $s3;
+  box-shadow: $shadow-nm;
+  display: flex;
+  flex-direction: column;
+  gap: $s2;
+  text-align: left;
+  transition: transform $t-normal, box-shadow $t-normal;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: $shadow-card-h;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover { transform: none; }
+  }
+
+  // ── Header ────────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $s2;
+  }
+
+  &__avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: $grad-pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-pink;
+  }
+
+  &__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__avatar-initial {
+    font-family: $font-heading;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $white;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: $font-body;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    font-family: $font-body;
+    font-size: 0.75rem;
+    color: $text-light;
+  }
+
+  // ── Stars ─────────────────────────────────────────────────────
+  &__stars {
+    display: block;
+  }
+
+  // ── Comment ───────────────────────────────────────────────────
+  &__comment {
+    font-family: $font-body;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: $text-mid;
+    margin: 0;
+    font-style: italic;
+    flex: 1;
+  }
+
+  // ── Service tags ──────────────────────────────────────────────
+  &__services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: $s1;
+  }
+
+  &__service-tag {
+    font-family: $font-body;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $pink-deep;
+    background: $pink-muted;
+    border: 1px solid rgba($pink-dark, 0.20);
+    border-radius: $r-full;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+}
+
+
+// ================================================================
+// 7. REVIEW SECTION — form for new testimonials
+// ================================================================
+
+.review-section {
+  background: $bg;
+  background-image: radial-gradient(circle, rgba($pink-dark, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+// ── Review form ────────────────────────────────────────────────────
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: $s3;
+  width: 100%;
+  max-width: 680px;
+  text-align: left;
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $s3;
+
+    @media (min-width: 640px) { grid-template-columns: 1fr 1fr; }
+  }
+
+  &__field {
+    width: 100%;
+
+    &--full { width: 100%; }
+
+    // Mat outline field colours
+    .mat-mdc-form-field-outline { color: $border !important; }
+    &.mat-focused .mat-mdc-form-field-outline { color: $pink-dark !important; }
+  }
+
+  // Photo upload
+  &__photo-row {
+    display: flex;
+    align-items: center;
+    gap: $s2;
+    flex-wrap: wrap;
+  }
+
+  &__label,
+  &__legend {
+    font-family: $font-body;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  &__fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__checks {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px 16px;
+
+    @media (min-width: 640px) { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  &__check {
+    font-family: $font-body;
+    font-size: 0.9rem;
+    color: $text-mid;
+  }
+
+  &__error {
+    font-family: $font-body;
+    font-size: 0.8125rem;
+    color: #e53e3e;
+    margin: 4px 0 0;
+  }
+
+  &__rating-row {
+    display: flex;
+    align-items: center;
+    gap: $s3;
+    flex-wrap: wrap;
+  }
+
+  &__hint {
+    font-family: $font-body;
+    font-size: 0.75rem;
+    color: $text-light;
+  }
+
+  &__submit.mat-mdc-raised-button {
+    align-self: flex-start;
+
+    @media (max-width: 639px) {
+      align-self: stretch;
+      justify-content: center;
+    }
+  }
+}
+
+// Photo upload widget
+.photo-upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  width: 80px;
+  height: 80px;
+  border-radius: $r-lg;
+  border: 2px dashed rgba($pink-dark, 0.35);
+  background: $bg-white;
+  cursor: pointer;
+  color: $text-mid;
+  font-family: $font-body;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: border-color $t-fast, background $t-fast;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  mat-icon { font-size: 24px; width: 24px; height: 24px; color: $pink-dark; }
+
+  &:hover {
+    border-color: $pink-dark;
+    background: $pink-pale;
+  }
+
+  &__input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: $r-md;
+  }
+
+  &__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba($white, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: $text;
+    padding: 0;
+    z-index: 2;
+
+    mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+    &:hover { background: $white; color: $pink-deep; }
+  }
+
+  &--has-img { border-style: solid; border-color: rgba($pink-dark, 0.25); }
+}
+
+// ── Review success state ──────────────────────────────────────────
+.review-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $s3;
+  max-width: 480px;
+  padding: $s6 $s4;
+  background: $bg-white;
+  border: 1px solid $border;
+  border-radius: $r-xl;
+  box-shadow: $shadow-nm;
+  text-align: center;
+
+  &__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: $grad-sage;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-sage;
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+      color: $white;
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+  }
+
+  &__text {
+    font-family: $font-body;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: $text-mid;
+    margin: 0;
+  }
+}
+
+
+// ================================================================
+// ACCESSIBLE FOCUS — Mat buttons
+// ================================================================
+
+:host {
+  .mat-mdc-raised-button:focus-visible,
+  .mat-mdc-stroked-button:focus-visible,
+  .mat-mdc-button:focus-visible {
+    outline: 2px solid $pink-deep;
+    outline-offset: 3px;
+  }
+}

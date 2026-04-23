@@ -1,0 +1,498 @@
+// ================================================================
+// RESERVAS COMPONENT — uipro Beauty & Spa design tokens
+// Aligned with home.component.scss palette
+// ================================================================
+
+// ── Design tokens (uipro Beauty & Spa) ──────────────────────────
+$pink:       #ffb6c1;
+$pink-dark:  #f5a0ab;
+$pink-deep:  #d4697e;
+$pink-pale:  #fff0f3;
+$pink-muted: #fde0e6;
+$sage:       #7dba7d;
+$sage-dark:  #4a8a4a;
+$gold:       #d4a017;
+$gold-dark:  #b88810;
+$bg:         #fff5f5;
+$bg-white:   #ffffff;
+$border:     #f3e8e8;
+$border-pink:#ffd0d8;
+$text:       #2d2d2d;
+$text-mid:   #6b7280;
+$text-light: #9ca3af;
+$white:      #ffffff;
+
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body:    'Inter', system-ui, sans-serif;
+
+$s1: 8px;  $s2: 16px;  $s3: 24px;  $s4: 32px;
+$s5: 40px; $s6: 48px;  $s8: 64px;  $s10: 80px;
+
+$r-sm: 8px; $r-md: 12px; $r-lg: 20px; $r-xl: 24px; $r-full: 50px;
+
+$shadow-nm:    8px 8px 16px rgba(200, 180, 180, 0.28), -8px -8px 16px rgba(255, 255, 255, 0.85);
+$shadow-card:  0 4px 20px rgba(0, 0, 0, 0.05);
+$shadow-card-h:0 8px 30px rgba(0, 0, 0, 0.10);
+$shadow-pink:  0 8px 24px rgba(245, 160, 171, 0.38);
+$shadow-gold:  0 8px 20px rgba(212, 160, 23, 0.38);
+$shadow-sage:  0 6px 16px rgba(125, 186, 125, 0.28);
+
+$t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ── Shared helpers ────────────────────────────────────────────────
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  font-family: $font-body;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $pink-deep;
+  background: $pink-muted;
+  border: 1px solid rgba($pink-dark, 0.25);
+  border-radius: $r-full;
+  padding: 6px 16px;
+  margin-bottom: $s2;
+}
+
+// Gold CTA button
+.btn-primary.mat-mdc-raised-button {
+  background: linear-gradient(135deg, $gold 0%, #e8be4a 100%) !important;
+  color: $white !important;
+  font-family: $font-body !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+  border-radius: $r-full !important;
+  padding: 0 $s4 !important;
+  height: 54px !important;
+  box-shadow: $shadow-gold !important;
+  transition: transform $t-fast, box-shadow $t-normal, filter $t-normal !important;
+
+  mat-icon { margin-right: 6px; }
+  &:hover { filter: brightness(1.07); transform: translateY(-2px); }
+  &:active { transform: translateY(0); }
+  &:disabled { opacity: 0.6; filter: none; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: filter $t-fast !important;
+    &:hover { transform: none; }
+  }
+}
+
+// Pink outline secondary
+.btn-outline.mat-mdc-stroked-button {
+  --mdc-outlined-button-outline-color: #{$pink-dark};
+  color: $pink-deep !important;
+  font-family: $font-body !important;
+  font-weight: 600 !important;
+  border-radius: $r-full !important;
+  height: 54px !important;
+  padding: 0 $s4 !important;
+  background: $bg-white !important;
+  transition: background $t-fast !important;
+
+  &:hover { background: $pink-pale !important; }
+}
+
+
+// ================================================================
+// PAGE HEADER (back button row)
+// ================================================================
+.page-header {
+  background: rgba($bg-white, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid $border;
+  // sits below the global navbar (fixed, ~88px)
+  position: sticky;
+  top: 88px;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(200, 180, 180, 0.12);
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    gap: $s2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px $s2;
+    @media (min-width: 768px) { padding: 10px $s4; }
+  }
+
+  &__back.mat-mdc-icon-button { color: $pink-deep; }
+
+  &__brand { display: flex; flex-direction: column; line-height: 1.2; }
+
+  &__name {
+    font-family: $font-heading;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: $text;
+  }
+
+  &__sub {
+    font-family: $font-body;
+    font-size: 0.6875rem;
+    color: $text-light;
+  }
+}
+
+
+// ================================================================
+// HERO COMPACTO
+// ================================================================
+.reservas-hero {
+  background: linear-gradient(150deg, #fff5f5 0%, #fff0f3 55%, #ffeef5 100%);
+  position: relative;
+  padding: $s6 $s2 $s5;
+  text-align: center;
+
+  @media (min-width: 768px) { padding: $s8 $s4 $s6; }
+
+  &__content {
+    max-width: 580px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 $s2;
+    line-height: 1.15;
+
+    em {
+      font-style: italic;
+      background: linear-gradient(135deg, $pink-deep 0%, $pink 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  &__subtitle {
+    font-family: $font-body;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: $text-mid;
+    margin: 0;
+  }
+
+  &__wave {
+    line-height: 0;
+    margin-top: $s5;
+    svg { display: block; width: 100%; height: 60px; }
+  }
+}
+
+
+// ================================================================
+// LAYOUT: aside + form
+// ================================================================
+.reservas-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $s4;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $s4 $s2 $s8;
+
+  @media (min-width: 768px) { padding: $s6 $s4 $s10; }
+  @media (min-width: 1024px) {
+    grid-template-columns: 300px 1fr;
+    gap: $s6;
+    align-items: start;
+    padding: $s6 $s6 $s10;
+  }
+}
+
+
+// ================================================================
+// ASIDE: Info de contacto
+// ================================================================
+.reservas-info {
+  display: flex;
+  flex-direction: column;
+  gap: $s3;
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: $s2;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $r-lg;
+  padding: $s3;
+  box-shadow: $shadow-nm;
+  transition: box-shadow $t-normal, transform $t-normal;
+
+  &:hover { box-shadow: $shadow-card-h; transform: translateY(-2px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover { transform: none; }
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: $r-md;
+    background: linear-gradient(135deg, $pink-pale, rgba(212, 160, 23, 0.12));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: $shadow-card;
+
+    mat-icon { color: $pink-deep; font-size: 22px; width: 22px; height: 22px; }
+
+    &--green {
+      background: linear-gradient(135deg, rgba($sage, 0.18), rgba($sage-dark, 0.10));
+      mat-icon { color: $sage-dark; }
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 4px;
+  }
+
+  &__text {
+    font-family: $font-body;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: $text-mid;
+    margin: 0;
+    em { font-style: italic; color: $text-light; }
+  }
+
+  &__link {
+    font-family: $font-body;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $pink-deep;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color $t-fast;
+
+    &:hover { color: $gold; }
+    &:focus-visible { outline: 2px solid $pink-deep; outline-offset: 2px; border-radius: 2px; }
+  }
+}
+
+.info-services {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $r-lg;
+  padding: $s3;
+  box-shadow: $shadow-nm;
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0 0 $s2;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: $font-body;
+    font-size: 0.875rem;
+    color: $text-mid;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; color: $pink-dark; }
+  }
+}
+
+
+// ================================================================
+// FORM WRAPPER
+// ================================================================
+.reservas-form-wrap {
+  background: $bg-white;
+  border: 1px solid $border;
+  border-radius: $r-xl;
+  box-shadow: $shadow-nm;
+  padding: $s4;
+
+  @media (min-width: 768px) { padding: $s6; }
+}
+
+.reservas-form {
+  display: flex;
+  flex-direction: column;
+  gap: $s1;
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $text;
+    margin: $s1 0 $s2;
+    padding-bottom: $s1;
+    border-bottom: 1px solid $border;
+
+    &--spaced { margin-top: $s3; }
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $s1;
+  @media (min-width: 600px) { grid-template-columns: 1fr 1fr; }
+}
+
+// Mat form field: override with pink/gold palette
+.form-field {
+  width: 100%;
+  font-family: $font-body;
+
+  --mat-form-field-label-text-color:        #{$text-mid};
+  --mat-form-field-focus-label-text-color:  #{$pink-deep};
+  --mdc-outlined-text-field-focus-outline-color: #{$pink-dark};
+  --mdc-outlined-text-field-hover-outline-color: #{$pink};
+  --mdc-outlined-text-field-outline-color:  #{$border};
+  --mat-form-field-error-text-color:        #e53e3e;
+}
+
+.form-field mat-icon[matPrefix] {
+  color: $text-light;
+  margin-right: $s1;
+}
+
+.label-optional {
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: $text-light;
+}
+
+.form-privacy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: $font-body;
+  font-size: 0.8125rem;
+  color: $text-light;
+  margin: $s1 0 $s2;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; color: $sage-dark; }
+}
+
+.form-submit { width: 100%; margin-top: $s1; }
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+// ================================================================
+// SUCCESS STATE
+// ================================================================
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $s3;
+  padding: $s6 $s4;
+
+  &__icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $sage 0%, $sage-dark 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-sage;
+
+    mat-icon { font-size: 40px; width: 40px; height: 40px; color: $white; }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+  }
+
+  &__text {
+    font-family: $font-body;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: $text-mid;
+    margin: 0;
+    max-width: 440px;
+  }
+}
+
+
+// ================================================================
+// PROMOCIÓN BADGE
+// ================================================================
+.promo-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: -4px;
+  margin-bottom: 4px;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #fff3cd 0%, #fde9c9 100%);
+    border: 1.5px solid $gold;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: .875rem;
+    color: #7a5300;
+    font-family: $font-body;
+    animation: badge-in .3s ease;
+  }
+
+  &__hours {
+    font-size: .8rem;
+    opacity: .8;
+  }
+}
+
+@keyframes badge-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ================================================================
+// SNACKBAR
+// ================================================================
+:host ::ng-deep .snack-success {
+  --mdc-snackbar-container-color: #{$sage-dark};
+  --mdc-snackbar-supporting-text-color: #{$white};
+  --mat-snack-bar-button-color: #{$white};
+}

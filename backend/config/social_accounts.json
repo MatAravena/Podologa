@@ -1,0 +1,35 @@
+{
+  "_comment": "Social media accounts for auto-posting. Add multiple accounts under 'accounts'. Set real tokens in .env.",
+  "_schema": {
+    "id": "Unique account identifier used in code",
+    "platform": "facebook | instagram",
+    "name": "Human-readable label",
+    "enabled": "Set to false to skip posting to this account",
+    "page_id": "Facebook Page ID or Instagram Business Account ID",
+    "access_token_env": "Name of the .env variable that holds the long-lived access token"
+  },
+  "accounts": [
+    {
+      "id": "fb_libelula",
+      "platform": "facebook",
+      "name": "Libélula Podología — Facebook",
+      "enabled": true,
+      "page_id": "${FB_PAGE_ID}",
+      "access_token_env": "FB_PAGE_ACCESS_TOKEN"
+    },
+    {
+      "id": "ig_libelula",
+      "platform": "instagram",
+      "name": "Libélula Podología — Instagram",
+      "enabled": true,
+      "page_id": "${IG_BUSINESS_ACCOUNT_ID}",
+      "access_token_env": "IG_ACCESS_TOKEN"
+    }
+  ],
+  "post_defaults": {
+    "append_hashtags": true,
+    "hashtags": "#podología #terapias #bienestar #santiago #chile #libelula",
+    "append_booking_link": true,
+    "booking_link": "https://libelula.cl/reservas"
+  }
+}

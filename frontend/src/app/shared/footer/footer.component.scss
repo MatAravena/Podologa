@@ -1,0 +1,258 @@
+// ── FooterComponent — uipro Beauty & Spa tokens ──────────────────
+
+$pink:       #ffb6c1;
+$pink-dark:  #f5a0ab;
+$pink-deep:  #d4697e;
+$pink-muted: #fde0e6;
+$gold:       #d4a017;
+$gold-light: #f5cd6a;
+$bg:         #fff5f5;
+$border:     #f3e8e8;
+$text:       #2d2d2d;
+$text-mid:   #6b7280;
+$text-light: #9ca3af;
+$white:      #ffffff;
+
+// Footer dark background (matches why-us section)
+$footer-bg:  #2d1218;
+$footer-mid: #3d1a22;
+
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body:    'Inter', system-ui, sans-serif;
+
+$s1: 8px;  $s2: 16px;  $s3: 24px;  $s4: 32px;
+$s6: 48px; $s8: 64px;  $s10: 80px;
+
+$r-sm: 8px; $r-md: 12px; $r-full: 50px;
+$t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ── Footer wrapper ────────────────────────────────────────────────
+.footer {
+  background: $footer-bg;
+  color: rgba($white, 0.85);
+  font-family: $font-body;
+}
+
+// ── Top section ───────────────────────────────────────────────────
+.footer__top {
+  border-bottom: 1px solid rgba($white, 0.08);
+}
+
+.footer__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $s10 $s2 $s8;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $s8;
+
+  @media (min-width: 640px)  { grid-template-columns: 1fr 1fr; gap: $s6; }
+  @media (min-width: 1024px) { grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: $s8; }
+}
+
+// ── Brand ─────────────────────────────────────────────────────────
+.footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: $s3;
+}
+
+.footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.footer__logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.footer__logo-name {
+  font-family: $font-heading;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $white;
+}
+
+.footer__logo-sub {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgba($white, 0.55);
+  letter-spacing: 0.04em;
+}
+
+.footer__tagline {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba($white, 0.65);
+  margin: 0;
+  max-width: 280px;
+}
+
+.footer__social {
+  display: flex;
+  gap: $s1;
+  margin-top: $s1;
+}
+
+.footer__social-link {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba($white, 0.15);
+  background: rgba($white, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba($white, 0.75);
+  text-decoration: none;
+  transition: background $t-fast, color $t-fast, border-color $t-fast;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+  &:hover {
+    background: rgba($pink, 0.18);
+    color: $pink;
+    border-color: rgba($pink, 0.35);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $pink;
+    outline-offset: 2px;
+  }
+}
+
+// ── Columns ───────────────────────────────────────────────────────
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: $s1;
+  font-style: normal;
+}
+
+.footer__col-title {
+  font-family: $font-heading;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: $white;
+  margin: 0 0 $s1;
+  letter-spacing: 0.01em;
+}
+
+.footer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer__link {
+  font-size: 0.875rem;
+  color: rgba($white, 0.65);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color $t-fast;
+  display: inline-block;
+
+  &:hover { color: $pink; }
+
+  &:focus-visible {
+    outline: 2px solid $pink;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+// ── Contact column ────────────────────────────────────────────────
+.footer__contact {
+  gap: $s2;
+}
+
+.footer__contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: rgba($white, 0.65);
+  line-height: 1.6;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $pink;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  em { color: rgba($white, 0.40); font-style: italic; }
+}
+
+// CTA button in footer
+.footer__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: $s2;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, $gold 0%, #e8be4a 100%);
+  color: $white;
+  font-family: $font-body;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: $r-full;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(212, 160, 23, 0.35);
+  transition: transform $t-fast, box-shadow $t-fast;
+  width: fit-content;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(212, 160, 23, 0.50);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold-light;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover { transform: none; }
+  }
+}
+
+// ── Bottom bar ────────────────────────────────────────────────────
+.footer__bottom {
+  background: rgba(0, 0, 0, 0.20);
+}
+
+.footer__bottom-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $s2 $s2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $s1;
+}
+
+.footer__copy,
+.footer__made {
+  font-size: 0.8125rem;
+  color: rgba($white, 0.40);
+  margin: 0;
+}
+
+.footer__made span {
+  color: $pink;
+}

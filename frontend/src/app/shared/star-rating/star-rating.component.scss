@@ -1,0 +1,93 @@
+// ── StarRatingComponent ──────────────────────────────────────────
+$gold:       #d4a017;
+$gold-empty: rgba(212, 160, 23, 0.18);
+$gold-hover: #e8be4a;
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+
+  &--interactive {
+    cursor: pointer;
+    user-select: none;
+
+    .star-wrap:hover .star-svg--bg polygon {
+      fill: rgba(212, 160, 23, 0.10);
+    }
+  }
+}
+
+.star-wrap {
+  position: relative;
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+// All three SVG layers sit on top of each other
+.star-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  polygon {
+    stroke: $gold;
+    stroke-width: 1.5;
+    transition: fill 120ms ease;
+  }
+
+  // Background outline layer — always empty fill
+  &--bg polygon {
+    fill: $gold-empty;
+  }
+
+  // Coloured halves — transparent by default
+  &--left polygon,
+  &--right polygon {
+    fill: transparent;
+    stroke: none;
+  }
+
+  // When filled, use solid gold
+  &--left.star-svg--filled polygon,
+  &--right.star-svg--filled polygon {
+    fill: $gold;
+  }
+}
+
+.star-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $gold;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+  min-width: 28px;
+}
+
+// Larger variant — apply via class="star-lg" on the host
+:host(.star-lg) {
+  gap: 8px;
+
+  .stars { gap: 4px; }
+
+  .star-wrap {
+    width: 32px;
+    height: 32px;
+  }
+
+  .star-label {
+    font-size: 1rem;
+    min-width: 36px;
+  }
+}

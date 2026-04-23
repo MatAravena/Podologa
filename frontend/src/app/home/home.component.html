@@ -1,0 +1,492 @@
+<!-- ================================================================
+     HOME — Libélula Podología y Terapias
+     Design: uipro Beauty & Spa design tokens
+     1.Hero  2.About  3.Servicios  4.Por qué  5.CTA  6.Opiniones  7.Dejar opinión
+     ================================================================ -->
+
+
+<!-- ==================== 1. HERO ==================== -->
+<section class="hero" id="inicio" aria-label="Bienvenida a Libélula Podología y Terapias">
+
+  <div class="hero__blob hero__blob--1" aria-hidden="true"></div>
+  <div class="hero__blob hero__blob--2" aria-hidden="true"></div>
+
+  <div class="hero__container">
+
+    <div class="hero__content">
+      <span class="hero__badge">
+        <mat-icon aria-hidden="true">spa</mat-icon>
+        Podología Clínica &amp; Terapias Integrativas
+      </span>
+
+      <h1 class="hero__title">
+        Cuidado integral<br>
+        desde los <em>pies</em><br>
+        hasta el alma
+      </h1>
+
+      <p class="hero__subtitle">
+        Atención profesional, cálida y completamente personalizada.<br>
+        Tu bienestar es nuestra prioridad.
+      </p>
+
+      <div class="hero__actions">
+        <a mat-raised-button routerLink="/reservas" class="btn-gold" aria-label="Ir al formulario de reservas">
+          <mat-icon aria-hidden="true">calendar_today</mat-icon>
+          Reservar mi turno
+        </a>
+        <a mat-stroked-button href="#servicios" class="btn-outline-pink" aria-label="Ver servicios disponibles">
+          Ver servicios
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__visual" aria-hidden="true">
+      <div class="hero__visual-frame">
+        <img ngSrc="/images/ChatGPT Image 21 abr 2026, 22_52_37.png" alt="" class="hero__visual-img" width="480" height="480" priority />
+      </div>
+      <div class="hero__petal hero__petal--1"></div>
+      <div class="hero__petal hero__petal--2"></div>
+      <div class="hero__petal hero__petal--3"></div>
+      <div class="hero__chip">
+        <mat-icon>schedule</mat-icon>
+        <span>Turnos todos los días</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Stats strip -->
+  <div class="hero__stats" aria-label="Logros de Libélula">
+    <div class="hero__stats-inner">
+      @for (stat of stats(); track stat.etiqueta) {
+        <div class="hero__stat">
+          <span class="hero__stat-value">{{ stat.valor }}</span>
+          <span class="hero__stat-label">{{ stat.etiqueta }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="hero__wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 72" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,36 C360,72 1080,0 1440,36 L1440,72 L0,72 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+</section>
+
+
+<!-- ==================== 2. SOBRE MÍ ==================== -->
+<section class="about" id="sobre-mi" aria-label="Sobre la profesional">
+  <div class="section-container">
+
+    <div class="about__image-col">
+      <div class="about__chip about__chip--top">
+        <mat-icon aria-hidden="true">verified</mat-icon>
+        Profesional certificada
+      </div>
+      <div class="about__frame">
+        <img ngSrc="/images/profesional.svg" alt="Ilustración de la podóloga" class="about__frame-img" width="400" height="500" />
+      </div>
+      <div class="about__chip about__chip--bottom" aria-label="Mas de 10 años de experiencia">
+        <span class="about__chip-number">+10</span>
+        <span class="about__chip-text">años de<br>experiencia</span>
+      </div>
+    </div>
+
+    <div class="about__content">
+      <span class="section-label">Sobre mí</span>
+      <h2 class="section-title">Un cuidado que va<br>más allá del <em>pie</em></h2>
+      <p class="about__text">
+        Soy podóloga con formación universitaria y especialización en terapias complementarias.
+        Mi enfoque integra el cuidado clínico del pie con técnicas holísticas para promover
+        el bienestar del cuerpo y la mente en su totalidad.
+      </p>
+      <p class="about__text">
+        En <strong>Libélula</strong> creo en una atención cercana y humana. Cada paciente
+        es único, y cada tratamiento se diseña pensando en sus necesidades, su historia
+        y sus objetivos de salud.
+      </p>
+      <ul class="about__values" aria-label="Valores profesionales">
+        <li class="about__value-item">
+          <span class="about__value-icon" aria-hidden="true"><mat-icon>check</mat-icon></span>
+          Enfoque integral cuerpo-mente
+        </li>
+        <li class="about__value-item">
+          <span class="about__value-icon" aria-hidden="true"><mat-icon>check</mat-icon></span>
+          Formación continua y certificada
+        </li>
+        <li class="about__value-item">
+          <span class="about__value-icon" aria-hidden="true"><mat-icon>check</mat-icon></span>
+          Técnicas convencionales y complementarias
+        </li>
+      </ul>
+      <a mat-raised-button routerLink="/reservas" class="btn-gold" aria-label="Reservar una consulta">
+        Reservar consulta
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ==================== 3. SERVICIOS ==================== -->
+<section class="services" id="servicios" aria-label="Servicios ofrecidos">
+  <div class="section-container section-container--center">
+
+    <span class="section-label">Lo que ofrezco</span>
+    <h2 class="section-title">Servicios pensados<br>para tu <em>bienestar</em></h2>
+    <p class="section-subtitle">
+      Combino podología clínica con terapias integrativas para brindarte una atención
+      completa, acompañando tu salud de adentro hacia afuera.
+    </p>
+
+    <div class="services__grid" role="list">
+      @for (servicio of servicios(); track servicio.nombre; let i = $index) {
+        <mat-card class="service-card" role="listitem">
+          <mat-card-content>
+            <span class="service-card__num" aria-hidden="true">
+              {{ (i + 1).toString().padStart(2, '0') }}
+            </span>
+            <div class="service-card__icon-wrap" aria-hidden="true">
+              <mat-icon class="service-card__icon">{{ servicio.icono }}</mat-icon>
+            </div>
+            <h3 class="service-card__title">{{ servicio.nombre }}</h3>
+            <p class="service-card__desc">{{ servicio.descripcion }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <a mat-button routerLink="/reservas" class="service-card__link"
+              [attr.aria-label]="'Reservar turno de ' + servicio.nombre">
+              Reservar turno
+              <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+            </a>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ==================== 4. ¿POR QUÉ ELEGIRNOS? ==================== -->
+<section class="why-us" aria-label="Razones para elegirnos">
+  <div class="section-container">
+
+    <div class="why-us__header">
+      <span class="section-label section-label--light">Nuestro diferencial</span>
+      <h2 class="section-title section-title--light">
+        ¿Por qué elegir<br><em>Libélula</em>?
+      </h2>
+    </div>
+
+    <div class="why-us__grid" role="list">
+      @for (razon of razones(); track razon.titulo) {
+        <article class="why-card" role="listitem">
+          <div class="why-card__icon-wrap" aria-hidden="true">
+            <mat-icon class="why-card__icon">{{ razon.icono }}</mat-icon>
+          </div>
+          <h3 class="why-card__title">{{ razon.titulo }}</h3>
+          <p class="why-card__desc">{{ razon.descripcion }}</p>
+        </article>
+      }
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ==================== 5. CTA FINAL ==================== -->
+<section class="cta-final" id="contacto" aria-label="Reservar turno en Libélula">
+  <div class="cta-final__circle cta-final__circle--tl" aria-hidden="true"></div>
+  <div class="cta-final__circle cta-final__circle--br" aria-hidden="true"></div>
+
+  <div class="cta-final__content">
+    <div class="cta-final__icon" aria-hidden="true">
+      <mat-icon>calendar_month</mat-icon>
+    </div>
+    <h2 class="cta-final__title">
+      ¿Lista para empezar a<br><em>sentirte mejor</em>?
+    </h2>
+    <p class="cta-final__subtitle">
+      Reserva tu hora en <strong>Libélula</strong> y comienza un camino hacia el
+      bienestar integral.<br>Primera consulta con evaluación completa incluida.
+    </p>
+    <a mat-raised-button routerLink="/reservas" class="btn-gold cta-final__btn"
+      aria-label="Ir al formulario para reservar tu turno">
+      <mat-icon aria-hidden="true">calendar_today</mat-icon>
+      Reservar mi turno ahora
+    </a>
+    <p class="cta-final__note">
+      También puedes contactarte por
+      <a href="https://wa.me/569XXXXXXXX" class="cta-final__link"
+        aria-label="Contactar por WhatsApp" target="_blank" rel="noopener noreferrer">
+        WhatsApp
+      </a>
+      para consultas rápidas.
+    </p>
+  </div>
+</section>
+
+
+<!-- ==================== 6. OPINIONES ==================== -->
+<section class="testimonials" id="opiniones" aria-label="Opiniones de pacientes">
+  <div class="section-container section-container--center">
+
+    <span class="section-label">Lo que dicen</span>
+    <h2 class="section-title">Opiniones de<br>nuestras <em>pacientes</em></h2>
+
+    <!-- Global rating summary -->
+    <div class="testimonials__summary" aria-label="Calificación promedio">
+      <app-star-rating
+        [value]="promedioCalificacion()"
+        [showLabel]="true"
+      />
+      <span class="testimonials__summary-count">
+        ({{ totalTestimonios() }} opiniones)
+      </span>
+    </div>
+
+    <!-- Testimonials grid -->
+    <div class="testimonials__grid" role="list">
+      @for (t of testimonios(); track t.id) {
+        <article class="t-card" role="listitem">
+
+          <!-- Header: avatar + name + date -->
+          <div class="t-card__header">
+            <div class="t-card__avatar" aria-hidden="true">
+              @if (t.fotoUrl) {
+                <img [src]="t.fotoUrl" [alt]="t.nombre + ' ' + t.apellido" class="t-card__avatar-img" />
+              } @else {
+                <span class="t-card__avatar-initial">
+                  {{ t.nombre.charAt(0) }}{{ t.apellido.charAt(0) }}
+                </span>
+              }
+            </div>
+            <div class="t-card__meta">
+              <span class="t-card__name">{{ t.nombre }} {{ t.apellido }}</span>
+              <time class="t-card__date" [attr.datetime]="t.fecha">
+                {{ t.fecha | date:'d MMM yyyy' }}
+              </time>
+            </div>
+          </div>
+
+          <!-- Stars -->
+          <app-star-rating [value]="t.calificacion" class="t-card__stars" />
+
+          <!-- Comment -->
+          <p class="t-card__comment">"{{ t.comentario }}"</p>
+
+          <!-- Services used -->
+          <div class="t-card__services" aria-label="Servicios utilizados">
+            @for (s of t.servicios; track s) {
+              <span class="t-card__service-tag">{{ s }}</span>
+            }
+          </div>
+
+        </article>
+      }
+    </div>
+
+    <!-- CTA to review form -->
+    <a
+      mat-stroked-button
+      href="#dejar-opinion"
+      class="btn-outline-pink testimonials__cta"
+      aria-label="Dejar tu opinión"
+    >
+      <mat-icon aria-hidden="true">rate_review</mat-icon>
+      Dejar mi opinión
+    </a>
+
+  </div>
+</section>
+
+
+<!-- ==================== 7. DEJAR OPINIÓN ==================== -->
+<section class="review-section" id="dejar-opinion" aria-label="Formulario para dejar tu opinión">
+  <div class="section-container section-container--center">
+
+    <span class="section-label">Tu experiencia importa</span>
+    <h2 class="section-title">Comparte tu <em>opinión</em></h2>
+    <p class="section-subtitle">
+      Cuéntanos cómo fue tu experiencia en Libélula. Tu testimonio ayuda a otras
+      personas a encontrar el cuidado que necesitan.
+    </p>
+
+    @if (enviado()) {
+      <!-- Success state -->
+      <div class="review-success" role="status" aria-live="polite">
+        <div class="review-success__icon" aria-hidden="true">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <h3 class="review-success__title">¡Gracias por tu opinión!</h3>
+        <p class="review-success__text">
+          Tu testimonio ya está publicado y ayuda a otras personas a conocer Libélula.
+        </p>
+        <button mat-stroked-button class="btn-outline-pink" (click)="escribirOtraOpinion()">
+          Escribir otra opinión
+        </button>
+      </div>
+    } @else {
+
+      <form
+        class="review-form"
+        [formGroup]="form"
+        (ngSubmit)="onSubmit()"
+        novalidate
+        aria-label="Formulario de opinión"
+      >
+
+        <!-- Name row -->
+        <div class="review-form__row">
+          <mat-form-field appearance="outline" class="review-form__field">
+            <mat-label>Nombre <span aria-hidden="true">*</span></mat-label>
+            <input matInput formControlName="nombre" autocomplete="given-name" />
+            @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+              <mat-error>Ingresa tu nombre (mínimo 2 caracteres)</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="review-form__field">
+            <mat-label>Apellido <span aria-hidden="true">*</span></mat-label>
+            <input matInput formControlName="apellido" autocomplete="family-name" />
+            @if (form.get('apellido')?.invalid && form.get('apellido')?.touched) {
+              <mat-error>Ingresa tu apellido (mínimo 2 caracteres)</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Optional contact row -->
+        <div class="review-form__row">
+          <mat-form-field appearance="outline" class="review-form__field">
+            <mat-label>Email (opcional)</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" />
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <mat-error>Ingresa un email válido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="review-form__field">
+            <mat-label>Teléfono (opcional)</mat-label>
+            <input matInput type="tel" formControlName="telefono" autocomplete="tel" />
+            @if (form.get('telefono')?.invalid && form.get('telefono')?.touched) {
+              <mat-error>Formato inválido</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Photo upload -->
+        <div class="review-form__photo-row">
+          <span class="review-form__label">Foto de perfil (opcional)</span>
+          <label class="photo-upload" [class.photo-upload--has-img]="fotoPreview()">
+            @if (fotoPreview()) {
+              <img [src]="fotoPreview()!" alt="Vista previa de tu foto" class="photo-upload__preview" />
+              <button
+                type="button"
+                class="photo-upload__remove"
+                aria-label="Quitar foto"
+                (click)="$event.stopPropagation(); removeFoto()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <mat-icon aria-hidden="true">add_a_photo</mat-icon>
+              <span>Subir foto</span>
+            }
+            <input
+              type="file"
+              accept="image/*"
+              class="photo-upload__input"
+              aria-label="Seleccionar foto de perfil"
+              (change)="onFotoChange($event)"
+            />
+          </label>
+          <span class="review-form__hint">JPG, PNG o WebP — máx. 2 MB</span>
+        </div>
+
+        <!-- Servicios checkboxes -->
+        <fieldset class="review-form__fieldset" formGroupName="serviciosGroup">
+          <legend class="review-form__legend">
+            Servicios utilizados <span aria-hidden="true">*</span>
+          </legend>
+          <div class="review-form__checks">
+            @for (nombre of nombresServicios; track nombre) {
+              <mat-checkbox
+                class="review-form__check"
+                [formControlName]="nombre"
+                [attr.aria-label]="nombre"
+              >{{ nombre }}</mat-checkbox>
+            }
+          </div>
+          @if (form.get('serviciosGroup')?.invalid && form.get('serviciosGroup')?.touched) {
+            <p class="review-form__error" role="alert">Selecciona al menos un servicio</p>
+          }
+        </fieldset>
+
+        <!-- Star rating picker -->
+        <div class="review-form__rating-row">
+          <span class="review-form__legend" id="rating-label">
+            Calificación <span aria-hidden="true">*</span>
+          </span>
+          <app-star-rating
+            class="star-lg"
+            [value]="calificacion()"
+            [interactive]="true"
+            [showLabel]="true"
+            (valueChange)="calificacion.set($event)"
+            aria-labelledby="rating-label"
+          />
+        </div>
+
+        <!-- Comment textarea -->
+        <mat-form-field appearance="outline" class="review-form__field review-form__field--full">
+          <mat-label>Tu comentario <span aria-hidden="true">*</span></mat-label>
+          <textarea
+            matInput
+            formControlName="comentario"
+            rows="4"
+            placeholder="Cuéntanos tu experiencia con el tratamiento, el trato recibido, cómo te sentiste…"
+          ></textarea>
+          <mat-hint align="end">
+            {{ form.get('comentario')?.value?.length ?? 0 }} / 600
+          </mat-hint>
+          @if (form.get('comentario')?.invalid && form.get('comentario')?.touched) {
+            <mat-error>
+              @if (form.get('comentario')?.errors?.['required']) {
+                El comentario es obligatorio
+              } @else if (form.get('comentario')?.errors?.['minlength']) {
+                Mínimo 20 caracteres
+              } @else {
+                Máximo 600 caracteres
+              }
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Submit -->
+        <button
+          mat-raised-button
+          type="submit"
+          class="btn-gold review-form__submit"
+          [disabled]="enviando()"
+          aria-label="Enviar mi opinión"
+        >
+          @if (enviando()) {
+            <ng-container>
+              <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
+              Enviando…
+            </ng-container>
+          } @else {
+            <ng-container>
+              <mat-icon aria-hidden="true">send</mat-icon>
+              Publicar mi opinión
+            </ng-container>
+          }
+        </button>
+
+      </form>
+    }
+
+  </div>
+</section>

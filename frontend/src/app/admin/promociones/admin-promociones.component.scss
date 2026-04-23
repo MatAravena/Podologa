@@ -1,0 +1,158 @@
+// ── Shared admin shell (mirrors admin-galeria / admin-disponibilidad) ─────────
+
+.admin-shell { min-height: 100vh; background: #fafafa; }
+
+.admin-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: #2d1218; color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; gap: 16px; flex-wrap: wrap;
+}
+.admin-bar__brand {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 1rem;
+  mat-icon { color: #f5a0ab; }
+}
+.admin-bar__nav   { display: flex; gap: 4px; }
+.admin-bar__nav a { color: #f5a0ab !important; opacity: .75; font-size: .875rem; }
+.admin-bar__nav a.active { opacity: 1; border-bottom: 2px solid #f5a0ab; }
+.admin-bar__actions { display: flex; gap: 8px; }
+.admin-bar__actions button,
+.admin-bar__actions a { color: #fff !important; }
+
+.admin-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700;
+  color: #2d2d2d; margin: 0 0 20px;
+  .count { font-size: 1rem; font-weight: 400; color: #9ca3af; }
+}
+
+.info-text { color: #6b7280; }
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+
+.promo-form-section {
+  background: #fff;
+  border: 1px solid #f3e8e8;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(200,140,160,.08);
+}
+
+.promo-form {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.form-row {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+
+.form-field { flex: 1 1 160px; }
+.form-field--wide { flex: 2 1 220px; }
+.form-field--short { flex: 1 1 100px; max-width: 140px; }
+
+.form-hint {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .8125rem; color: #9ca3af; margin: 0;
+  mat-icon { font-size: 1rem; height: 1rem; width: 1rem; }
+}
+
+.submit-btn {
+  align-self: flex-start;
+  background: #a0566a !important;
+  color: #fff !important;
+  mat-icon { margin-right: 4px; }
+}
+
+// ── Promos grid ───────────────────────────────────────────────────────────────
+
+.promos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.promo-card {
+  background: #fff;
+  border: 1px solid #f3e8e8;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 2px 12px rgba(200,140,160,.10);
+  transition: opacity .2s;
+
+  &--inactive { opacity: .6; }
+}
+
+.promo-card__header {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+
+.promo-card__discount {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 1.25rem; font-weight: 700; color: #a0566a;
+  mat-icon { font-size: 1.2rem; height: 1.2rem; width: 1.2rem; color: #c98b9a; }
+}
+
+.promo-card__status {
+  font-size: .75rem; font-weight: 600;
+  background: #f3f4f6; color: #6b7280;
+  border-radius: 99px; padding: 2px 10px;
+  &--active { background: #dcfce7; color: #16a34a; }
+}
+
+.promo-card__service {
+  font-size: 1rem; font-weight: 600; color: #2d2d2d; margin: 0;
+}
+
+.promo-card__desc {
+  font-size: .875rem; color: #6b7280; margin: 0; line-height: 1.5;
+}
+
+.promo-card__dates {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .8125rem; color: #9ca3af;
+  mat-icon { font-size: 1rem; height: 1rem; width: 1rem; }
+}
+
+.promo-card__hours { color: #a0566a; font-weight: 500; }
+
+.promo-card__actions {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 4px;
+}
+
+.promo-card__toggle {
+  font-size: .8125rem;
+  &--off { --mdc-outlined-button-label-text-color: #dc2626; }
+}
+
+.promo-card__delete {
+  color: #e53e3e;
+}
+
+// ── Spin animation ────────────────────────────────────────────────────────────
+
+.spin {
+  animation: spin .8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+
+@media (max-width: 600px) {
+  .admin-bar { padding: 10px 16px; }
+  .admin-content { padding: 20px 16px; }
+  .form-field--short { max-width: 100%; }
+}

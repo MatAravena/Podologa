@@ -1,0 +1,158 @@
+$pink-deep: #d4697e; $pink-dark: #f5a0ab; $gold: #d4a017;
+$text: #2d2d2d; $text-mid: #6b7280; $text-light: #9ca3af;
+$border: #f3e8e8; $white: #ffffff; $bg: #fafafa;
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body:    'Inter', system-ui, sans-serif;
+$r-lg: 16px; $r-full: 50px;
+$t: 250ms cubic-bezier(0.4,0,0.2,1);
+
+.admin-shell { min-height: 100vh; background: $bg; }
+
+.admin-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: #2d1218; color: $white;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 12px 24px;
+  &__brand { display: flex; align-items: center; gap: 8px; font-weight: 600; mat-icon { color: $pink-dark; } }
+  &__nav { display: flex; gap: 4px; a { color: rgba($white,.7) !important; } a.active { color: $white !important; font-weight: 600; } }
+  &__actions { display: flex; gap: 8px; margin-left: auto; button,a { color: $white !important; } }
+}
+
+.admin-content { max-width: 1000px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 48px; }
+
+// ── Upload form ───────────────────────────────────────────────────────────────
+.upload-section__title {
+  font-family: $font-heading; font-size: 1.375rem; font-weight: 700; color: $text; margin: 0 0 24px;
+}
+.upload-form {
+  background: $white; border: 1px solid $border; border-radius: 20px;
+  padding: 32px; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 4px 20px rgba(200,140,160,.08);
+  &__field { width: 100%; }
+  &__checkbox { font-family: $font-body; }
+  &__submit {
+    align-self: flex-start;
+    background: linear-gradient(135deg, $gold, #e8be4a) !important;
+    color: $white !important; font-weight: 600 !important;
+    border-radius: $r-full !important; padding: 0 32px !important; height: 48px !important;
+  }
+}
+
+.file-drop {
+  border: 2px dashed $pink-dark; border-radius: $r-lg;
+  padding: 40px 24px; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: $text-mid; transition: border-color $t, background $t;
+  position: relative;
+  mat-icon { font-size: 40px; width: 40px; height: 40px; color: $pink-dark; }
+  small { font-size: .8125rem; color: $text-light; }
+  &:hover { border-color: $pink-deep; background: rgba($pink-dark,.04); }
+  &__input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  &__preview { width: 100%; max-height: 240px; object-fit: contain; border-radius: 8px; }
+  &__change { font-size: .8125rem; color: $pink-deep; font-weight: 600; }
+  &--has-preview { padding: 16px; border-style: solid; border-color: $pink-deep; }
+}
+
+// ── Posts grid ────────────────────────────────────────────────────────────────
+.posts-section__title {
+  font-family: $font-heading; font-size: 1.375rem; font-weight: 700; color: $text; margin: 0 0 24px;
+}
+.posts-section__count { font-weight: 400; font-size: 1rem; color: $text-light; }
+.info-text { color: $text-mid; }
+
+.posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+.post-card {
+  background: $white; border: 1px solid $border; border-radius: $r-lg;
+  overflow: hidden; box-shadow: 0 2px 12px rgba(200,140,160,.08);
+  display: flex; flex-direction: column;
+
+  &__thumb { position: relative; aspect-ratio: 4/3; overflow: hidden; background: #f0ebe8; }
+  &__img { width: 100%; height: 100%; object-fit: cover; }
+  &__play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    mat-icon { font-size: 40px; width: 40px; height: 40px; color: rgba($white,.9); } }
+
+  &__badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba($text,.65); color: $white;
+    font-size: .6875rem; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    &--published { background: #2d8a4e; }
+  }
+
+  &__info { padding: 14px 16px; flex: 1; }
+  &__title { font-family: $font-heading; font-size: 1rem; font-weight: 600; color: $text; margin: 0 0 4px; }
+  &__desc { font-size: .8125rem; color: $text-mid; line-height: 1.5; margin: 0 0 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  &__date { font-size: .75rem; color: $text-light; }
+
+  &__actions { padding: 8px 16px 14px; display: flex; align-items: center; gap: 8px; }
+  &__btn--publish { font-size: .8125rem !important; --mdc-outlined-button-outline-color: #{$pink-dark}; color: $pink-deep !important; }
+  &__btn--delete { color: #e53e3e !important; margin-left: auto; }
+}
+
+.spin { animation: spin 1s linear infinite; @media (prefers-reduced-motion: reduce) { animation: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── AI Caption Panel ──────────────────────────────────────────────────────────
+.caption-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fade-in .2s ease;
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.caption-panel {
+  background: $white; border-radius: 20px;
+  width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,.18);
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 16px;
+
+  &__header {
+    display: flex; align-items: center; gap: 10px;
+    mat-icon { color: $gold; font-size: 22px; width: 22px; height: 22px; }
+    button { margin-left: auto; color: $text-mid !important; }
+  }
+
+  &__title {
+    font-family: $font-heading; font-size: 1.125rem; font-weight: 700; color: $text; margin: 0;
+  }
+
+  &__post-info {
+    font-family: $font-body; font-size: .9375rem; color: $text;
+    background: rgba($pink-dark,.12); border-radius: 10px; padding: 10px 14px;
+  }
+  &__post-desc { color: $text-mid; }
+
+  &__row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    @media (max-width: 500px) { grid-template-columns: 1fr; }
+  }
+
+  &__field { width: 100%; font-family: $font-body; }
+  &__field--full { width: 100%; }
+
+  &__btn-generate {
+    align-self: flex-start;
+    --mdc-outlined-button-outline-color: #{$gold};
+    color: darken($gold, 10%) !important;
+    font-weight: 600 !important;
+    mat-icon { color: $gold; }
+  }
+
+  &__actions {
+    display: flex; justify-content: flex-end; gap: 12px; margin-top: 4px;
+  }
+
+  &__btn-publish {
+    background: linear-gradient(135deg, $pink-deep, darken($pink-deep, 10%)) !important;
+    color: $white !important;
+    font-weight: 600 !important;
+    border-radius: $r-full !important;
+    height: 44px !important;
+    padding: 0 24px !important;
+  }
+}

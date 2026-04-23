@@ -1,0 +1,67 @@
+{
+  "_comment": "Intent-based auto-responses for the WhatsApp bot. Edit 'responses' and 'keywords' freely — no code changes needed.",
+  "_schema": {
+    "id": "Unique intent identifier (string)",
+    "keywords": "List of words/phrases that trigger this intent (case-insensitive, partial match)",
+    "response": "Text sent back to the user. Supports {name} placeholder if user name is known.",
+    "buttons": "Optional quick-reply buttons (max 3, WhatsApp limitation)",
+    "priority": "Higher number wins when multiple intents match"
+  },
+  "intents": [
+    {
+      "id": "greeting",
+      "keywords": ["hola", "buenas", "buenos días", "buenas tardes", "buenas noches", "hey"],
+      "response": "¡Hola! Bienvenido a Libélula Podología y Terapias 🌿\n\n¿En qué te puedo ayudar hoy?\n\n1️⃣ Reservar una hora\n2️⃣ Conocer nuestros servicios\n3️⃣ Consultar horarios y ubicación\n4️⃣ Hablar con la podóloga",
+      "priority": 1
+    },
+    {
+      "id": "reserva",
+      "keywords": ["reservar", "reserva", "hora", "turno", "cita", "agendar", "appointment"],
+      "response": "Para reservar tu hora puedes hacerlo directamente desde nuestra web:\n👉 https://libelula.cl/reservas\n\nO si prefieres, dime tu nombre y el servicio que buscas y te ayudo a coordinar.",
+      "priority": 2
+    },
+    {
+      "id": "servicios",
+      "keywords": ["servicio", "servicios", "qué hacen", "que ofrecen", "que hacen", "tratamiento", "terapia"],
+      "response": "Ofrecemos los siguientes servicios:\n\n🦶 Podología\n✨ Reiki\n🖐 Reflexología\n🌸 Esencias Florales\n👂 Auriculoterapia\n💆 Masajes Linfáticos\n🀄 Tuina\n\nPara más información visita: https://libelula.cl/#servicios",
+      "priority": 2
+    },
+    {
+      "id": "precios",
+      "keywords": ["precio", "precios", "costo", "cuánto vale", "cuanto cuesta", "valor", "tarifa"],
+      "response": "Los precios varían según el servicio. Para conocer los valores actualizados, escríbenos directamente o visita nuestra web en https://libelula.cl\n\nTambién puedes llamarnos al +56 9 XXXX XXXX.",
+      "priority": 2
+    },
+    {
+      "id": "horarios",
+      "keywords": ["horario", "horarios", "cuando atienden", "cuándo atienden", "qué días", "que dias"],
+      "response": "Nuestros horarios de atención son:\n\n📅 Lunes a Viernes: 9:00 – 19:00 hrs\n📅 Sábados: 9:00 – 13:00 hrs\n❌ Domingos: cerrado",
+      "priority": 2
+    },
+    {
+      "id": "ubicacion",
+      "keywords": ["dirección", "direccion", "donde están", "donde quedan", "ubicación", "ubicacion", "cómo llego", "como llego"],
+      "response": "Estamos ubicados en Santiago, Chile 📍\nLa dirección exacta se entrega al confirmar tu hora.\n\n¿Te gustaría reservar una consulta?",
+      "priority": 2
+    },
+    {
+      "id": "podologia",
+      "keywords": ["podología", "podologia", "pie", "pies", "uña encarnada", "uña", "hongo", "hongos", "callos", "dureza"],
+      "response": "La podología es el cuidado integral del pie. Tratamos:\n\n• Uñas encarnadas\n• Hongos en las uñas\n• Callosidades y durezas\n• Problemas de pisada\n• Cuidado preventivo\n\n¿Quieres reservar tu hora?",
+      "priority": 3
+    },
+    {
+      "id": "gracias",
+      "keywords": ["gracias", "muchas gracias", "ok gracias", "perfecto", "listo"],
+      "response": "¡Con gusto! Cualquier otra consulta estoy aquí para ayudarte 😊\nRecuerda que también puedes reservar en https://libelula.cl/reservas",
+      "priority": 1
+    },
+    {
+      "id": "hablar_persona",
+      "keywords": ["persona", "humano", "hablar con alguien", "quiero hablar", "atiéndeme", "atiendeme"],
+      "response": "Entendido, voy a avisarle a la podóloga para que te contacte a la brevedad. Por favor, indícame tu nombre y el motivo de tu consulta.",
+      "priority": 4
+    }
+  ],
+  "default_response": "Gracias por escribirnos. Por favor, escríbenos al +56 9 XXXX XXXX o visita https://libelula.cl para más información."
+}

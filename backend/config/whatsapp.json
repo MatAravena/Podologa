@@ -1,0 +1,11 @@
+{
+  "_comment": "WhatsApp Cloud API credentials. Set real values in .env — these are defaults/docs only.",
+  "phone_number_id": "${WHATSAPP_PHONE_NUMBER_ID}",
+  "business_account_id": "${WHATSAPP_BUSINESS_ACCOUNT_ID}",
+  "verify_token": "${WHATSAPP_VERIFY_TOKEN}",
+  "api_version": "v19.0",
+  "language": "es",
+  "fallback_message": "Hola, gracias por escribirte a Libélula Podología. En este momento no puedo responder, pero te contactaré a la brevedad. También puedes reservar tu hora en nuestra web.",
+  "office_hours_message": "Nuestro horario de atención es de lunes a viernes de 9:00 a 19:00 hrs y sábados de 9:00 a 13:00 hrs.",
+  "typing_delay_ms": 800
+}

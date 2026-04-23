@@ -1,0 +1,165 @@
+<!-- ============================================================
+     GALERíA — Conoce a la podóloga / terapeuta
+     ============================================================ -->
+
+<header class="page-header" role="banner">
+  <div class="page-header__inner">
+    <a routerLink="/" mat-icon-button class="page-header__back" aria-label="Volver al inicio">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div class="page-header__brand">
+      <span class="page-header__name">Libélula</span>
+      <span class="page-header__sub">Podología y Terapias</span>
+    </div>
+  </div>
+</header>
+
+<main class="galeria-page">
+
+  <!-- Hero -->
+  <section class="galeria-hero" aria-label="Galería">
+    <div class="galeria-hero__content">
+      <span class="section-label">Detrás del consultorio</span>
+      <h1 class="galeria-hero__title">
+        Conoce a la<br><em>podóloga</em>
+      </h1>
+      <p class="galeria-hero__subtitle">
+        Momentos del día a día, tratamientos, y el espacio donde cada paciente
+        recibe una atención cálida y personalizada.
+      </p>
+    </div>
+    <div class="galeria-hero__wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF6F0"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Grid -->
+  <section class="galeria-grid-section" aria-label="Galería de fotos y videos">
+    <div class="galeria-container">
+
+      @if (loading()) {
+        <div class="galeria-skeleton-grid" aria-busy="true" aria-label="Cargando galería">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="galeria-skeleton"></div>
+          }
+        </div>
+      } @else if (posts().length === 0) {
+        <div class="galeria-empty">
+          <mat-icon aria-hidden="true">photo_library</mat-icon>
+          <p>La galería aún no tiene publicaciones.</p>
+          <a mat-stroked-button routerLink="/" class="btn-outline-pink">Volver al inicio</a>
+        </div>
+      } @else {
+        <div class="galeria-grid" role="list">
+          @for (post of posts(); track post.id) {
+            <article
+              class="galeria-item"
+              role="listitem"
+              (click)="openLightbox(post)"
+              (keydown.enter)="openLightbox(post)"
+              (keydown.space)="openLightbox(post)"
+              tabindex="0"
+              [attr.aria-label]="'Ver ' + post.titulo"
+            >
+              <div class="galeria-item__media">
+                @if (post.media_type === 'video') {
+                  <video
+                    [src]="mediaUrl(post)"
+                    class="galeria-item__img"
+                    muted
+                    preload="metadata"
+                    aria-hidden="true"
+                  ></video>
+                  <div class="galeria-item__play" aria-hidden="true">
+                    <mat-icon>play_circle</mat-icon>
+                  </div>
+                } @else {
+                  <img
+                    [src]="mediaUrl(post)"
+                    [alt]="post.titulo"
+                    class="galeria-item__img"
+                    loading="lazy"
+                  />
+                }
+                <div class="galeria-item__overlay" aria-hidden="true">
+                  <mat-icon>zoom_in</mat-icon>
+                </div>
+              </div>
+              <div class="galeria-item__info">
+                <h2 class="galeria-item__title">{{ post.titulo }}</h2>
+                @if (post.descripcion) {
+                  <p class="galeria-item__desc">{{ post.descripcion }}</p>
+                }
+                <time class="galeria-item__date">
+                  {{ post.created_at | date:'d MMM yyyy' }}
+                </time>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="galeria-cta" aria-label="Reservar hora">
+    <p class="galeria-cta__text">
+      ¿Te gustaría vivir esta experiencia?
+    </p>
+    <a mat-raised-button routerLink="/reservas" class="btn-gold" aria-label="Reservar tu hora">
+      <mat-icon aria-hidden="true">calendar_today</mat-icon>
+      Reserva tu hora
+    </a>
+  </section>
+
+</main>
+
+<!-- Lightbox -->
+@if (selected(); as post) {
+  <div
+    class="lightbox"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="post.titulo"
+    (click)="closeLightbox()"
+    (keydown.escape)="closeLightbox()"
+    tabindex="-1"
+  >
+    <div class="lightbox__content" (click)="$event.stopPropagation()">
+      <button
+        mat-icon-button
+        class="lightbox__close"
+        (click)="closeLightbox()"
+        aria-label="Cerrar"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+
+      @if (post.media_type === 'video') {
+        <video
+          [src]="mediaUrl(post)"
+          class="lightbox__media"
+          controls
+          autoplay
+          [attr.aria-label]="post.titulo"
+        ></video>
+      } @else {
+        <img
+          [src]="mediaUrl(post)"
+          [alt]="post.titulo"
+          class="lightbox__media"
+        />
+      }
+
+      <div class="lightbox__caption">
+        <h2 class="lightbox__title">{{ post.titulo }}</h2>
+        @if (post.descripcion) {
+          <p class="lightbox__desc">{{ post.descripcion }}</p>
+        }
+      </div>
+    </div>
+  </div>
+}

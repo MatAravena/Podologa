@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none" role="img" aria-label="Retrato ilustrado de la profesional">
+
+  <!-- Fondo con forma de marco redondeado -->
+  <rect width="400" height="500" rx="24" fill="#F5EDE0"/>
+
+  <!-- Gradiente de fondo suave -->
+  <ellipse cx="200" cy="480" rx="220" ry="140" fill="#EAD8C5" opacity="0.6"/>
+  <ellipse cx="200" cy="100" rx="160" ry="100" fill="#DFB89E" opacity="0.2"/>
+
+  <!-- ── FIGURA PROFESIONAL ── -->
+
+  <!-- Cuerpo / guardapolvo -->
+  <path d="M90,480 L90,310 Q90,285 115,275 L160,262 L200,290 L240,262 L285,275 Q310,285 310,310 L310,480 Z"
+        fill="#FAF6F0" stroke="#DFB89E" stroke-width="2"/>
+
+  <!-- Cuello de la ropa (interior) -->
+  <path d="M170,270 Q200,285 230,270 L225,295 Q200,310 175,295 Z" fill="#EAD8C5" opacity="0.6"/>
+
+  <!-- Detalle bolsillo -->
+  <rect x="220" y="330" width="55" height="45" rx="6" fill="none" stroke="#DFB89E" stroke-width="1.5" opacity="0.6"/>
+  <line x1="220" y1="345" x2="275" y2="345" stroke="#DFB89E" stroke-width="1" opacity="0.5"/>
+  <!-- Cruz médica en bolsillo -->
+  <line x1="247" y1="352" x2="247" y2="368" stroke="#C07753" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <line x1="239" y1="360" x2="255" y2="360" stroke="#C07753" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Brazos -->
+  <!-- Brazo izquierdo -->
+  <path d="M90,310 Q70,330 72,380 Q74,400 88,405 Q102,408 108,385 L115,310 Z"
+        fill="#DEB89A" opacity="0.7"/>
+  <!-- Brazo derecho -->
+  <path d="M310,310 Q330,330 328,380 Q326,400 312,405 Q298,408 292,385 L285,310 Z"
+        fill="#DEB89A" opacity="0.7"/>
+
+  <!-- Manos (simplificadas) -->
+  <ellipse cx="82" cy="412" rx="16" ry="12" fill="#DEB89A" opacity="0.8"/>
+  <ellipse cx="318" cy="412" rx="16" ry="12" fill="#DEB89A" opacity="0.8"/>
+
+  <!-- ── CABEZA ── -->
+  <!-- Cuello -->
+  <rect x="182" y="222" width="36" height="52" rx="16" fill="#DEB89A" opacity="0.85"/>
+
+  <!-- Cabeza -->
+  <ellipse cx="200" cy="185" rx="70" ry="78" fill="#DEB89A" opacity="0.9"/>
+
+  <!-- Cabello -->
+  <path d="M132,170 Q130,110 160,88 Q180,75 200,72 Q220,75 240,88 Q270,110 268,170
+           Q260,145 240,138 Q220,132 200,133 Q180,132 160,138 Q140,145 132,170 Z"
+        fill="#5C3D2E" opacity="0.85"/>
+  <!-- Mechones laterales del cabello -->
+  <path d="M132,170 Q128,195 134,215 Q126,200 125,180 Z" fill="#5C3D2E" opacity="0.7"/>
+  <path d="M268,170 Q272,195 266,215 Q274,200 275,180 Z" fill="#5C3D2E" opacity="0.7"/>
+  <!-- Cabello que cae por los hombros -->
+  <path d="M134,215 Q128,240 132,265 Q140,255 148,268 Q145,245 148,228 Z" fill="#5C3D2E" opacity="0.6"/>
+  <path d="M266,215 Q272,240 268,265 Q260,255 252,268 Q255,245 252,228 Z" fill="#5C3D2E" opacity="0.6"/>
+
+  <!-- Orejas -->
+  <ellipse cx="132" cy="192" rx="10" ry="13" fill="#DEB89A" opacity="0.8"/>
+  <ellipse cx="268" cy="192" rx="10" ry="13" fill="#DEB89A" opacity="0.8"/>
+
+  <!-- Ojos -->
+  <!-- Ojo izquierdo -->
+  <ellipse cx="178" cy="188" rx="14" ry="11" fill="white" opacity="0.95"/>
+  <ellipse cx="178" cy="188" rx="8" ry="8" fill="#3D2414" opacity="0.9"/>
+  <ellipse cx="178" cy="188" rx="4" ry="4" fill="#1a0d08"/>
+  <circle cx="181" cy="185" r="2.5" fill="white" opacity="0.9"/>
+  <!-- Ceja izquierda -->
+  <path d="M163,175 Q178,170 193,174" stroke="#5C3D2E" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Ojo derecho -->
+  <ellipse cx="222" cy="188" rx="14" ry="11" fill="white" opacity="0.95"/>
+  <ellipse cx="222" cy="188" rx="8" ry="8" fill="#3D2414" opacity="0.9"/>
+  <ellipse cx="222" cy="188" rx="4" ry="4" fill="#1a0d08"/>
+  <circle cx="225" cy="185" r="2.5" fill="white" opacity="0.9"/>
+  <!-- Ceja derecha -->
+  <path d="M207,175 Q222,170 237,174" stroke="#5C3D2E" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Nariz -->
+  <path d="M196,198 Q200,210 204,198" stroke="#C07753" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Sonrisa -->
+  <path d="M183,218 Q200,232 217,218" stroke="#8B4C2A" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Mejillas sonrosadas -->
+  <ellipse cx="163" cy="210" rx="14" ry="9" fill="#EC8B6A" opacity="0.18"/>
+  <ellipse cx="237" cy="210" rx="14" ry="9" fill="#EC8B6A" opacity="0.18"/>
+
+  <!-- ── ACCESORIOS ── -->
+  <!-- Estetoscopio -->
+  <path d="M155,270 Q148,290 152,320 Q155,340 165,350 Q178,360 190,350 Q200,342 200,330"
+        stroke="#9C7A67" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="200" cy="328" r="8" fill="#C07753" opacity="0.5" stroke="#8B4C2A" stroke-width="1.5"/>
+
+  <!-- Clip en bolsillo con lapiceras -->
+  <rect x="228" y="318" width="4" height="20" rx="2" fill="#9C7A67" opacity="0.6"/>
+  <rect x="234" y="318" width="4" height="18" rx="2" fill="#7BAF7A" opacity="0.6"/>
+
+  <!-- ── LIBÉLULA decorativa pequeña ── -->
+  <!-- Cuerpo -->
+  <ellipse cx="305" cy="145" rx="3" ry="14" fill="#8B4C2A" opacity="0.5" transform="rotate(30 305 145)"/>
+  <!-- Alas -->
+  <ellipse cx="292" cy="138" rx="14" ry="6" fill="#C07753" opacity="0.25" transform="rotate(20 292 138)"/>
+  <ellipse cx="318" cy="138" rx="14" ry="6" fill="#C07753" opacity="0.25" transform="rotate(-20 318 138)"/>
+  <ellipse cx="294" cy="147" rx="11" ry="5" fill="#DFB89E" opacity="0.3" transform="rotate(25 294 147)"/>
+  <ellipse cx="316" cy="147" rx="11" ry="5" fill="#DFB89E" opacity="0.3" transform="rotate(-25 316 147)"/>
+
+  <!-- Plantas decorativas en las esquinas -->
+  <circle cx="48" cy="450" r="18" fill="#7BAF7A" opacity="0.2"/>
+  <circle cx="38" cy="435" r="12" fill="#7BAF7A" opacity="0.25"/>
+  <line x1="48" y1="468" x2="48" y2="500" stroke="#7BAF7A" stroke-width="2" opacity="0.3"/>
+
+  <circle cx="352" cy="455" r="14" fill="#7BAF7A" opacity="0.2"/>
+  <circle cx="362" cy="440" r="10" fill="#7BAF7A" opacity="0.2"/>
+  <line x1="352" y1="469" x2="352" y2="500" stroke="#7BAF7A" stroke-width="2" opacity="0.25"/>
+
+  <!-- Puntos decorativos -->
+  <circle cx="52" cy="80" r="5" fill="#DFB89E" opacity="0.4"/>
+  <circle cx="345" cy="95" r="4" fill="#C07753" opacity="0.3"/>
+  <circle cx="65" cy="200" r="3" fill="#7BAF7A" opacity="0.35"/>
+  <circle cx="340" cy="380" r="3" fill="#C07753" opacity="0.25"/>
+
+</svg>

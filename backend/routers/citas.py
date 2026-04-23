@@ -1,0 +1,196 @@
+from datetime import date, time
+from typing import List
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy.orm import Session
+
+from database import get_db
+from integrations.google_calendar import calendar_service
+from notifications.mailer import send_confirmation
+from models import Cita, Paciente, Servicio, EstadoCita, Promocion
+from routers.promociones import _is_currently_active
+from schemas import CitaOut, CitaUpdate
+
+router = APIRouter(prefix="/citas", tags=["citas"])
+
+
+# ── Public booking payload (frontend form) ────────────────────────────────────
+
+class CitaPublicaCreate(BaseModel):
+    """Payload sent from the Angular booking form."""
+    nombre: str = Field(..., min_length=2, max_length=255)
+    apellido: str = Field(default="", max_length=255)
+    email: EmailStr | None = None
+    telefono: str | None = Field(default=None, max_length=20)
+    servicio_id: int
+    fecha: date
+    hora: str = Field(..., pattern=r"^\d{1,2}:\d{2}$")
+    notas: str | None = None
+
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@router.post("", response_model=CitaOut, status_code=status.HTTP_201_CREATED)
+def crear_cita(
+    payload: CitaPublicaCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    servicio = db.query(Servicio).filter(Servicio.id == payload.servicio_id).first()
+    if not servicio:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Servicio no encontrado")
+
+    # Reuse existing patient by email, or create a new one
+    paciente = None
+    if payload.email:
+        paciente = db.query(Paciente).filter(Paciente.email == payload.email).first()
+
+    nombre_completo = f"{payload.nombre} {payload.apellido}".strip()
+    if not paciente:
+        paciente = Paciente(
+            nombre=nombre_completo,
+            email=payload.email,
+            telefono=payload.telefono,
+            notas=payload.notas,
+        )
+        db.add(paciente)
+        db.flush()
+    else:
+        if payload.telefono:
+            paciente.telefono = payload.telefono
+
+    hora_h, hora_m = payload.hora.split(":")
+    try:
+        hora_time = time(int(hora_h), int(hora_m))
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Hora inválida.")
+
+    # Apply the best active promotion for this service, if any
+    from datetime import date as date_cls
+    today = date_cls.today()
+    promos = db.query(Promocion).filter(
+        Promocion.activo.is_(True),
+        Promocion.servicio_id == servicio.id,
+        Promocion.fecha_inicio <= today,
+        Promocion.fecha_fin >= today,
+    ).order_by(Promocion.porcentaje_descuento.desc()).all()
+    active_promo = next((p for p in promos if _is_currently_active(p)), None)
+
+    precio_final = None
+    promocion_id = None
+    if active_promo and servicio.precio:
+        from decimal import Decimal as D
+        descuento = D(str(active_promo.porcentaje_descuento)) / D("100")
+        precio_final = (servicio.precio * (D("1") - descuento)).quantize(D("0.01"))
+        promocion_id = active_promo.id
+
+    cita = Cita(
+        fecha=payload.fecha,
+        hora=hora_time,
+        duracion=servicio.duracion,
+        estado=EstadoCita.PENDIENTE,
+        paciente_id=paciente.id,
+        servicio_id=servicio.id,
+        precio_final=precio_final,
+        promocion_id=promocion_id,
+    )
+    db.add(cita)
+    db.commit()
+    db.refresh(cita)
+
+    # Send confirmation email in background if patient has email
+    if payload.email:
+        fecha_str = payload.fecha.strftime("%d/%m/%Y")
+        background_tasks.add_task(
+            send_confirmation,
+            to_email=payload.email,
+            nombre=payload.nombre,
+            servicio=servicio.nombre,
+            fecha=fecha_str,
+            hora=payload.hora,
+        )
+
+    # Create Google Calendar event in background (fire-and-forget)
+    background_tasks.add_task(
+        _sync_calendar_on_create,
+        cita_id=cita.id,
+        fecha=cita.fecha,
+        hora=cita.hora,
+        duracion=cita.duracion,
+        paciente_nombre=payload.nombre,
+        servicio_nombre=servicio.nombre,
+        notas=payload.notas,
+    )
+
+    return cita
+
+
+def _sync_calendar_on_create(
+    cita_id: int,
+    fecha,
+    hora,
+    duracion: int,
+    paciente_nombre: str,
+    servicio_nombre: str,
+    notas: str | None,
+) -> None:
+    """Create a Google Calendar event and persist the event_id back to the DB."""
+    from database import SessionLocal
+    event_id = calendar_service.create_event(
+        fecha=fecha,
+        hora=hora,
+        duracion_min=duracion,
+        paciente_nombre=paciente_nombre,
+        servicio_nombre=servicio_nombre,
+        notas=notas,
+    )
+    if event_id:
+        db = SessionLocal()
+        try:
+            cita = db.query(Cita).filter(Cita.id == cita_id).first()
+            if cita:
+                cita.google_event_id = event_id
+                db.commit()
+        finally:
+            db.close()
+
+
+@router.get("/{cita_id}", response_model=CitaOut)
+def obtener_cita(cita_id: int, db: Session = Depends(get_db)):
+    cita = db.query(Cita).filter(Cita.id == cita_id).first()
+    if not cita:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
+    return cita
+
+
+@router.patch("/{cita_id}/estado", response_model=CitaOut)
+def actualizar_estado(
+    cita_id: int,
+    payload: CitaUpdate,
+    db: Session = Depends(get_db),
+):
+    cita = db.query(Cita).filter(Cita.id == cita_id).first()
+    if not cita:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
+    old_estado = cita.estado
+    old_fecha, old_hora = cita.fecha, cita.hora
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(cita, field, value)
+    db.commit()
+    db.refresh(cita)
+
+    # Sync Google Calendar
+    if cita.google_event_id:
+        if cita.estado == EstadoCita.CANCELADA and old_estado != EstadoCita.CANCELADA:
+            calendar_service.delete_event(cita.google_event_id)
+        elif (cita.fecha != old_fecha or cita.hora != old_hora):
+            calendar_service.update_event(
+                cita.google_event_id,
+                fecha=cita.fecha,
+                hora=cita.hora,
+                duracion_min=cita.duracion,
+            )
+
+    return cita

@@ -1,0 +1,6 @@
+// Offset page content below the fixed navbar (88px)
+// Admin pages manage their own layout — excluded via isAdminPage()
+router-outlet + *:not(app-admin-login):not(app-admin-opiniones):not(app-admin-galeria) {
+  display: block;
+  padding-top: 88px;
+}

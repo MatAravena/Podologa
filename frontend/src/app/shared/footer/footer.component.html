@@ -1,0 +1,129 @@
+<footer class="footer" aria-label="Pie de página de Libélula">
+
+  <div class="footer__top">
+    <div class="footer__inner">
+
+      <!-- Brand column -->
+      <div class="footer__brand">
+        <a routerLink="/" class="footer__logo" aria-label="Libélula — inicio">
+          <svg width="32" height="32" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <ellipse cx="14" cy="14" rx="3" ry="7" fill="#f5a0ab"/>
+            <ellipse cx="14" cy="12" rx="9" ry="3.5" fill="#ffb6c1" opacity=".8"/>
+            <ellipse cx="14" cy="17" rx="7" ry="2.5" fill="#ffb6c1" opacity=".6"/>
+            <circle  cx="14" cy="9"  r="2.5"  fill="#d4a017"/>
+          </svg>
+          <span class="footer__logo-text">
+            <span class="footer__logo-name">Libélula</span>
+            <span class="footer__logo-sub">Podología &amp; Terapias</span>
+          </span>
+        </a>
+        <p class="footer__tagline">
+          Cuidado integral del pie y bienestar del cuerpo-mente.<br>
+          Atención profesional, cálida y personalizada.
+        </p>
+        <!-- Social links -->
+        <div class="footer__social" aria-label="Redes sociales">
+          <a
+            href="https://wa.me/569XXXXXXXX"
+            class="footer__social-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp de Libélula"
+          >
+            <mat-icon aria-hidden="true">phone</mat-icon>
+          </a>
+          <a
+            href="https://instagram.com/libelula.podologia"
+            class="footer__social-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram de Libélula"
+          >
+            <mat-icon aria-hidden="true">photo_camera</mat-icon>
+          </a>
+          <a
+            href="https://facebook.com/libelulapodologia"
+            class="footer__social-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook de Libélula"
+          >
+            <mat-icon aria-hidden="true">facebook</mat-icon>
+          </a>
+        </div>
+      </div>
+
+      <!-- Navigation column -->
+      <nav class="footer__col" aria-label="Navegación del sitio">
+        <h3 class="footer__col-title">Navegación</h3>
+        <ul class="footer__list" role="list">
+          @for (link of links; track link.label) {
+            <li>
+              @if (link.route) {
+                <a [routerLink]="link.route" class="footer__link">{{ link.label }}</a>
+              } @else {
+                <a routerLink="/" [fragment]="link.fragment" class="footer__link">{{ link.label }}</a>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+
+      <!-- Services column -->
+      <div class="footer__col" aria-label="Servicios ofrecidos">
+        <h3 class="footer__col-title">Servicios</h3>
+        <ul class="footer__list" role="list">
+          @for (s of servicios; track s) {
+            <li>
+              <a routerLink="/" fragment="servicios" class="footer__link">{{ s }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Contact column -->
+      <address class="footer__col footer__contact" aria-label="Información de contacto">
+        <h3 class="footer__col-title">Contacto</h3>
+
+        <div class="footer__contact-item">
+          <mat-icon aria-hidden="true">place</mat-icon>
+          <span>Santiago, Chile<br><em>(dirección al confirmar hora)</em></span>
+        </div>
+
+        <div class="footer__contact-item">
+          <mat-icon aria-hidden="true">schedule</mat-icon>
+          <span>
+            Lun – Vie: 9:00 – 19:00 hrs<br>
+            Sábados: 9:00 – 13:00 hrs
+          </span>
+        </div>
+
+        <div class="footer__contact-item">
+          <mat-icon aria-hidden="true">phone</mat-icon>
+          <a href="https://wa.me/569XXXXXXXX" class="footer__link" target="_blank" rel="noopener noreferrer">
+            +56 9 XXXX XXXX
+          </a>
+        </div>
+
+        <a routerLink="/reservas" class="footer__cta" aria-label="Reservar hora">
+          <mat-icon aria-hidden="true">calendar_today</mat-icon>
+          Reservar hora
+        </a>
+      </address>
+
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer__bottom">
+    <div class="footer__bottom-inner">
+      <p class="footer__copy">
+        &copy; {{ year }} Libélula Podología y Terapias. Todos los derechos reservados.
+      </p>
+      <p class="footer__made">
+        Hecho con <span aria-label="amor">♡</span> en Santiago, Chile
+      </p>
+    </div>
+  </div>
+
+</footer>

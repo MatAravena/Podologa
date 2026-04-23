@@ -1,0 +1,113 @@
+<!-- ================================================================
+     NAVBAR — floating pill style matching uipro Beauty & Spa template
+     ================================================================ -->
+<header class="navbar__outer" role="banner">
+  <nav class="navbar__pill" aria-label="Navegación principal">
+
+    <!-- Brand / Logo -->
+    <a
+      class="navbar__brand"
+      routerLink="/"
+      (click)="closeMenu()"
+      aria-label="Libélula — inicio"
+    >
+      <span class="navbar__brand-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="14" cy="14" rx="3" ry="7" fill="#f5a0ab"/>
+          <ellipse cx="14" cy="12" rx="9" ry="3.5" fill="#ffb6c1" opacity=".8"/>
+          <ellipse cx="14" cy="17" rx="7" ry="2.5" fill="#ffb6c1" opacity=".6"/>
+          <circle  cx="14" cy="9"  r="2.5"  fill="#d4a017"/>
+        </svg>
+      </span>
+      <span class="navbar__brand-text">
+        <span class="navbar__brand-name">Libélula</span>
+        <span class="navbar__brand-sub">Podología &amp; Terapias</span>
+      </span>
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="navbar__links" role="list">
+      @for (link of links; track link.label) {
+        <li>
+          @if (link.route) {
+            <a
+              class="navbar__link"
+              [routerLink]="link.route"
+              routerLinkActive="navbar__link--active"
+              (click)="closeMenu()"
+            >{{ link.label }}</a>
+          } @else {
+            <a
+              class="navbar__link"
+              routerLink="/"
+              [fragment]="link.fragment"
+              (click)="closeMenu()"
+            >{{ link.label }}</a>
+          }
+        </li>
+      }
+    </ul>
+
+    <!-- Desktop CTA -->
+    <a
+      mat-raised-button
+      routerLink="/reservas"
+      class="navbar__cta"
+      aria-label="Reservar hora"
+    >
+      Reservar hora
+    </a>
+
+    <!-- Mobile burger -->
+    <button
+      class="navbar__burger"
+      type="button"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="navbar-mobile-menu"
+      aria-label="Abrir menú"
+      (click)="toggleMenu()"
+    >
+      <mat-icon aria-hidden="true">{{ menuOpen() ? 'close' : 'menu' }}</mat-icon>
+    </button>
+
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div
+    class="navbar__mobile"
+    id="navbar-mobile-menu"
+    [class.navbar__mobile--open]="menuOpen()"
+    role="navigation"
+    aria-label="Menú móvil"
+  >
+    <ul role="list">
+      @for (link of links; track link.label) {
+        <li>
+          @if (link.route) {
+            <a
+              class="navbar__mobile-link"
+              [routerLink]="link.route"
+              (click)="closeMenu()"
+            >{{ link.label }}</a>
+          } @else {
+            <a
+              class="navbar__mobile-link"
+              routerLink="/"
+              [fragment]="link.fragment"
+              (click)="closeMenu()"
+            >{{ link.label }}</a>
+          }
+        </li>
+      }
+    </ul>
+    <a
+      mat-raised-button
+      routerLink="/reservas"
+      class="navbar__cta navbar__cta--mobile"
+      (click)="closeMenu()"
+    >
+      Reservar hora
+    </a>
+  </div>
+
+</header>
