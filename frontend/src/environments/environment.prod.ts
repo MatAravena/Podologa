@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',  // reverse-proxy path in production
+  apiUrl: 'https://podologa-production.up.railway.app',
 };
