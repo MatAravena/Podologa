@@ -59,11 +59,20 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REFRESH_TOKEN: str = ""        # obtained via OAuth2 consent (run scripts/gcal_auth.py)
 
+    # ── Cloudinary (media storage) ────────────────────────────────────────────
+    CLOUDINARY_CLOUD_NAME: str = ""
+    CLOUDINARY_API_KEY: str = ""
+    CLOUDINARY_API_SECRET: str = ""
+
     # ── AI (Anthropic) ────────────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = ""    # leave empty to disable AI caption generation
 
     # ── App ───────────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
+
+    # Comma-separated extra origins added at runtime (e.g. the Vercel domain).
+    # Example: CORS_EXTRA_ORIGINS=https://libelula.cl,https://www.libelula.cl
+    CORS_EXTRA_ORIGINS: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -86,7 +95,11 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> list[str]:
-        return self.app_config.get("cors_origins", ["http://localhost:4200"])
+        base = self.app_config.get("cors_origins", ["http://localhost:4200"])
+        if self.CORS_EXTRA_ORIGINS:
+            extra = [o.strip() for o in self.CORS_EXTRA_ORIGINS.split(",") if o.strip()]
+            return base + extra
+        return base
 
 
 settings = Settings()

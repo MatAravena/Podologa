@@ -210,13 +210,8 @@
         [disabled]="generatingCaption()"
         aria-label="Generar caption con inteligencia artificial"
       >
-        @if (generatingCaption()) {
-          <mat-icon class="spin" aria-hidden="true">sync</mat-icon>
-          Generando…
-        } @else {
-          <mat-icon aria-hidden="true">auto_awesome</mat-icon>
-          Generar con IA
-        }
+        <mat-icon [class.spin]="generatingCaption()" aria-hidden="true">{{ generatingCaption() ? 'sync' : 'auto_awesome' }}</mat-icon>
+        {{ generatingCaption() ? 'Generando…' : 'Generar con IA' }}
       </button>
 
       <mat-form-field appearance="outline" class="caption-panel__field caption-panel__field--full">
@@ -243,13 +238,8 @@
           [disabled]="publishing() === captionPost()!.id || !captionText()"
           aria-label="Confirmar y publicar en redes sociales"
         >
-          @if (publishing() === captionPost()!.id) {
-            <mat-icon class="spin" aria-hidden="true">sync</mat-icon>
-            Publicando…
-          } @else {
-            <mat-icon aria-hidden="true">share</mat-icon>
-            Publicar en redes
-          }
+          <mat-icon [class.spin]="publishing() === captionPost()!.id" aria-hidden="true">{{ publishing() === captionPost()!.id ? 'sync' : 'share' }}</mat-icon>
+          {{ publishing() === captionPost()!.id ? 'Publicando…' : 'Publicar en redes' }}
         </button>
       </div>
 

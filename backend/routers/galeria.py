@@ -1,8 +1,9 @@
-import shutil
+import re
 import uuid
-from pathlib import Path
 from typing import List
 
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -17,10 +18,29 @@ from social.meta import publish_to_all_accounts
 
 router = APIRouter(prefix="/galeria", tags=["galeria"])
 
+ALLOWED_IMAGE = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_VIDEO = {"video/mp4", "video/quicktime"}
+MAX_FILE_MB   = 50
+
+
+def _cloudinary_config() -> None:
+    cloudinary.config(
+        cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+        api_key=settings.CLOUDINARY_API_KEY,
+        api_secret=settings.CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+
+
+def _public_id_from_url(url: str) -> str:
+    """Extract Cloudinary public_id (with folder, no extension) from a secure URL."""
+    match = re.search(r"/upload/(?:v\d+/)?(.+)\.[^.]+$", url)
+    return match.group(1) if match else url
+
 
 class PublicarPayload(BaseModel):
-    caption: str | None = None       # admin-provided or AI-generated caption
-    tono: str | None = None          # tone hint forwarded if re-generating
+    caption: str | None = None
+    tono: str | None = None
 
 
 class GenerarCaptionPayload(BaseModel):
@@ -32,51 +52,52 @@ class CaptionOut(BaseModel):
     caption: str
     ai_generated: bool
 
-UPLOADS_DIR = Path(__file__).parent.parent / "uploads" / "galeria"
-ALLOWED_IMAGE = {"image/jpeg", "image/png", "image/webp"}
-ALLOWED_VIDEO = {"video/mp4", "video/quicktime"}
-MAX_FILE_MB   = 50
 
-
-def _save_upload(file: UploadFile) -> tuple[str, str]:
-    """Save the upload, return (relative_url, media_type)."""
+def _upload_to_cloudinary(file: UploadFile) -> tuple[str, str]:
+    """Upload file to Cloudinary, return (secure_url, media_type)."""
     content_type = file.content_type or ""
     if content_type in ALLOWED_IMAGE:
         media_type = "image"
-        ext = content_type.split("/")[1]
+        resource_type = "image"
     elif content_type in ALLOWED_VIDEO:
         media_type = "video"
-        ext = "mp4"
+        resource_type = "video"
     else:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail="Solo se permiten imágenes (jpg, png, webp) y videos (mp4, mov).",
         )
 
-    UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    dest = UPLOADS_DIR / filename
-
-    with dest.open("wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    # Check size
-    size_mb = dest.stat().st_size / (1024 * 1024)
+    # Read and check size before uploading
+    data = file.file.read()
+    size_mb = len(data) / (1024 * 1024)
     if size_mb > MAX_FILE_MB:
-        dest.unlink(missing_ok=True)
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=f"Archivo demasiado grande (máx {MAX_FILE_MB} MB)")
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Archivo demasiado grande (máx {MAX_FILE_MB} MB)",
+        )
 
-    return f"/uploads/galeria/{filename}", media_type
+    _cloudinary_config()
+    result = cloudinary.uploader.upload(
+        data,
+        folder="podologa/galeria",
+        public_id=uuid.uuid4().hex,
+        resource_type=resource_type,
+        overwrite=False,
+    )
+    return result["secure_url"], media_type
+
+
+def _delete_from_cloudinary(media_url: str, media_type: str) -> None:
+    _cloudinary_config()
+    public_id = _public_id_from_url(media_url)
+    resource_type = "video" if media_type == "video" else "image"
+    cloudinary.uploader.destroy(public_id, resource_type=resource_type, invalidate=True)
 
 
 def _do_social_publish(post_id: int, media_url: str, caption: str, media_type: str, db: Session) -> None:
     """Background task: publish to social media and save post IDs."""
-    # Build a public URL (in production, replace with real domain)
-    app_cfg = settings.app_config
-    booking_link = app_cfg.get("booking_link", "")
-    public_url = f"https://libelula.cl{media_url}"
-
-    results = publish_to_all_accounts(public_url, caption, media_type)  # type: ignore[arg-type]
+    results = publish_to_all_accounts(media_url, caption, media_type)  # type: ignore[arg-type]
 
     fb_id = next((r.get("id") for r in results if r.get("platform") == "facebook" and "id" in r), None)
     ig_id = next((r.get("id") for r in results if r.get("platform") == "instagram" and "id" in r), None)
@@ -101,14 +122,14 @@ def listar_posts(db: Session = Depends(get_db)):
 @router.post("", response_model=GaleriaPostOut, status_code=status.HTTP_201_CREATED)
 def crear_post(
     background_tasks: BackgroundTasks,
-    titulo: str     = Form(...),
+    titulo: str      = Form(...),
     descripcion: str | None = Form(default=None),
-    publicar: bool  = Form(default=False),  # if True → post to social immediately
+    publicar: bool   = Form(default=False),
     file: UploadFile = File(...),
-    db: Session     = Depends(get_db),
-    _admin: User    = Depends(get_current_admin),
+    db: Session      = Depends(get_db),
+    _admin: User     = Depends(get_current_admin),
 ):
-    media_url, media_type = _save_upload(file)
+    media_url, media_type = _upload_to_cloudinary(file)
 
     post = GaleriaPost(
         titulo=titulo,
@@ -137,7 +158,6 @@ def generar_caption_ia(
     db: Session  = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    """Generate (but do not publish) an AI-written caption for a gallery post."""
     post = db.query(GaleriaPost).filter(GaleriaPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post no encontrado")
@@ -160,7 +180,6 @@ def publicar_post(
     db: Session  = Depends(get_db),
     _admin: User = Depends(get_current_admin),
 ):
-    """Publish a gallery post to social media. Accepts an optional pre-written caption."""
     post = db.query(GaleriaPost).filter(GaleriaPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post no encontrado")
@@ -181,8 +200,7 @@ def eliminar_post(
     post = db.query(GaleriaPost).filter(GaleriaPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post no encontrado")
-    # Remove file from disk
-    path = Path(__file__).parent.parent / post.media_url.lstrip("/")
-    path.unlink(missing_ok=True)
+
+    _delete_from_cloudinary(post.media_url, post.media_type)
     db.delete(post)
     db.commit()

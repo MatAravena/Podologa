@@ -110,13 +110,8 @@
           class="submit-btn"
           [disabled]="saving() || form.invalid"
         >
-          @if (saving()) {
-            <mat-icon class="spin">sync</mat-icon>
-            Guardando…
-          } @else {
-            <mat-icon>local_offer</mat-icon>
-            Crear promoción
-          }
+          <mat-icon [class.spin]="saving()">{{ saving() ? 'sync' : 'local_offer' }}</mat-icon>
+          {{ saving() ? 'Guardando…' : 'Crear promoción' }}
         </button>
 
       </form>
