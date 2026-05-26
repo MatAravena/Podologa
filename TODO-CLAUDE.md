@@ -62,6 +62,7 @@
 - [x] Lightbox al hacer clic
 - [x] Lazy loading + skeleton de carga
 - [x] CTA para reservar hora
+- [ ] **Eliminar menú duplicado en sub-páginas** — la navbar aparece dos veces en `/galeria` y otras sub-páginas; eliminar la instancia duplicada
 
 ---
 
