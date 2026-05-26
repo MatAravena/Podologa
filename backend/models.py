@@ -1,4 +1,4 @@
-from datetime import datetime, date, time
+from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
@@ -88,7 +88,7 @@ class Cita(TimestampMixin, Base):
     hora = Column(Time, nullable=False)
     duracion = Column(Integer, nullable=False)  # en minutos
     estado = Column(
-        Enum(EstadoCita),
+        Enum(EstadoCita, values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=EstadoCita.PENDIENTE,
         index=True,
