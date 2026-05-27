@@ -95,49 +95,14 @@ $t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover { background: $pink-pale !important; }
 }
+ 
 
 
-// ================================================================
-// PAGE HEADER (back button row)
-// ================================================================
-.page-header {
-  background: rgba($bg-white, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid $border;
-  // sits below the global navbar (fixed, ~88px)
-  position: sticky;
-  top: 88px;
-  z-index: 50;
-  box-shadow: 0 2px 12px rgba(200, 180, 180, 0.12);
+// page reservas-page / main ───────────────────────────────────────────────────────────────
 
-  &__inner {
-    display: flex;
-    align-items: center;
-    gap: $s2;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 10px $s2;
-    @media (min-width: 768px) { padding: 10px $s4; }
-  }
-
-  &__back.mat-mdc-icon-button { color: $pink-deep; }
-
-  &__brand { display: flex; flex-direction: column; line-height: 1.2; }
-
-  &__name {
-    font-family: $font-heading;
-    font-size: 1.0625rem;
-    font-weight: 700;
-    color: $text;
-  }
-
-  &__sub {
-    font-family: $font-body;
-    font-size: 0.6875rem;
-    color: $text-light;
-  }
+.reservas-page{
+  margin: 40px;
 }
-
 
 // ================================================================
 // HERO COMPACTO
@@ -200,9 +165,9 @@ $t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   gap: $s4;
   max-width: 1200px;
   margin: 0 auto;
-  padding: $s4 $s2 $s8;
+  padding: 120px $s2 $s8 0;
 
-  @media (min-width: 768px) { padding: $s6 $s4 $s10; }
+  @media (min-width: 768px) { padding: 120px $s4 $s10; }
   @media (min-width: 1024px) {
     grid-template-columns: 300px 1fr;
     gap: $s6;
