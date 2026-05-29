@@ -69,6 +69,7 @@ class Settings(BaseSettings):
 
     # ── App ───────────────────────────────────────────────────────────────────
     APP_ENV: str = "development"
+    APP_URL: str = "https://terapiaslibelula.cl"
 
     # Comma-separated extra origins added at runtime (e.g. the Vercel domain).
     # Example: CORS_EXTRA_ORIGINS=https://libelula.cl,https://www.libelula.cl

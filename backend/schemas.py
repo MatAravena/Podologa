@@ -51,6 +51,8 @@ class ServicioCreate(BaseModel):
 class ServicioUpdate(BaseModel):
     nombre: str | None = Field(default=None, min_length=2, max_length=255)
     descripcion: str | None = None
+    subtitulo: str | None = Field(default=None, max_length=255)
+    descripcion_larga: str | None = None
     duracion: int | None = Field(default=None, gt=0)
     precio: Decimal | None = Field(default=None, gt=0, decimal_places=2)
 
@@ -59,6 +61,9 @@ class ServicioOut(ORMBase):
     id: int
     nombre: str
     descripcion: str | None
+    subtitulo: str | None
+    descripcion_larga: str | None
+    fotos_urls: str | None  # raw JSON array text
     duracion: int
     precio: Decimal
     created_at: datetime

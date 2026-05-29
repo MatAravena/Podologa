@@ -1,11 +1,8 @@
 @use 'sass:color';
-$pink-deep: #d4697e; $pink-dark: #f5a0ab; $gold: #d4a017;
-$text: #2d2d2d; $text-mid: #6b7280; $text-light: #9ca3af;
-$border: #f3e8e8; $white: #ffffff; $bg: #fafafa;
-$font-heading: 'Playfair Display', Georgia, serif;
-$font-body:    'Inter', system-ui, sans-serif;
-$r-lg: 16px; $r-full: 50px;
-$t: 250ms cubic-bezier(0.4,0,0.2,1);
+@use 'tokens' as *;
+$r-lg: 16px;
+$bg: #fafafa;
+$t: $t-normal;
 
 .admin-shell { min-height: 100vh; background: $bg; }
 

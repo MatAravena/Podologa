@@ -62,7 +62,7 @@
 - [x] Lightbox al hacer clic
 - [x] Lazy loading + skeleton de carga
 - [x] CTA para reservar hora
-- [ ] **Eliminar menú duplicado en sub-páginas** — la navbar aparece dos veces en `/galeria` y otras sub-páginas; eliminar la instancia duplicada
+- [x] **Eliminar menú duplicado en sub-páginas** — la navbar aparece dos veces en `/galeria` y otras sub-páginas; eliminar la instancia duplicada
 
 ---
 
@@ -162,6 +162,39 @@
 ---
 
 ## Roadmap — Nuevas Funcionalidades
+
+### Página de Detalle por Servicio
+Cada tarjeta de servicio en el home enlaza a `/servicios/:id` con contenido completo almacenado en la base de datos y gestionado desde el panel admin.
+
+**Modelo de contenido por servicio (todo en DB)**
+- `descripcion` (ya existe) — descripción corta; se muestra en las tarjetas del home
+- `descripcion_larga` (nuevo) — descripción extensa con beneficios, indicaciones, etc.; se muestra en `/servicios/:id`
+- `subtitulo` (nuevo) — frase destacada debajo del título en la página de detalle (ej: "Para el bienestar de tus pies")
+- `fotos_urls` (nuevo) — JSON array de URLs Cloudinary; galería de imágenes en la página de detalle
+
+**Backend**
+- [x] Extender modelo `Servicio` con: `subtitulo` (String, nullable), `descripcion_larga` (Text, nullable), `fotos_urls` (Text, nullable — JSON array)
+- [x] Migration `006_add_servicio_detalle.py` — columnas nullable para no romper registros existentes
+- [x] Actualizar schema `ServicioOut` para incluir los nuevos campos
+- [x] `PATCH /servicios/{id}` (admin) — editar nombre, descripcion, subtitulo, descripcion_larga, duración, precio
+- [x] `POST /servicios/{id}/fotos` (admin) — subir foto a Cloudinary y añadir URL al JSON array `fotos_urls`
+- [x] `DELETE /servicios/{id}/fotos/{index}` (admin) — eliminar foto por índice del array y borrar de Cloudinary
+
+**Frontend — página de detalle**
+- [x] Nueva ruta `/servicios/:id` en `app.routes.ts` (lazy load)
+- [x] Nuevo componente en `frontend/src/app/servicios/detalle/` con los 4 archivos: `servicio-detalle.component.ts` `.html` `.scss` `.spec.ts`
+- [x] Muestra: título, subtítulo, descripción larga, galería de fotos, precio, duración y CTA "Reservar este servicio"
+- [x] Enlazar cada tarjeta del home a `/servicios/:id` con `[routerLink]`
+- [x] La descripción corta (`descripcion`) sigue mostrándose en las tarjetas del home sin cambios
+
+**Frontend — panel admin**
+- [x] Ruta `/admin/servicios` (lazy load, protegida con `adminAuthGuard`)
+- [x] Nuevo componente en `frontend/src/app/admin/servicios/` con los 4 archivos: `admin-servicios.component.ts` `.html` `.scss` `.spec.ts`
+- [x] Lista todos los servicios; al seleccionar uno: formulario para editar nombre, descripcion corta, subtitulo, descripcion_larga, duración y precio
+- [x] Sección de fotos: subir nuevas imágenes (Cloudinary), previsualizar, eliminar individualmente
+- [x] Añadir enlace al panel admin en la navegación lateral/header del admin
+
+---
 
 ### Publicación en Redes Sociales (Agentes IA)
 - [x] Agente que publique imágenes y videos con comentarios generados por IA en Instagram y Facebook

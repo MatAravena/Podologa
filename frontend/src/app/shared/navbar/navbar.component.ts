@@ -10,6 +10,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AdminAuthService } from '../admin/admin-auth.service';
 
 interface NavLink {
   label: string;
@@ -29,6 +30,7 @@ interface NavLink {
 })
 export class NavbarComponent {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly auth = inject(AdminAuthService);
 
   readonly scrolled    = signal(false);
   readonly menuOpen    = signal(false);

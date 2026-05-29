@@ -155,6 +155,13 @@
             <p class="service-card__desc">{{ servicio.descripcion }}</p>
           </mat-card-content>
           <mat-card-actions>
+            @if (servicioId(servicio.nombre); as id) {
+              <a mat-button [routerLink]="['/servicios', id]" class="service-card__link service-card__link--detail"
+                [attr.aria-label]="'Ver detalles de ' + servicio.nombre">
+                Ver más
+                <mat-icon aria-hidden="true">info</mat-icon>
+              </a>
+            }
             <a mat-button routerLink="/reservas" class="service-card__link"
               [attr.aria-label]="'Reservar turno de ' + servicio.nombre">
               Reservar turno

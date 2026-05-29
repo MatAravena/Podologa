@@ -1,0 +1,144 @@
+<!-- ============================================================
+     SERVICIO DETALLE — /servicios/:id
+     ============================================================ -->
+
+@if (loading()) {
+  <div class="sd-loading" aria-busy="true" aria-label="Cargando servicio">
+    <div class="sd-loading__spinner"></div>
+  </div>
+} @else if (notFound()) {
+  <div class="sd-not-found">
+    <mat-icon aria-hidden="true">search_off</mat-icon>
+    <h1>Servicio no encontrado</h1>
+    <a mat-raised-button routerLink="/" fragment="servicios">Ver todos los servicios</a>
+  </div>
+} @else if (servicio(); as s) {
+
+  <!-- Hero -->
+  <section class="sd-hero">
+    <div class="sd-hero__content">
+      <a class="sd-hero__back" routerLink="/" fragment="servicios" aria-label="Volver a servicios">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        Todos los servicios
+      </a>
+
+      <div class="sd-hero__icon-wrap" aria-hidden="true">
+        <mat-icon class="sd-hero__icon">{{ icono(s.nombre) }}</mat-icon>
+      </div>
+
+      <h1 class="sd-hero__title">{{ s.nombre }}</h1>
+
+      @if (s.subtitulo) {
+        <p class="sd-hero__subtitle">{{ s.subtitulo }}</p>
+      }
+
+      <div class="sd-hero__meta">
+        <span class="sd-hero__meta-item">
+          <mat-icon aria-hidden="true">schedule</mat-icon>
+          {{ s.duracion }} min
+        </span>
+        <span class="sd-hero__meta-sep" aria-hidden="true">·</span>
+        <span class="sd-hero__meta-item">
+          <mat-icon aria-hidden="true">payments</mat-icon>
+          ${{ s.precio | number:'1.0-0' }}
+        </span>
+      </div>
+
+      <a
+        mat-raised-button
+        routerLink="/reservas"
+        [queryParams]="{ servicio: s.id }"
+        class="sd-hero__cta"
+        aria-label="Reservar este servicio"
+      >
+        <mat-icon aria-hidden="true">calendar_today</mat-icon>
+        Reservar este servicio
+      </a>
+    </div>
+
+    <div class="sd-hero__wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF6F0"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Body -->
+  <div class="sd-body">
+
+    <!-- Long description -->
+    @if (s.descripcion_larga) {
+      <section class="sd-section" aria-label="Descripción del servicio">
+        <h2 class="sd-section__title">Sobre este servicio</h2>
+        <div class="sd-description">
+          @for (paragraph of s.descripcion_larga.split('\n'); track $index) {
+            @if (paragraph.trim()) {
+              <p>{{ paragraph }}</p>
+            }
+          }
+        </div>
+      </section>
+    } @else {
+      @if (s.descripcion) {
+        <section class="sd-section" aria-label="Descripción del servicio">
+          <h2 class="sd-section__title">Sobre este servicio</h2>
+          <p class="sd-description">{{ s.descripcion }}</p>
+        </section>
+      }
+    }
+
+    <!-- Photo gallery -->
+    @if (fotos().length > 0) {
+      <section class="sd-section" aria-label="Galería de fotos">
+        <h2 class="sd-section__title">Galería</h2>
+        <div class="sd-gallery" role="list">
+          @for (url of fotos(); track url; let i = $index) {
+            <button
+              class="sd-gallery__item"
+              role="listitem"
+              (click)="openLightbox(url)"
+              [attr.aria-label]="'Ver foto ' + (i + 1)"
+            >
+              <img [src]="url" [alt]="s.nombre + ' — foto ' + (i + 1)" loading="lazy" />
+            </button>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- CTA bottom -->
+    <section class="sd-cta" aria-label="Reservar">
+      <h2 class="sd-cta__title">¿Te interesa este servicio?</h2>
+      <p class="sd-cta__text">Reserva tu hora en línea de manera rápida y sencilla.</p>
+      <a
+        mat-raised-button
+        routerLink="/reservas"
+        [queryParams]="{ servicio: s.id }"
+        class="sd-cta__btn"
+      >
+        <mat-icon aria-hidden="true">calendar_today</mat-icon>
+        Reservar hora
+      </a>
+    </section>
+
+  </div>
+
+  <!-- Lightbox -->
+  @if (lightbox()) {
+    <div
+      class="sd-lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Vista ampliada de foto"
+      (click)="closeLightbox()"
+      (keydown.escape)="closeLightbox()"
+      tabindex="0"
+    >
+      <button class="sd-lightbox__close" (click)="closeLightbox()" aria-label="Cerrar">
+        <mat-icon>close</mat-icon>
+      </button>
+      <img [src]="lightbox()!" alt="Vista ampliada" (click)="$event.stopPropagation()" />
+    </div>
+  }
+
+}

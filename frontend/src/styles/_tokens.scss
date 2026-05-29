@@ -1,0 +1,111 @@
+// ================================================================
+// DESIGN TOKENS — uipro Beauty & Spa
+// Single source of truth for all component SCSS.
+// Usage in any component: @use 'tokens' as *;
+// ================================================================
+
+// ── Colors ───────────────────────────────────────────────────────
+$pink:        #ffb6c1;
+$pink-dark:   #f5a0ab;
+$pink-deep:   #d4697e;
+$pink-pale:   #fff0f3;
+$pink-muted:  #fde0e6;
+
+$sage:        #7dba7d;
+$sage-dark:   #4a8a4a;
+
+$gold:        #d4a017;
+$gold-dark:   #b88810;
+$gold-light:  #f5cd6a;
+
+$bg:          #fff5f5;
+$bg-white:    #ffffff;
+$bg-card:     #fffafa;
+$border:      #f3e8e8;
+$border-pink: #ffd0d8;
+$text:        #2d2d2d;
+$text-mid:    #6b7280;
+$text-light:  #9ca3af;
+$white:       #ffffff;
+
+$footer-bg:   #2d1218;
+$footer-mid:  #3d1a22;
+
+// ── Typography ───────────────────────────────────────────────────
+$font-heading: 'Playfair Display', Georgia, serif;
+$font-body:    'Inter', system-ui, sans-serif;
+
+// ── Spacing (4/8pt scale) ─────────────────────────────────────────
+$s1:  8px;
+$s2:  16px;
+$s3:  24px;
+$s4:  32px;
+$s5:  40px;
+$s6:  48px;
+$s8:  64px;
+$s10: 80px;
+$s12: 96px;
+
+// ── Border radii ──────────────────────────────────────────────────
+$r-sm:   8px;
+$r-md:   12px;
+$r-lg:   20px;
+$r-xl:   24px;
+$r-full: 50px;
+
+// ── Shadows ───────────────────────────────────────────────────────
+$shadow-nm:       8px 8px 16px rgba(200, 180, 180, 0.30),
+                  -8px -8px 16px rgba(255, 255, 255, 0.85);
+$shadow-nm-hover: 4px 4px 8px rgba(200, 180, 180, 0.30),
+                  -4px -4px 8px rgba(255, 255, 255, 0.85);
+$shadow-card:     0 4px 20px rgba(0, 0, 0, 0.06);
+$shadow-card-h:   0 8px 30px rgba(0, 0, 0, 0.10);
+$shadow-pink:     0 8px 24px rgba(245, 160, 171, 0.40);
+$shadow-pink-lg:  0 12px 40px rgba(245, 160, 171, 0.45);
+$shadow-gold:     0 8px 20px rgba(212, 160, 23, 0.40);
+$shadow-sage:     0 6px 16px rgba(125, 186, 125, 0.30);
+
+// ── Gradients ─────────────────────────────────────────────────────
+$grad-pink: linear-gradient(135deg, $pink 0%, $pink-dark 100%);
+$grad-gold: linear-gradient(135deg, $gold 0%, #e8be4a 100%);
+$grad-sage: linear-gradient(135deg, $sage 0%, $sage-dark 100%);
+$grad-hero: linear-gradient(150deg, #fff5f5 0%, #fff0f3 55%, #ffeef5 100%);
+$grad-why:  linear-gradient(145deg, #2d1218 0%, #4a1e28 60%, #3a1520 100%);
+
+// ── Transitions ───────────────────────────────────────────────────
+$t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-slow:   350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// ── Mixins ────────────────────────────────────────────────────────
+@mixin gradient-text($gradient) {
+  background: $gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin glass($bg-color: rgba(#ffffff, 0.65), $blur: 12px) {
+  background: $bg-color;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+}
+
+@mixin pill-button {
+  border-radius: $r-full !important;
+  font-family: $font-body !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  height: 54px !important;
+  padding: 0 $s4 !important;
+  transition: transform $t-fast, box-shadow $t-normal, filter $t-normal !important;
+
+  &:hover  { transform: translateY(-2px); }
+  &:active { transform: translateY(0); }
+  &:disabled { opacity: 0.6; filter: none; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: filter $t-fast !important;
+    &:hover { transform: none; }
+  }
+}

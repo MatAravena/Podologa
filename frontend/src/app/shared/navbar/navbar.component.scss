@@ -1,21 +1,4 @@
-// ================================================================
-// NAVBAR — uipro Beauty & Spa style
-// Floating pill with glass effect, matches the SerentySpa template
-// ================================================================
-
-$pink:       #ffb6c1;
-$pink-dark:  #f5a0ab;
-$pink-deep:  #d4697e;
-$gold:       #d4a017;
-$text:       #2d2d2d;
-$text-mid:   #6b7280;
-$white:      #ffffff;
-$bg:         #fff5f5;
-$border:     #f3e8e8;
-
-$r-full: 50px;
-$t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-$t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+@use 'tokens' as *;
 
 // ── Host ─────────────────────────────────────────────────────────
 :host {
@@ -248,6 +231,66 @@ $t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
     background: rgba($pink, 0.12);
     color: $text;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $pink-deep;
+    outline-offset: 2px;
+  }
+}
+
+// ── Admin button (desktop) ────────────────────────────────────────
+.navbar__admin {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 6px;
+  text-decoration: none;
+  background: rgba($text-light, 0.08);
+  color: $text-light;
+  transition: background $t-fast, color $t-fast;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; line-height: 1; }
+
+  &:hover {
+    background: rgba($pink-deep, 0.12);
+    color: $pink-deep;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $pink-deep;
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 768px) { display: flex; }
+}
+
+// ── Admin link (mobile drawer) ────────────────────────────────────
+.navbar__admin-mobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $text-light;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba($border, 0.6);
+  padding-top: 16px;
+  transition: background $t-fast, color $t-fast;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover {
+    background: rgba($pink, 0.08);
+    color: $pink-deep;
   }
 
   &:focus-visible {

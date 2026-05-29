@@ -50,7 +50,7 @@ def _build_confirmation_html(nombre: str, servicio: str, fecha: str, hora: str) 
         <p style="color:#6b7280;font-size:.875rem;line-height:1.6;margin:0 0 24px;">
           Si tienes alguna duda, puedes responder este correo o escribirnos por WhatsApp.
         </p>
-        <a href="https://libelula.cl/reservas"
+        <a href="{settings.APP_URL}/reservas"
            style="display:inline-block;background:linear-gradient(135deg,#d4a017,#e8be4a);color:#ffffff;font-weight:600;font-size:.9375rem;padding:14px 32px;border-radius:50px;text-decoration:none;">
           Ver mis reservas
         </a>
@@ -60,7 +60,7 @@ def _build_confirmation_html(nombre: str, servicio: str, fecha: str, hora: str) 
     <tr>
       <td style="padding:20px 40px;border-top:1px solid #f3e8e8;text-align:center;color:#9ca3af;font-size:.75rem;">
         Santiago, Chile &nbsp;·&nbsp; +56 9 XXXX XXXX &nbsp;·&nbsp;
-        <a href="https://libelula.cl" style="color:#d4697e;text-decoration:none;">libelula.cl</a>
+        <a href="{settings.APP_URL}" style="color:#d4697e;text-decoration:none;">libelula.cl</a>
       </td>
     </tr>
   </table>

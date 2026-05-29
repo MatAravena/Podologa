@@ -17,6 +17,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./galeria/galeria.component').then((m) => m.GaleriaComponent),
   },
+  {
+    path: 'servicios/:id',
+    loadComponent: () =>
+      import('./servicios/detalle/servicio-detalle.component').then((m) => m.ServicioDetalleComponent),
+  },
   // ── Admin ────────────────────────────────────────────────────────────────────
   {
     path: 'admin/login',
@@ -45,6 +50,12 @@ export const routes: Routes = [
     path: 'admin/promociones',
     loadComponent: () =>
       import('./admin/promociones/admin-promociones.component').then((m) => m.AdminPromocionesComponent),
+    canActivate: [adminAuthGuard],
+  },
+  {
+    path: 'admin/servicios',
+    loadComponent: () =>
+      import('./admin/servicios/admin-servicios.component').then((m) => m.AdminServiciosComponent),
     canActivate: [adminAuthGuard],
   },
   {

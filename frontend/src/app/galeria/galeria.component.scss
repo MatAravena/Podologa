@@ -1,26 +1,4 @@
-// Design tokens (shared with home/reservas)
-$pink:      #ffb6c1;
-$pink-dark: #f5a0ab;
-$pink-deep: #d4697e;
-$pink-pale: #fff0f3;
-$gold:      #d4a017;
-$bg:        #fff5f5;
-$text:      #2d2d2d;
-$text-mid:  #6b7280;
-$text-light:#9ca3af;
-$border:    #f3e8e8;
-$white:     #ffffff;
-
-$font-heading: 'Playfair Display', Georgia, serif;
-$font-body:    'Inter', system-ui, sans-serif;
-
-$r-lg:  20px;
-$r-xl:  24px;
-$r-full:50px;
-
-$shadow-card: 0 4px 20px rgba(0,0,0,.06);
-$shadow-card-h: 0 10px 32px rgba(200,140,160,.18);
-$t-normal: 250ms cubic-bezier(0.4,0,0.2,1);
+@use 'tokens' as *;
 
 // ── Reused section-label ─────────────────────────────────────────────────────
 .section-label {

@@ -1,0 +1,79 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { provideRouter, ActivatedRoute } from '@angular/router';
+import { signal } from '@angular/core';
+
+import { ServicioDetalleComponent, ServicioDetalleApi } from './servicio-detalle.component';
+
+const MOCK: ServicioDetalleApi = {
+  id: 1,
+  nombre: 'Podología',
+  descripcion: 'Cuidado del pie.',
+  subtitulo: 'Para el bienestar de tus pies',
+  descripcion_larga: 'Descripción larga de prueba.',
+  fotos_urls: '["https://example.com/a.jpg","https://example.com/b.jpg"]',
+  duracion: 45,
+  precio: '25000.00',
+};
+
+describe('ServicioDetalleComponent', () => {
+  let fixture: ComponentFixture<ServicioDetalleComponent>;
+  let component: ServicioDetalleComponent;
+  let http: HttpTestingController;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ServicioDetalleComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: { get: () => '1' } } },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ServicioDetalleComponent);
+    component = fixture.componentInstance;
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => http.verify());
+
+  it('should create', () => {
+    fixture.detectChanges();
+    http.expectOne(r => r.url.includes('/servicios/1')).flush(MOCK);
+    expect(component).toBeTruthy();
+  });
+
+  it('should show service name after load', () => {
+    fixture.detectChanges();
+    http.expectOne(r => r.url.includes('/servicios/1')).flush(MOCK);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Podología');
+  });
+
+  it('should parse fotos_urls into fotos signal', () => {
+    fixture.detectChanges();
+    http.expectOne(r => r.url.includes('/servicios/1')).flush(MOCK);
+    expect(component.fotos().length).toBe(2);
+  });
+
+  it('should show not-found state on error', () => {
+    fixture.detectChanges();
+    http.expectOne(r => r.url.includes('/servicios/1')).error(new ProgressEvent('error'));
+    fixture.detectChanges();
+    expect(component.notFound()).toBeTrue();
+  });
+
+  it('should open and close lightbox', () => {
+    component.openLightbox('https://example.com/a.jpg');
+    expect(component.lightbox()).toBe('https://example.com/a.jpg');
+    component.closeLightbox();
+    expect(component.lightbox()).toBeNull();
+  });
+});

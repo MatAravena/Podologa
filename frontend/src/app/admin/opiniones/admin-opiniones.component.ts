@@ -56,6 +56,7 @@ export interface OpinionApi {
         <nav class="admin-bar__nav">
           <a routerLink="/admin/opiniones"     mat-button class="active">Opiniones</a>
           <a routerLink="/admin/galeria"        mat-button>Galería</a>
+          <a routerLink="/admin/servicios"      mat-button>Servicios</a>
           <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
           <a routerLink="/admin/promociones"    mat-button>Promociones</a>
         </nav>

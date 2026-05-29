@@ -70,8 +70,11 @@ class Servicio(TimestampMixin, Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(255), nullable=False, unique=True)
-    descripcion = Column(Text, nullable=True)
-    duracion = Column(Integer, nullable=False)  # en minutos
+    descripcion = Column(Text, nullable=True)           # short — shown on home cards
+    subtitulo = Column(String(255), nullable=True)      # tagline for detail page
+    descripcion_larga = Column(Text, nullable=True)     # full detail for /servicios/:id
+    fotos_urls = Column(Text, nullable=True)            # JSON array of Cloudinary URLs
+    duracion = Column(Integer, nullable=False)          # en minutos
     precio = Column(Numeric(10, 2), nullable=False)
 
     citas = relationship("Cita", back_populates="servicio")

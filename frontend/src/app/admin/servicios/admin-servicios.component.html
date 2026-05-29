@@ -1,0 +1,277 @@
+<div class="admin-shell">
+  <!-- Top bar -->
+  <header class="admin-bar">
+    <span class="admin-bar__brand">
+      <mat-icon>admin_panel_settings</mat-icon>
+      Panel admin
+    </span>
+    <nav class="admin-bar__nav">
+      <a routerLink="/admin/opiniones"     mat-button>Opiniones</a>
+      <a routerLink="/admin/galeria"        mat-button>Galería</a>
+      <a routerLink="/admin/servicios"      mat-button class="active">Servicios</a>
+      <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
+      <a routerLink="/admin/promociones"    mat-button>Promociones</a>
+    </nav>
+    <div class="admin-bar__actions">
+      <a routerLink="/" mat-button>
+        <mat-icon>home</mat-icon> Sitio
+      </a>
+      <button mat-stroked-button (click)="auth.logout()">
+        <mat-icon>logout</mat-icon> Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-content">
+
+    @if (loading()) {
+      <p class="info-text">Cargando servicios…</p>
+    } @else {
+      <div class="as-layout">
+
+        <!-- Left: service list -->
+        <aside class="as-list" aria-label="Lista de servicios">
+          <div class="as-list__header">
+            <h2 class="as-list__title">Servicios ({{ servicios().length }})</h2>
+            <button mat-icon-button class="as-list__add-btn" (click)="startCreate()" aria-label="Agregar nuevo servicio">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <ul class="as-list__items" role="list">
+            @for (s of servicios(); track s.id) {
+              <li class="as-list__row">
+                <button
+                  class="as-list__item"
+                  [class.as-list__item--active]="selected()?.id === s.id"
+                  (click)="select(s)"
+                  [attr.aria-pressed]="selected()?.id === s.id"
+                >
+                  <span class="as-list__item-name">{{ s.nombre }}</span>
+                  <span class="as-list__item-price">${{ s.precio | number:'1.0-0' }}</span>
+                </button>
+                <button
+                  mat-icon-button
+                  class="as-list__delete-btn"
+                  (click)="deleteServicio(s)"
+                  [disabled]="deletingServicio() === s.id"
+                  [attr.aria-label]="'Eliminar ' + s.nombre"
+                >
+                  @if (deletingServicio() === s.id) {
+                    <mat-icon class="spin">sync</mat-icon>
+                  } @else {
+                    <mat-icon>delete</mat-icon>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        </aside>
+
+        <!-- Right panel -->
+        @if (creating()) {
+
+          <!-- Create new service form -->
+          <section class="as-editor" aria-label="Nuevo servicio">
+            <div class="as-editor__header">
+              <h2 class="as-editor__title">Nuevo servicio</h2>
+              <button mat-icon-button (click)="cancelCreate()" aria-label="Cancelar">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="create()" novalidate class="as-form">
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Nombre del servicio</mat-label>
+                <input matInput formControlName="nombre" />
+                @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+                  <mat-error>Mínimo 2 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="as-form__row">
+                <mat-form-field appearance="outline" class="as-form__field">
+                  <mat-label>Duración (minutos)</mat-label>
+                  <input matInput type="number" formControlName="duracion" min="1" />
+                  @if (form.get('duracion')?.invalid && form.get('duracion')?.touched) {
+                    <mat-error>Mínimo 1 minuto</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="as-form__field">
+                  <mat-label>Precio (CLP, sin decimales)</mat-label>
+                  <input matInput formControlName="precio" placeholder="25000" />
+                  @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
+                    <mat-error>El precio es obligatorio</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Descripción corta (opcional)</mat-label>
+                <textarea matInput formControlName="descripcion" rows="2"></textarea>
+              </mat-form-field>
+
+              <div class="as-form__actions">
+                <button mat-button type="button" (click)="cancelCreate()">Cancelar</button>
+                <button
+                  mat-raised-button
+                  type="submit"
+                  class="as-form__submit"
+                  [disabled]="saving() || form.invalid"
+                  aria-label="Crear servicio"
+                >
+                  @if (saving()) {
+                    <ng-container>
+                      <mat-icon class="spin">sync</mat-icon>
+                      Creando…
+                    </ng-container>
+                  } @else {
+                    <ng-container>
+                      <mat-icon>add</mat-icon>
+                      Crear servicio
+                    </ng-container>
+                  }
+                </button>
+              </div>
+            </form>
+          </section>
+
+        } @else if (selected(); as s) {
+
+          <!-- Edit existing service -->
+          <section class="as-editor" aria-label="Editar servicio">
+            <div class="as-editor__header">
+              <h2 class="as-editor__title">{{ s.nombre }}</h2>
+              <button mat-icon-button (click)="deselect()" aria-label="Cerrar editor">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="save()" novalidate class="as-form">
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Nombre del servicio</mat-label>
+                <input matInput formControlName="nombre" />
+                @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+                  <mat-error>Mínimo 2 caracteres</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Subtítulo (tagline en página de detalle)</mat-label>
+                <input matInput formControlName="subtitulo" placeholder="Ej: Para el bienestar de tus pies" />
+              </mat-form-field>
+
+              <div class="as-form__row">
+                <mat-form-field appearance="outline" class="as-form__field">
+                  <mat-label>Duración (minutos)</mat-label>
+                  <input matInput type="number" formControlName="duracion" min="1" />
+                  @if (form.get('duracion')?.invalid && form.get('duracion')?.touched) {
+                    <mat-error>Mínimo 1 minuto</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="as-form__field">
+                  <mat-label>Precio (CLP, sin decimales)</mat-label>
+                  <input matInput formControlName="precio" placeholder="25000" />
+                  @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
+                    <mat-error>El precio es obligatorio</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Descripción corta (tarjeta en página principal)</mat-label>
+                <textarea matInput formControlName="descripcion" rows="2"></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="as-form__field">
+                <mat-label>Descripción larga (página de detalle)</mat-label>
+                <textarea matInput formControlName="descripcion_larga" rows="6"
+                  placeholder="Escribe el contenido completo del servicio. Cada línea nueva genera un párrafo."></textarea>
+              </mat-form-field>
+
+              <button
+                mat-raised-button
+                type="submit"
+                class="as-form__submit"
+                [disabled]="saving() || form.invalid"
+                aria-label="Guardar cambios del servicio"
+              >
+                @if (saving()) {
+                  <ng-container>
+                    <mat-icon class="spin">sync</mat-icon>
+                    Guardando…
+                  </ng-container>
+                } @else {
+                  <ng-container>
+                    <mat-icon>save</mat-icon>
+                    Guardar cambios
+                  </ng-container>
+                }
+              </button>
+            </form>
+
+            <!-- Photo management -->
+            <div class="as-fotos" aria-label="Fotos del servicio">
+              <h3 class="as-fotos__title">Fotos del servicio</h3>
+
+              <label class="as-fotos__upload" [class.as-fotos__upload--loading]="uploadingFoto()">
+                @if (uploadingFoto()) {
+                  <mat-icon class="spin" aria-hidden="true">sync</mat-icon>
+                  Subiendo…
+                } @else {
+                  <mat-icon aria-hidden="true">add_photo_alternate</mat-icon>
+                  Agregar foto
+                }
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="as-fotos__upload-input"
+                  (change)="onFileChange($event)"
+                  [disabled]="uploadingFoto()"
+                  aria-label="Subir nueva foto"
+                />
+              </label>
+
+              @if (fotos().length > 0) {
+                <div class="as-fotos__grid" role="list">
+                  @for (url of fotos(); track url; let i = $index) {
+                    <div class="as-fotos__item" role="listitem">
+                      <img [src]="url" [alt]="'Foto ' + (i + 1) + ' de ' + s.nombre" loading="lazy" />
+                      <button
+                        class="as-fotos__delete"
+                        (click)="deleteFoto(i)"
+                        [disabled]="deletingFoto() === i"
+                        [attr.aria-label]="'Eliminar foto ' + (i + 1)"
+                      >
+                        @if (deletingFoto() === i) {
+                          <mat-icon class="spin">sync</mat-icon>
+                        } @else {
+                          <mat-icon>delete</mat-icon>
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="as-fotos__empty">No hay fotos. Sube la primera con el botón de arriba.</p>
+              }
+            </div>
+
+          </section>
+
+        } @else {
+          <div class="as-empty">
+            <mat-icon aria-hidden="true">touch_app</mat-icon>
+            <p>Selecciona un servicio para editarlo o pulsa <strong>+</strong> para crear uno nuevo</p>
+          </div>
+        }
+
+      </div>
+    }
+
+  </main>
+</div>

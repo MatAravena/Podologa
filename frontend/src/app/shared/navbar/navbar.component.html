@@ -58,6 +58,16 @@
       Reservar hora
     </a>
 
+    <!-- Admin access (desktop) -->
+    <a
+      [routerLink]="auth.isLoggedIn() ? '/admin' : '/admin/login'"
+      class="navbar__admin"
+      [attr.aria-label]="auth.isLoggedIn() ? 'Panel de administración' : 'Acceso administrador'"
+      (click)="closeMenu()"
+    >
+      <mat-icon aria-hidden="true">manage_accounts</mat-icon>
+    </a>
+
     <!-- Mobile burger -->
     <button
       class="navbar__burger"
@@ -107,6 +117,15 @@
       (click)="closeMenu()"
     >
       Reservar hora
+    </a>
+
+    <a
+      class="navbar__admin-mobile"
+      [routerLink]="auth.isLoggedIn() ? '/admin' : '/admin/login'"
+      (click)="closeMenu()"
+    >
+      <mat-icon aria-hidden="true">manage_accounts</mat-icon>
+      {{ auth.isLoggedIn() ? 'Panel admin' : 'Acceso admin' }}
     </a>
   </div>
 

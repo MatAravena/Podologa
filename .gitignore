@@ -289,3 +289,4 @@ baseline.json
 /.vscode
 /frontend/.vscode
 /backend/.vscode
+.playwright-mcp/*

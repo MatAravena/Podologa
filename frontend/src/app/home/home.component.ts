@@ -4,10 +4,14 @@ import {
   signal,
   inject,
   computed,
+  OnInit,
   PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser, NgOptimizedImage, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -27,6 +31,7 @@ import { TestimonialsService } from '../shared/testimonials/testimonials.service
 import { StarRatingComponent } from '../shared/star-rating/star-rating.component';
 
 interface Servicio { nombre: string; descripcion: string; icono: string; }
+interface ServicioApiMin { id: number; nombre: string; }
 interface Razon    { titulo: string; descripcion: string; icono: string; }
 interface Stat     { valor: string; etiqueta: string; }
 
@@ -66,11 +71,14 @@ const NOMBRES_SERVICIOS = [
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private readonly fb       = inject(FormBuilder);
   private readonly snack    = inject(MatSnackBar);
+  private readonly http     = inject(HttpClient);
   readonly testimonialsService = inject(TestimonialsService);
   private readonly isBrowser   = isPlatformBrowser(inject(PLATFORM_ID));
+
+  readonly servicioIds = signal<Map<string, number>>(new Map());
 
   // ── Static data ──────────────────────────────────────────────────
   readonly servicios = signal<Servicio[]>([
@@ -132,6 +140,21 @@ export class HomeComponent {
   readonly promedioCalificacion = this.testimonialsService.promedioCalificacion;
   readonly totalTestimonios     = this.testimonialsService.totalTestimonios;
   readonly testimonios          = this.testimonialsService.testimonios;
+
+  ngOnInit(): void {
+    if (!this.isBrowser) return;
+    this.http.get<ServicioApiMin[]>(`${environment.apiUrl}/servicios`).pipe(
+      catchError(() => of([] as ServicioApiMin[]))
+    ).subscribe(list => {
+      const map = new Map<string, number>();
+      for (const s of list) map.set(s.nombre, s.id);
+      this.servicioIds.set(map);
+    });
+  }
+
+  servicioId(nombre: string): number | null {
+    return this.servicioIds().get(nombre) ?? null;
+  }
 
   // ── Photo upload ──────────────────────────────────────────────────
   onFotoChange(event: Event): void {

@@ -1,44 +1,4 @@
-// ================================================================
-// RESERVAS COMPONENT — uipro Beauty & Spa design tokens
-// Aligned with home.component.scss palette
-// ================================================================
-
-// ── Design tokens (uipro Beauty & Spa) ──────────────────────────
-$pink:       #ffb6c1;
-$pink-dark:  #f5a0ab;
-$pink-deep:  #d4697e;
-$pink-pale:  #fff0f3;
-$pink-muted: #fde0e6;
-$sage:       #7dba7d;
-$sage-dark:  #4a8a4a;
-$gold:       #d4a017;
-$gold-dark:  #b88810;
-$bg:         #fff5f5;
-$bg-white:   #ffffff;
-$border:     #f3e8e8;
-$border-pink:#ffd0d8;
-$text:       #2d2d2d;
-$text-mid:   #6b7280;
-$text-light: #9ca3af;
-$white:      #ffffff;
-
-$font-heading: 'Playfair Display', Georgia, serif;
-$font-body:    'Inter', system-ui, sans-serif;
-
-$s1: 8px;  $s2: 16px;  $s3: 24px;  $s4: 32px;
-$s5: 40px; $s6: 48px;  $s8: 64px;  $s10: 80px;
-
-$r-sm: 8px; $r-md: 12px; $r-lg: 20px; $r-xl: 24px; $r-full: 50px;
-
-$shadow-nm:    8px 8px 16px rgba(200, 180, 180, 0.28), -8px -8px 16px rgba(255, 255, 255, 0.85);
-$shadow-card:  0 4px 20px rgba(0, 0, 0, 0.05);
-$shadow-card-h:0 8px 30px rgba(0, 0, 0, 0.10);
-$shadow-pink:  0 8px 24px rgba(245, 160, 171, 0.38);
-$shadow-gold:  0 8px 20px rgba(212, 160, 23, 0.38);
-$shadow-sage:  0 6px 16px rgba(125, 186, 125, 0.28);
-
-$t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
-$t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+@use 'tokens' as *;
 
 // ── Shared helpers ────────────────────────────────────────────────
 .section-label {
@@ -165,9 +125,9 @@ $t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   gap: $s4;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 120px $s2 $s8 0;
+  padding: $s4 $s2 $s8;
 
-  @media (min-width: 768px) { padding: 120px $s4 $s10; }
+  @media (min-width: 768px) { padding: $s6 $s4 $s10; }
   @media (min-width: 1024px) {
     grid-template-columns: 300px 1fr;
     gap: $s6;
