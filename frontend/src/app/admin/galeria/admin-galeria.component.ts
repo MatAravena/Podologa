@@ -18,9 +18,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
-import { GaleriaPostApi }   from '../../galeria/galeria.component';
-import { environment }      from '../../../environments/environment';
+import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
+import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { GaleriaPostApi }       from '../../galeria/galeria.component';
+import { environment }          from '../../../environments/environment';
 
 interface CaptionOut {
   caption: string;
@@ -30,8 +31,8 @@ interface CaptionOut {
 @Component({
   selector: 'app-admin-galeria',
   imports: [
-    DatePipe,
-    RouterLink,
+    AdminNavbarComponent,
+    DatePipe, 
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

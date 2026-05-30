@@ -1,29 +1,9 @@
 <div class="admin-shell">
-  <!-- Top bar -->
-  <header class="admin-bar">
-    <span class="admin-bar__brand">
-      <mat-icon>admin_panel_settings</mat-icon>
-      Panel admin
-    </span>
-    <nav class="admin-bar__nav">
-      <a routerLink="/admin/opiniones"     mat-button>Opiniones</a>
-      <a routerLink="/admin/galeria"        mat-button class="active">Galería</a>
-      <a routerLink="/admin/servicios"      mat-button>Servicios</a>
-      <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
-      <a routerLink="/admin/promociones"    mat-button>Promociones</a>
-    </nav>
-    <div class="admin-bar__actions">
-      <a routerLink="/galeria" mat-button target="_blank">
-        <mat-icon>open_in_new</mat-icon> Ver galería
-      </a>
-      <a routerLink="/" mat-button>
-        <mat-icon>home</mat-icon> Sitio
-      </a>
-      <button mat-stroked-button (click)="auth.logout()">
-        <mat-icon>logout</mat-icon> Salir
-      </button>
-    </div>
-  </header>
+  <app-admin-navbar>
+    <!-- <a routerLink="/galeria" mat-button target="_blank" rel="noopener">
+      <mat-icon>open_in_new</mat-icon> Ver galería
+    </a> -->
+  </app-admin-navbar>
 
   <main class="admin-content">
 

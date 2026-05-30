@@ -7,9 +7,9 @@ import {
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { forkJoin, of, catchError } from 'rxjs';
 import { MatButtonModule }    from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule }     from '@angular/material/input';
@@ -17,10 +17,10 @@ import { MatSelectModule }    from '@angular/material/select';
 import { MatIconModule }      from '@angular/material/icon';
 import { MatTabsModule }      from '@angular/material/tabs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { catchError, of } from 'rxjs';
 
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
-import { environment }      from '../../../environments/environment';
+import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
+import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { environment }          from '../../../environments/environment';
 
 export interface BloqueApi {
   id: number;
@@ -45,8 +45,8 @@ const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', '
 @Component({
   selector: 'app-admin-disponibilidad',
   imports: [
+    AdminNavbarComponent,
     DatePipe,
-    RouterLink,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -98,8 +98,17 @@ export class AdminDisponibilidadComponent implements OnInit {
   });
 
   readonly bloqueoForm = this.fb.nonNullable.group({
-    fecha:  ['', Validators.required],
-    motivo: [''],
+    fecha:       ['', Validators.required],
+    fecha_hasta: [''],
+    motivo:      [''],
+  }, { validators: this.fechaHastaValidator });
+
+  readonly rangoBloqueo = computed(() => {
+    const inicio = this.bloqueoForm.get('fecha')?.value;
+    const hasta  = this.bloqueoForm.get('fecha_hasta')?.value;
+    if (!inicio || !hasta || hasta < inicio) return 1;
+    const ms = new Date(hasta).getTime() - new Date(inicio).getTime();
+    return Math.round(ms / 86_400_000) + 1;
   });
 
   readonly apiUrl = environment.apiUrl;
@@ -172,29 +181,62 @@ export class AdminDisponibilidadComponent implements OnInit {
 
   // ── Fechas bloqueadas ─────────────────────────────────────────────────────
 
+  private fechaHastaValidator(group: AbstractControl): ValidationErrors | null {
+    const inicio = group.get('fecha')?.value;
+    const hasta  = group.get('fecha_hasta')?.value;
+    if (hasta && inicio && hasta < inicio) {
+      group.get('fecha_hasta')?.setErrors({ fechaHastaInvalida: true });
+      return { fechaHastaInvalida: true };
+    }
+    const ctrl = group.get('fecha_hasta');
+    if (ctrl?.errors?.['fechaHastaInvalida']) {
+      ctrl.setErrors(null);
+    }
+    return null;
+  }
+
+  private dateRange(start: string, end: string): string[] {
+    const dates: string[] = [];
+    const cur = new Date(start);
+    const last = new Date(end);
+    while (cur <= last) {
+      dates.push(cur.toISOString().split('T')[0]);
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  }
+
   agregarBloqueo(): void {
     if (this.bloqueoForm.invalid) return;
     const v = this.bloqueoForm.getRawValue();
+    const motivo = v.motivo || null;
+    const fechas = (v.fecha_hasta && v.fecha_hasta >= v.fecha)
+      ? this.dateRange(v.fecha, v.fecha_hasta)
+      : [v.fecha];
+
     this.saving.set(true);
-    this.http.post<BloqueoApi>(`${this.apiUrl}/admin/disponibilidad/bloqueos`, {
-      fecha:  v.fecha,
-      motivo: v.motivo || null,
-      activo: true,
-    }).pipe(
-      catchError(err => {
-        const msg = err.status === 409
-          ? `Ya existe un bloqueo para esa fecha.`
-          : 'Error al guardar el bloqueo.';
-        this.snack.open(msg, 'Cerrar', { duration: 4000 });
-        this.saving.set(false);
-        return of(null);
-      })
-    ).subscribe(bloqueo => {
+
+    const requests = fechas.map(fecha =>
+      this.http.post<BloqueoApi>(`${this.apiUrl}/admin/disponibilidad/bloqueos`, {
+        fecha, motivo, activo: true,
+      }).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(requests).subscribe(results => {
       this.saving.set(false);
-      if (bloqueo) {
-        this.bloqueos.update(list => [...list, bloqueo].sort((a, b) => a.fecha.localeCompare(b.fecha)));
+      const added = results.filter((r): r is BloqueoApi => r !== null);
+      if (added.length > 0) {
+        this.bloqueos.update(list =>
+          [...list, ...added].sort((a, b) => a.fecha.localeCompare(b.fecha))
+        );
         this.bloqueoForm.reset();
-        this.snack.open('Fecha bloqueada correctamente.', 'Cerrar', { duration: 3000 });
+        const skipped = fechas.length - added.length;
+        const msg = skipped > 0
+          ? `${added.length} fecha(s) bloqueadas (${skipped} ya existían).`
+          : added.length === 1 ? 'Fecha bloqueada correctamente.' : `${added.length} fechas bloqueadas.`;
+        this.snack.open(msg, 'Cerrar', { duration: 4000 });
+      } else {
+        this.snack.open('No se pudo bloquear ninguna fecha (¿ya existen?).', 'Cerrar', { duration: 4000 });
       }
     });
   }

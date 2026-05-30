@@ -28,10 +28,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
 import { TestimonialsService } from '../shared/testimonials/testimonials.service';
+import { AppIconComponent }    from '../shared/icon/app-icon.component';
+import { resolveColor }        from '../shared/colors/brand-colors';
 import { StarRatingComponent } from '../shared/star-rating/star-rating.component';
 
-interface Servicio { nombre: string; descripcion: string; icono: string; }
-interface ServicioApiMin { id: number; nombre: string; }
+interface Servicio { nombre: string; descripcion: string; icono: string; color: string; }
+interface ServicioApi { id: number; nombre: string; descripcion: string | null; icono: string | null; icono_color: string | null; }
 interface Razon    { titulo: string; descripcion: string; icono: string; }
 interface Stat     { valor: string; etiqueta: string; }
 
@@ -54,6 +56,7 @@ const NOMBRES_SERVICIOS = [
 @Component({
   selector: 'app-home',
   imports: [
+    AppIconComponent,
     RouterLink,
     NgOptimizedImage,
     DatePipe,
@@ -82,20 +85,20 @@ export class HomeComponent implements OnInit {
 
   // ── Static data ──────────────────────────────────────────────────
   readonly servicios = signal<Servicio[]>([
-    { nombre: 'Podología',          descripcion: 'Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.', icono: 'healing' },
-    { nombre: 'Reiki',              descripcion: 'Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.', icono: 'spa' },
-    { nombre: 'Reflexología',       descripcion: 'Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.', icono: 'self_improvement' },
-    { nombre: 'Esencias Florales',  descripcion: 'Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.', icono: 'local_florist' },
-    { nombre: 'Auriculoterapia',    descripcion: 'Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.', icono: 'hearing' },
-    { nombre: 'Masajes Linfáticos', descripcion: 'Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.', icono: 'water_drop' },
-    { nombre: 'Tuina',              descripcion: 'Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.', icono: 'back_hand' },
+    { nombre: 'Podología',          descripcion: 'Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.',                            icono: 'podologia',   color: resolveColor('rosa_empolvado') },
+    { nombre: 'Reiki',              descripcion: 'Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.',                       icono: 'reiki',        color: resolveColor('verde_salvia')   },
+    { nombre: 'Reflexología',       descripcion: 'Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.',                                    icono: 'reflexologia', color: resolveColor('verde_salvia')   },
+    { nombre: 'Esencias Florales',  descripcion: 'Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.',                                     icono: 'aromaterapia', color: resolveColor('verde_salvia')   },
+    { nombre: 'Auriculoterapia',    descripcion: 'Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.',                               icono: 'ayuda',        color: resolveColor('dorado_mostaza') },
+    { nombre: 'Masajes Linfáticos', descripcion: 'Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.',                                 icono: 'masaje',       color: resolveColor('verde_salvia')   },
+    { nombre: 'Tuina',              descripcion: 'Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.',                                 icono: 'herramientas', color: resolveColor('dorado_mostaza') },
   ]);
 
   readonly razones = signal<Razon[]>([
-    { titulo: 'Profesional Certificada', descripcion: 'Más de 10 años de experiencia y formación continua en podología clínica y terapias complementarias.', icono: 'verified' },
-    { titulo: 'Atención Personalizada',  descripcion: 'Cada paciente recibe un tratamiento adaptado a sus necesidades específicas y objetivos de salud.', icono: 'favorite' },
-    { titulo: 'Ambiente Tranquilo',       descripcion: 'Un espacio cálido y acogedor diseñado para que te sientas en calma desde el primer momento.', icono: 'home' },
-    { titulo: 'Horarios Flexibles',       descripcion: 'Horas adaptadas a tu rutina. Reserva online de manera rápida y sencilla las 24 horas.', icono: 'schedule' },
+    { titulo: 'Profesional Certificada', descripcion: 'Más de 10 años de experiencia y formación continua en podología clínica y terapias complementarias.', icono: 'sobre_mi' },
+    { titulo: 'Atención Personalizada',  descripcion: 'Cada paciente recibe un tratamiento adaptado a sus necesidades específicas y objetivos de salud.', icono: 'clientes' },
+    { titulo: 'Ambiente Tranquilo',       descripcion: 'Un espacio cálido y acogedor diseñado para que te sientas en calma desde el primer momento.', icono: 'inicio' },
+    { titulo: 'Horarios Flexibles',       descripcion: 'Horas adaptadas a tu rutina. Reserva online de manera rápida y sencilla las 24 horas.', icono: 'horarios' },
   ]);
 
   readonly stats = signal<Stat[]>([
@@ -143,12 +146,19 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.isBrowser) return;
-    this.http.get<ServicioApiMin[]>(`${environment.apiUrl}/servicios`).pipe(
-      catchError(() => of([] as ServicioApiMin[]))
+    this.http.get<ServicioApi[]>(`${environment.apiUrl}/servicios`).pipe(
+      catchError(() => of([] as ServicioApi[]))
     ).subscribe(list => {
+      if (list.length === 0) return;
       const map = new Map<string, number>();
       for (const s of list) map.set(s.nombre, s.id);
       this.servicioIds.set(map);
+      this.servicios.set(list.map(s => ({
+        nombre:      s.nombre,
+        descripcion: s.descripcion ?? '',
+        icono:       s.icono ?? 'bienestar',
+        color:       resolveColor(s.icono_color),
+      })));
     });
   }
 

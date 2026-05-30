@@ -1,0 +1,140 @@
+<div class="admin-shell">
+  <app-admin-navbar />
+
+  <main class="admin-content">
+
+    <!-- Form: create or edit -->
+    @if (creating() || editing()) {
+      <section class="op-form-section" aria-label="Formulario de opinión">
+        <div class="op-form-section__header">
+          <h2 class="section-title">
+            @if (creating()) { Nueva opinión } @else { Editar opinión }
+          </h2>
+          <button mat-icon-button (click)="cancel()" aria-label="Cancelar">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submitForm()" novalidate class="op-form">
+
+          <div class="op-form__row">
+            <mat-form-field appearance="outline" class="op-form__field">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre" />
+              @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+                <mat-error>Mínimo 2 caracteres</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="op-form__field">
+              <mat-label>Apellido</mat-label>
+              <input matInput formControlName="apellido" />
+              @if (form.get('apellido')?.invalid && form.get('apellido')?.touched) {
+                <mat-error>Requerido</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="op-form__row">
+            <mat-form-field appearance="outline" class="op-form__field">
+              <mat-label>Email (opcional)</mat-label>
+              <input matInput formControlName="email" type="email" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="op-form__field">
+              <mat-label>Puntuación</mat-label>
+              <mat-select formControlName="puntuacion">
+                @for (p of puntuaciones; track p) {
+                  <mat-option [value]="p">{{ p }} ★</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="op-form__field op-form__field--full">
+            <mat-label>Texto de la opinión</mat-label>
+            <textarea matInput formControlName="texto" rows="4"
+              placeholder="Escribe aquí el texto de la opinión…"></textarea>
+            @if (form.get('texto')?.invalid && form.get('texto')?.touched) {
+              <mat-error>Mínimo 10 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="op-form__actions">
+            <button mat-button type="button" (click)="cancel()">Cancelar</button>
+            <button
+              mat-raised-button
+              type="submit"
+              class="op-form__submit"
+              [disabled]="saving() || form.invalid"
+            >
+              <mat-icon>@if (saving()) { sync } @else { save }</mat-icon>
+              @if (saving()) { Guardando… } @else if (creating()) { Crear opinión } @else { Guardar cambios }
+            </button>
+          </div>
+
+        </form>
+      </section>
+    }
+
+    <!-- Header row -->
+    <div class="op-header">
+      <h1 class="op-header__title">
+        Opiniones
+        <span class="op-header__count">({{ opiniones().length }})</span>
+      </h1>
+      <button mat-raised-button class="op-header__add-btn" (click)="startCreate()">
+        <mat-icon>add</mat-icon> Nueva opinión
+      </button>
+    </div>
+
+    @if (loading()) {
+      <p class="info-text">Cargando…</p>
+    } @else if (opiniones().length === 0) {
+      <p class="info-text">No hay opiniones publicadas aún.</p>
+    } @else {
+      <div class="opinions-grid">
+        @for (op of opiniones(); track op.id) {
+          <article class="op-card" [class.op-card--editing]="editing()?.id === op.id">
+            <div class="op-card__header">
+              <div>
+                <span class="op-card__name">{{ op.nombre }} {{ op.apellido }}</span>
+                @if (op.email) {
+                  <span class="op-card__email">{{ op.email }}</span>
+                }
+              </div>
+              <time class="op-card__date">{{ op.created_at | date:'d MMM yyyy' }}</time>
+            </div>
+
+            <app-star-rating [value]="op.puntuacion" class="op-card__stars" />
+
+            <p class="op-card__text">"{{ op.texto }}"</p>
+
+            <div class="op-card__footer">
+              <button
+                mat-button
+                class="op-card__edit-btn"
+                (click)="startEdit(op)"
+                [attr.aria-label]="'Editar opinión de ' + op.nombre"
+              >
+                <mat-icon>edit</mat-icon> Editar
+              </button>
+              <button
+                mat-stroked-button
+                color="warn"
+                class="op-card__delete"
+                [disabled]="deleting() === op.id"
+                (click)="confirmDelete(op)"
+                [attr.aria-label]="'Eliminar opinión de ' + op.nombre"
+              >
+                <mat-icon>delete</mat-icon>
+                @if (deleting() === op.id) { Eliminando… } @else { Eliminar }
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+  </main>
+</div>

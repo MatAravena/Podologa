@@ -642,7 +642,7 @@
     &::before { opacity: 1; }
 
     .service-card__icon-wrap {
-      background: linear-gradient(135deg, rgba($pink, 0.22), rgba($gold-light, 0.20));
+      filter: brightness(1.15) saturate(1.1);
     }
   }
 
@@ -679,26 +679,24 @@
     user-select: none;
   }
 
-  // Icon container — neumorphic circle
+  // Icon container — solid color circle driven by --icon-bg CSS variable
   &__icon-wrap {
     width: 60px;
     height: 60px;
     border-radius: $r-lg;
-    background: linear-gradient(135deg, $pink-pale, rgba($gold-light, 0.25));
-    border: 1px solid rgba($pink-dark, 0.12);
+    background: var(--icon-bg, #{$pink-deep});
+    border: 1px solid rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: $s2;
-    transition: background $t-normal;
+    transition: filter $t-normal;
     box-shadow: $shadow-nm;
   }
 
   &__icon {
-    font-size: 28px !important;
-    width: 28px !important;
-    height: 28px !important;
-    color: $pink-deep !important;
+    width: 32px;
+    height: 32px;
   }
 
   &__title {
@@ -831,10 +829,8 @@
   }
 
   &__icon {
-    font-size: 28px !important;
-    width: 28px !important;
-    height: 28px !important;
-    color: $white !important;
+    width: 32px;
+    height: 32px;
   }
 
   &__title {

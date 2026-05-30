@@ -60,7 +60,7 @@
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, $pink-muted 0%, #ffd0d8 100%);
+    background: var(--icon-bg, #{$pink-deep});
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,10 +69,8 @@
   }
 
   &__icon {
-    font-size: 2rem !important;
-    width: 2rem !important;
-    height: 2rem !important;
-    color: $pink-deep;
+    width: 32px;
+    height: 32px;
   }
 
   &__title {

@@ -1,26 +1,5 @@
 <div class="admin-shell">
-  <!-- Top bar -->
-  <header class="admin-bar">
-    <span class="admin-bar__brand">
-      <mat-icon>admin_panel_settings</mat-icon>
-      Panel admin
-    </span>
-    <nav class="admin-bar__nav">
-      <a routerLink="/admin/opiniones"     mat-button>Opiniones</a>
-      <a routerLink="/admin/galeria"        mat-button>Galería</a>
-      <a routerLink="/admin/servicios"      mat-button class="active">Servicios</a>
-      <a routerLink="/admin/disponibilidad" mat-button>Disponibilidad</a>
-      <a routerLink="/admin/promociones"    mat-button>Promociones</a>
-    </nav>
-    <div class="admin-bar__actions">
-      <a routerLink="/" mat-button>
-        <mat-icon>home</mat-icon> Sitio
-      </a>
-      <button mat-stroked-button (click)="auth.logout()">
-        <mat-icon>logout</mat-icon> Salir
-      </button>
-    </div>
-  </header>
+  <app-admin-navbar />
 
   <main class="admin-content">
 
@@ -100,7 +79,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="as-form__field">
-                  <mat-label>Precio (CLP, sin decimales)</mat-label>
+                  <mat-label>Precio</mat-label>
                   <input matInput formControlName="precio" placeholder="25000" />
                   @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
                     <mat-error>El precio es obligatorio</mat-error>
@@ -112,6 +91,55 @@
                 <mat-label>Descripción corta (opcional)</mat-label>
                 <textarea matInput formControlName="descripcion" rows="2"></textarea>
               </mat-form-field>
+
+              <!-- Icon + color picker -->
+              <div class="as-icon-picker" role="group" aria-label="Seleccionar ícono y color del servicio">
+
+                <!-- Preview badge -->
+                @if (form.get('icono')?.value) {
+                  <div class="as-icon-picker__preview-row">
+                    <div class="as-icon-picker__preview-badge"
+                         [style.background-color]="resolveColor(form.get('icono_color')?.value)">
+                      <app-icon [name]="form.get('icono')!.value || 'bienestar'" [size]="24" [inverted]="true" />
+                    </div>
+                    <span class="as-icon-picker__name">{{ form.get('icono')!.value }}</span>
+                  </div>
+                }
+
+                <!-- Icon grid (grayscale) -->
+                <p class="as-icon-picker__label">Ícono</p>
+                <div class="as-icon-picker__grid">
+                  @for (ic of iconosDisponibles; track ic) {
+                    <button
+                      type="button"
+                      class="as-icon-picker__btn"
+                      [class.as-icon-picker__btn--active]="form.get('icono')?.value === ic"
+                      (click)="form.get('icono')!.setValue(ic)"
+                      [attr.aria-label]="ic"
+                      [attr.aria-pressed]="form.get('icono')?.value === ic"
+                    >
+                      <app-icon [name]="ic" [size]="24" />
+                    </button>
+                  }
+                </div>
+
+                <!-- Color swatches -->
+                <p class="as-icon-picker__label as-icon-picker__label--color">Color</p>
+                <div class="as-icon-picker__colors">
+                  @for (c of brandColors; track c.key) {
+                    <button
+                      type="button"
+                      class="as-icon-picker__swatch"
+                      [style.background-color]="c.hex"
+                      [class.as-icon-picker__swatch--active]="form.get('icono_color')?.value === c.key"
+                      (click)="form.get('icono_color')!.setValue(c.key)"
+                      [attr.aria-label]="c.label + ' — ' + c.uso"
+                      [attr.aria-pressed]="form.get('icono_color')?.value === c.key"
+                    ></button>
+                  }
+                </div>
+
+              </div>
 
               <div class="as-form__actions">
                 <button mat-button type="button" (click)="cancelCreate()">Cancelar</button>
@@ -174,7 +202,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="as-form__field">
-                  <mat-label>Precio (CLP, sin decimales)</mat-label>
+                  <mat-label>Precio</mat-label>
                   <input matInput formControlName="precio" placeholder="25000" />
                   @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
                     <mat-error>El precio es obligatorio</mat-error>
@@ -192,6 +220,55 @@
                 <textarea matInput formControlName="descripcion_larga" rows="6"
                   placeholder="Escribe el contenido completo del servicio. Cada línea nueva genera un párrafo."></textarea>
               </mat-form-field>
+
+              <!-- Icon + color picker -->
+              <div class="as-icon-picker" role="group" aria-label="Seleccionar ícono y color del servicio">
+
+                <!-- Preview badge -->
+                @if (form.get('icono')?.value) {
+                  <div class="as-icon-picker__preview-row">
+                    <div class="as-icon-picker__preview-badge"
+                         [style.background-color]="resolveColor(form.get('icono_color')?.value)">
+                      <app-icon [name]="form.get('icono')!.value || 'bienestar'" [size]="24" [inverted]="true" />
+                    </div>
+                    <span class="as-icon-picker__name">{{ form.get('icono')!.value }}</span>
+                  </div>
+                }
+
+                <!-- Icon grid (grayscale) -->
+                <p class="as-icon-picker__label">Ícono</p>
+                <div class="as-icon-picker__grid">
+                  @for (ic of iconosDisponibles; track ic) {
+                    <button
+                      type="button"
+                      class="as-icon-picker__btn"
+                      [class.as-icon-picker__btn--active]="form.get('icono')?.value === ic"
+                      (click)="form.get('icono')!.setValue(ic)"
+                      [attr.aria-label]="ic"
+                      [attr.aria-pressed]="form.get('icono')?.value === ic"
+                    >
+                      <app-icon [name]="ic" [size]="24" />
+                    </button>
+                  }
+                </div>
+
+                <!-- Color swatches -->
+                <p class="as-icon-picker__label as-icon-picker__label--color">Color</p>
+                <div class="as-icon-picker__colors">
+                  @for (c of brandColors; track c.key) {
+                    <button
+                      type="button"
+                      class="as-icon-picker__swatch"
+                      [style.background-color]="c.hex"
+                      [class.as-icon-picker__swatch--active]="form.get('icono_color')?.value === c.key"
+                      (click)="form.get('icono_color')!.setValue(c.key)"
+                      [attr.aria-label]="c.label + ' — ' + c.uso"
+                      [attr.aria-pressed]="form.get('icono_color')?.value === c.key"
+                    ></button>
+                  }
+                </div>
+
+              </div>
 
               <button
                 mat-raised-button

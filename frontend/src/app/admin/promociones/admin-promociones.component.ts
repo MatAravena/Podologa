@@ -6,7 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {
   ReactiveFormsModule,
@@ -23,8 +22,9 @@ import { MatChipsModule }     from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
-import { environment }      from '../../../environments/environment';
+import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
+import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { environment }          from '../../../environments/environment';
 
 export interface ServicioApi {
   id: number;
@@ -50,8 +50,8 @@ export interface PromocionApi {
 @Component({
   selector: 'app-admin-promociones',
   imports: [
+    AdminNavbarComponent,
     DatePipe,
-    RouterLink,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

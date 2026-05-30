@@ -6,7 +6,6 @@ import {
   computed,
   OnInit,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -18,8 +17,11 @@ import { MatProgressSpinnerModule }  from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
-import { environment }      from '../../../environments/environment';
+import { AdminAuthService }     from '../../shared/admin/admin-auth.service';
+import { AdminNavbarComponent }  from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { AppIconComponent }      from '../../shared/icon/app-icon.component';
+import { BRAND_COLORS, resolveColor } from '../../shared/colors/brand-colors';
+import { environment }           from '../../../environments/environment';
 
 export interface ServicioAdminApi {
   id: number;
@@ -28,14 +30,27 @@ export interface ServicioAdminApi {
   subtitulo: string | null;
   descripcion_larga: string | null;
   fotos_urls: string | null;
+  icono: string | null;
+  icono_color: string | null;
   duracion: number;
   precio: string;
 }
 
+
+export const ICONOS_DISPONIBLES = [
+  'podologia','reiki','reflexologia','aromaterapia','masaje','hidroterapia',
+  'parafina','pedicura','bienestar','ayuda','herramientas','clientes',
+  'reservar','horarios','inicio','sobre_mi','galeria','servicios',
+  'disponibilidad','promociones','opiniones','contacto','ubicacion',
+  'redes','pagos','estadisticas','mensajes','notificaciones','crear_cita',
+  'buscar','ajustes','panel','salir','libelula',
+] as const;
+
 @Component({
   selector: 'app-admin-servicios',
   imports: [
-    RouterLink,
+    AdminNavbarComponent,
+    AppIconComponent,
     DecimalPipe,
     ReactiveFormsModule,
     MatButtonModule,
@@ -69,11 +84,17 @@ export class AdminServiciosComponent implements OnInit {
     return s?.fotos_urls ? (JSON.parse(s.fotos_urls) as string[]) : [];
   });
 
+  readonly iconosDisponibles = ICONOS_DISPONIBLES;
+  readonly brandColors       = BRAND_COLORS;
+  readonly resolveColor      = resolveColor;
+
   readonly form = this.fb.group({
     nombre:           ['', [Validators.required, Validators.minLength(2)]],
     descripcion:      [''],
     subtitulo:        [''],
     descripcion_larga:[''],
+    icono:            [''],
+    icono_color:      [''],
     duracion:         [0,  [Validators.required, Validators.min(1)]],
     precio:           ['', [Validators.required]],
   });
@@ -99,6 +120,8 @@ export class AdminServiciosComponent implements OnInit {
       descripcion:       s.descripcion ?? '',
       subtitulo:         s.subtitulo ?? '',
       descripcion_larga: s.descripcion_larga ?? '',
+      icono:             s.icono ?? '',
+      icono_color:       s.icono_color ?? '',
       duracion:          s.duracion,
       precio:            s.precio,
     });
@@ -126,10 +149,12 @@ export class AdminServiciosComponent implements OnInit {
     this.saving.set(true);
     const v = this.form.getRawValue();
     const body = {
-      nombre:     v.nombre,
+      nombre:      v.nombre,
       descripcion: v.descripcion || null,
-      duracion:   Number(v.duracion),
-      precio:     v.precio,
+      icono:       v.icono || null,
+      icono_color: v.icono_color || null,
+      duracion:    Number(v.duracion),
+      precio:      v.precio,
     };
     this.http.post<ServicioAdminApi>(`${environment.apiUrl}/servicios`, body).pipe(
       catchError(err => {
@@ -160,6 +185,8 @@ export class AdminServiciosComponent implements OnInit {
       descripcion:       v.descripcion || null,
       subtitulo:         v.subtitulo || null,
       descripcion_larga: v.descripcion_larga || null,
+      icono:             v.icono || null,
+      icono_color:       v.icono_color || null,
       duracion:          Number(v.duracion),
       precio:            v.precio,
     };
@@ -178,7 +205,7 @@ export class AdminServiciosComponent implements OnInit {
       this.saving.set(false);
       if (updated) {
         this.servicios.update(list => list.map(s => s.id === updated.id ? updated : s));
-        this.selected.set(updated);
+        this.select(updated); // re-patches all form fields including icono + icono_color
         this.snack.open('Cambios guardados.', 'Cerrar', { duration: 3000 });
       }
     });

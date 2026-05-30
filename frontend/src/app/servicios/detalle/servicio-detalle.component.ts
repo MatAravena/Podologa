@@ -12,6 +12,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule }   from '@angular/material/icon';
 import { catchError, of }  from 'rxjs';
 import { environment }     from '../../../environments/environment';
+import { AppIconComponent } from '../../shared/icon/app-icon.component';
+import { resolveColor }     from '../../shared/colors/brand-colors';
 
 export interface ServicioDetalleApi {
   id: number;
@@ -20,23 +22,15 @@ export interface ServicioDetalleApi {
   subtitulo: string | null;
   descripcion_larga: string | null;
   fotos_urls: string | null;   // JSON array
+  icono: string | null;
+  icono_color: string | null;
   duracion: number;
   precio: string;
 }
 
-const ICONO_MAP: Record<string, string> = {
-  'Podología':          'healing',
-  'Reiki':              'spa',
-  'Reflexología':       'self_improvement',
-  'Esencias Florales':  'local_florist',
-  'Auriculoterapia':    'hearing',
-  'Masajes Linfáticos': 'water_drop',
-  'Tuina':              'back_hand',
-};
-
 @Component({
   selector: 'app-servicio-detalle',
-  imports: [RouterLink, DecimalPipe, MatButtonModule, MatIconModule],
+  imports: [RouterLink, DecimalPipe, MatButtonModule, MatIconModule, AppIconComponent],
   templateUrl: './servicio-detalle.component.html',
   styleUrl: './servicio-detalle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -65,9 +59,7 @@ export class ServicioDetalleComponent implements OnInit {
     });
   }
 
-  icono(nombre: string): string {
-    return ICONO_MAP[nombre] ?? 'healing';
-  }
+  readonly resolveColor = resolveColor;
 
   openLightbox(url: string): void { this.lightbox.set(url); }
   closeLightbox(): void           { this.lightbox.set(null); }

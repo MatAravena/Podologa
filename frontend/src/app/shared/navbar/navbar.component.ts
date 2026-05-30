@@ -36,11 +36,11 @@ export class NavbarComponent {
   readonly menuOpen    = signal(false);
 
   readonly links: NavLink[] = [
-    { label: 'Servicios',   fragment: 'servicios'   },
     { label: 'Sobre mí',    fragment: 'sobre-mi'    },
-    { label: 'Galería',     route: '/galeria'        },
+    { label: 'Servicios',   fragment: 'servicios'   },
     { label: 'Opiniones',   fragment: 'opiniones'   },
     { label: 'Contacto',    fragment: 'contacto'    },
+    { label: 'Galería',     route: '/galeria'        },
   ];
 
   constructor() {

@@ -6,15 +6,6 @@ $t: $t-normal;
 
 .admin-shell { min-height: 100vh; background: $bg; }
 
-.admin-bar {
-  position: sticky; top: 0; z-index: 100;
-  background: #2d1218; color: $white;
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  padding: 12px 24px;
-  &__brand { display: flex; align-items: center; gap: 8px; font-weight: 600; mat-icon { color: $pink-dark; } }
-  &__nav { display: flex; gap: 4px; a { color: rgba($white,.7) !important; } a.active { color: $white !important; font-weight: 600; } }
-  &__actions { display: flex; gap: 8px; margin-left: auto; button,a { color: $white !important; } }
-}
 
 .admin-content { max-width: 1000px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 48px; }
 

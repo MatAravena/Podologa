@@ -1,26 +1,5 @@
 <div class="admin-shell">
-  <!-- Top bar -->
-  <header class="admin-bar">
-    <span class="admin-bar__brand">
-      <mat-icon>admin_panel_settings</mat-icon>
-      Panel admin
-    </span>
-    <nav class="admin-bar__nav">
-      <a routerLink="/admin/opiniones"      mat-button>Opiniones</a>
-      <a routerLink="/admin/galeria"         mat-button>Galería</a>
-      <a routerLink="/admin/servicios"       mat-button>Servicios</a>
-      <a routerLink="/admin/disponibilidad"  mat-button class="active">Disponibilidad</a>
-      <a routerLink="/admin/promociones"     mat-button>Promociones</a>
-    </nav>
-    <div class="admin-bar__actions">
-      <a routerLink="/" mat-button>
-        <mat-icon>home</mat-icon> Sitio
-      </a>
-      <button mat-stroked-button (click)="auth.logout()">
-        <mat-icon>logout</mat-icon> Salir
-      </button>
-    </div>
-  </header>
+  <app-admin-navbar />
 
   <main class="admin-content">
 
@@ -163,20 +142,31 @@
           <div class="tab-content">
 
             <!-- Add blocked date form -->
-            <section class="form-section" aria-label="Bloquear una fecha">
+            <section class="form-section" aria-label="Bloquear fechas">
               <h2 class="section-title">
                 <mat-icon aria-hidden="true">event_busy</mat-icon>
-                Bloquear fecha completa
+                Bloquear fechas
               </h2>
-              <p class="section-desc">Los clientes no podrán reservar en este día.</p>
+              <p class="section-desc">
+                Selecciona una fecha o un rango. Los clientes no podrán reservar en esos días.
+              </p>
 
               <form [formGroup]="bloqueoForm" (ngSubmit)="agregarBloqueo()" novalidate class="bloque-form">
 
                 <mat-form-field appearance="outline">
-                  <mat-label>Fecha a bloquear</mat-label>
+                  <mat-label>Fecha inicio</mat-label>
                   <input matInput type="date" formControlName="fecha" />
                   @if (bloqueoForm.get('fecha')?.invalid && bloqueoForm.get('fecha')?.touched) {
                     <mat-error>Debes seleccionar una fecha</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fecha fin (opcional — si es rango)</mat-label>
+                  <input matInput type="date" formControlName="fecha_hasta"
+                    [min]="bloqueoForm.get('fecha')?.value" />
+                  @if (bloqueoForm.get('fecha_hasta')?.errors?.['fechaHastaInvalida']) {
+                    <mat-error>La fecha fin debe ser igual o posterior a la fecha inicio</mat-error>
                   }
                 </mat-form-field>
 
@@ -185,6 +175,13 @@
                   <input matInput formControlName="motivo" placeholder="Ej: Feriado, vacaciones…" />
                 </mat-form-field>
 
+                @if (rangoBloqueo() > 1) {
+                  <p class="range-preview">
+                    <mat-icon aria-hidden="true">info</mat-icon>
+                    Se bloquearán {{ rangoBloqueo() }} días
+                  </p>
+                }
+
                 <button
                   mat-raised-button
                   type="submit"
@@ -192,7 +189,9 @@
                   [disabled]="saving() || bloqueoForm.invalid"
                 >
                   <mat-icon>block</mat-icon>
-                  @if (saving()) { Guardando… } @else { Bloquear fecha }
+                  @if (saving()) { Guardando… }
+                  @else if (rangoBloqueo() > 1) { Bloquear {{ rangoBloqueo() }} días }
+                  @else { Bloquear fecha }
                 </button>
 
               </form>

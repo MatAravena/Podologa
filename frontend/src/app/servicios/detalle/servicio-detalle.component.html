@@ -22,8 +22,9 @@
         Todos los servicios
       </a>
 
-      <div class="sd-hero__icon-wrap" aria-hidden="true">
-        <mat-icon class="sd-hero__icon">{{ icono(s.nombre) }}</mat-icon>
+      <div class="sd-hero__icon-wrap" aria-hidden="true"
+           [style.--icon-bg]="resolveColor(s.icono_color)">
+        <app-icon class="sd-hero__icon" [name]="s.icono || 'bienestar'" [size]="32" [inverted]="true" />
       </div>
 
       <h1 class="sd-hero__title">{{ s.nombre }}</h1>

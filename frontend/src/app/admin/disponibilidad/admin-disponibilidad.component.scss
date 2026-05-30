@@ -6,38 +6,6 @@
   flex-direction: column;
 }
 
-.admin-bar {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  background: #fff;
-  border-bottom: 1px solid #e8e0da;
-  flex-wrap: wrap;
-
-  &__brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: #b5627e;
-    font-size: 1rem;
-  }
-
-  &__nav {
-    display: flex;
-    gap: 0.25rem;
-    margin-left: 1rem;
-
-    .active { color: #b5627e !important; font-weight: 600; }
-  }
-
-  &__actions {
-    display: flex;
-    gap: 0.25rem;
-    margin-left: auto;
-  }
-}
 
 .admin-content {
   flex: 1;
@@ -102,6 +70,18 @@
 }
 
 // ── Forms ─────────────────────────────────────────────────────────────────────
+.range-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: #c0392b;
+  font-weight: 500;
+  margin: 0;
+
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+
 .bloque-form {
   display: flex;
   flex-wrap: wrap;

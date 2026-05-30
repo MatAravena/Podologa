@@ -1,0 +1,157 @@
+.admin-shell {
+  min-height: 100vh;
+  background: #faf8f6;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-text { color: #9a847a; font-size: 0.95rem; }
+
+// ── Header row ────────────────────────────────────────────────────────────────
+.op-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  &__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d2d2d;
+    margin: 0;
+  }
+
+  &__count {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #9ca3af;
+  }
+
+  &__add-btn {
+    background: #b5627e !important;
+    color: #fff !important;
+  }
+}
+
+// ── Create/Edit form ──────────────────────────────────────────────────────────
+.op-form-section {
+  background: #fff;
+  border: 1px solid #f0e0e8;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(200, 140, 160, 0.1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d2d2d;
+  margin: 0;
+}
+
+.op-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    flex: 1 1 180px;
+
+    &--full { width: 100%; flex: unset; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+  }
+
+  &__submit {
+    background: #b5627e !important;
+    color: #fff !important;
+  }
+}
+
+// ── Opinion cards grid ────────────────────────────────────────────────────────
+.opinions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.op-card {
+  background: #fff;
+  border: 1px solid #f3e8e8;
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  box-shadow: 0 2px 12px rgba(200, 140, 160, 0.08);
+  transition: border-color 0.2s;
+
+  &--editing {
+    border-color: #b5627e;
+    box-shadow: 0 0 0 3px rgba(181, 98, 126, 0.15);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  &__name { font-weight: 600; color: #2d2d2d; display: block; }
+  &__email { font-size: 0.8125rem; color: #9ca3af; display: block; }
+  &__date { font-size: 0.8125rem; color: #9ca3af; white-space: nowrap; }
+
+  &__text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  &__edit-btn { color: #b5627e !important; font-size: 0.8125rem; }
+
+  &__delete {
+    --mdc-outlined-button-outline-color: #e53e3e;
+    color: #e53e3e !important;
+    font-size: 0.8125rem;
+  }
+}

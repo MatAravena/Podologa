@@ -148,8 +148,9 @@
             <span class="service-card__num" aria-hidden="true">
               {{ (i + 1).toString().padStart(2, '0') }}
             </span>
-            <div class="service-card__icon-wrap" aria-hidden="true">
-              <mat-icon class="service-card__icon">{{ servicio.icono }}</mat-icon>
+            <div class="service-card__icon-wrap" aria-hidden="true"
+                 [style.--icon-bg]="servicio.color">
+              <app-icon class="service-card__icon" [name]="servicio.icono" [size]="32" [inverted]="true" />
             </div>
             <h3 class="service-card__title">{{ servicio.nombre }}</h3>
             <p class="service-card__desc">{{ servicio.descripcion }}</p>
@@ -191,7 +192,7 @@
       @for (razon of razones(); track razon.titulo) {
         <article class="why-card" role="listitem">
           <div class="why-card__icon-wrap" aria-hidden="true">
-            <mat-icon class="why-card__icon">{{ razon.icono }}</mat-icon>
+            <app-icon class="why-card__icon" [name]="razon.icono" [size]="32" />
           </div>
           <h3 class="why-card__title">{{ razon.titulo }}</h3>
           <p class="why-card__desc">{{ razon.descripcion }}</p>
@@ -203,40 +204,7 @@
 </section>
 
 
-<!-- ==================== 5. CTA FINAL ==================== -->
-<section class="cta-final" id="contacto" aria-label="Reservar turno en Libélula">
-  <div class="cta-final__circle cta-final__circle--tl" aria-hidden="true"></div>
-  <div class="cta-final__circle cta-final__circle--br" aria-hidden="true"></div>
-
-  <div class="cta-final__content">
-    <div class="cta-final__icon" aria-hidden="true">
-      <mat-icon>calendar_month</mat-icon>
-    </div>
-    <h2 class="cta-final__title">
-      ¿Lista para empezar a<br><em>sentirte mejor</em>?
-    </h2>
-    <p class="cta-final__subtitle">
-      Reserva tu hora en <strong>Libélula</strong> y comienza un camino hacia el
-      bienestar integral.<br>Primera consulta con evaluación completa incluida.
-    </p>
-    <a mat-raised-button routerLink="/reservas" class="btn-gold cta-final__btn"
-      aria-label="Ir al formulario para reservar tu turno">
-      <mat-icon aria-hidden="true">calendar_today</mat-icon>
-      Reservar mi turno ahora
-    </a>
-    <p class="cta-final__note">
-      También puedes contactarte por
-      <a href="https://wa.me/569XXXXXXXX" class="cta-final__link"
-        aria-label="Contactar por WhatsApp" target="_blank" rel="noopener noreferrer">
-        WhatsApp
-      </a>
-      para consultas rápidas.
-    </p>
-  </div>
-</section>
-
-
-<!-- ==================== 6. OPINIONES ==================== -->
+<!-- ==================== 5. OPINIONES ==================== -->
 <section class="testimonials" id="opiniones" aria-label="Opiniones de pacientes">
   <div class="section-container section-container--center">
 
@@ -306,6 +274,39 @@
       Dejar mi opinión
     </a>
 
+  </div>
+</section>
+
+
+<!-- ==================== 6. CTA FINAL ==================== -->
+<section class="cta-final" id="contacto" aria-label="Reservar turno en Libélula">
+  <div class="cta-final__circle cta-final__circle--tl" aria-hidden="true"></div>
+  <div class="cta-final__circle cta-final__circle--br" aria-hidden="true"></div>
+
+  <div class="cta-final__content">
+    <div class="cta-final__icon" aria-hidden="true">
+      <mat-icon>calendar_month</mat-icon>
+    </div>
+    <h2 class="cta-final__title">
+      ¿Lista para empezar a<br><em>sentirte mejor</em>?
+    </h2>
+    <p class="cta-final__subtitle">
+      Reserva tu hora en <strong>Libélula</strong> y comienza un camino hacia el
+      bienestar integral.<br>Primera consulta con evaluación completa incluida.
+    </p>
+    <a mat-raised-button routerLink="/reservas" class="btn-gold cta-final__btn"
+      aria-label="Ir al formulario para reservar tu turno">
+      <mat-icon aria-hidden="true">calendar_today</mat-icon>
+      Reservar mi turno ahora
+    </a>
+    <p class="cta-final__note">
+      También puedes contactarte por
+      <a href="https://wa.me/569XXXXXXXX" class="cta-final__link"
+        aria-label="Contactar por WhatsApp" target="_blank" rel="noopener noreferrer">
+        WhatsApp
+      </a>
+      para consultas rápidas.
+    </p>
   </div>
 </section>
 
