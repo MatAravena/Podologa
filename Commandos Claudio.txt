@@ -1,2 +1,0 @@
-scan plugins, ad anthro suggest what's best
-/plugin install  claude-code-setup@claude-plugins-official
