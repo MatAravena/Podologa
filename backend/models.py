@@ -74,8 +74,10 @@ class Servicio(TimestampMixin, Base):
     subtitulo = Column(String(255), nullable=True)      # tagline for detail page
     descripcion_larga = Column(Text, nullable=True)     # full detail for /servicios/:id
     fotos_urls = Column(Text, nullable=True)            # JSON array of Cloudinary URLs
-    duracion = Column(Integer, nullable=False)          # en minutos
-    precio = Column(Numeric(10, 2), nullable=False)
+    icono       = Column(String(64), nullable=True)     # custom SVG icon name (e.g. 'podologia')
+    icono_color = Column(String(50), nullable=True)     # brand color key name (e.g. 'verde_salvia'), resolved to hex in frontend
+    duracion    = Column(Integer, nullable=False)       # en minutos
+    precio      = Column(Numeric(10), nullable=False)
 
     citas = relationship("Cita", back_populates="servicio")
 
@@ -97,7 +99,7 @@ class Cita(TimestampMixin, Base):
         index=True,
     )
     google_event_id = Column(String(255), unique=True, nullable=True)
-    precio_final = Column(Numeric(10, 2), nullable=True)   # set when a promo discount is applied
+    precio_final = Column(Numeric(10), nullable=True)   # set when a promo discount is applied
     promocion_id = Column(Integer, ForeignKey("promociones.id", ondelete="SET NULL"), nullable=True, index=True)
 
     paciente_id = Column(Integer, ForeignKey("pacientes.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -171,7 +173,7 @@ class Promocion(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     servicio_id = Column(Integer, ForeignKey("servicios.id", ondelete="CASCADE"), nullable=False, index=True)
-    porcentaje_descuento = Column(Numeric(5, 2), nullable=False)  # e.g. 20.00 = 20%
+    porcentaje_descuento = Column(Numeric(5), nullable=False)  # e.g. 20.00 = 20%
     descripcion = Column(String(500), nullable=True)
     fecha_inicio = Column(Date, nullable=False)
     fecha_fin = Column(Date, nullable=False)

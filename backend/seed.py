@@ -54,23 +54,38 @@ def _seed_admin(db) -> User:
 
 def _seed_servicios(db) -> list[Servicio]:
     items = [
-        ("Podología General",       "Evaluación y tratamiento general de los pies.",          45, 25000),
-        ("Tratamiento de Hongos",   "Diagnóstico y tratamiento de onicomicosis.",              60, 35000),
-        ("Reflexología Podal",      "Masaje terapéutico basado en puntos reflejos del pie.",   50, 30000),
+        # (nombre, descripcion, duracion_min, precio_clp, icono, icono_color)
+        ("Podología",          "Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.",       45, 25000, "podologia",   "rosa_empolvado"),
+        ("Reiki",              "Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.", 60, 20000, "reiki",        "verde_salvia"),
+        ("Reflexología",       "Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.",              60, 20000, "reflexologia", "verde_salvia"),
+        ("Esencias Florales",  "Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.",               45, 18000, "aromaterapia", "verde_salvia"),
+        ("Auriculoterapia",    "Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.",         45, 18000, "ayuda",        "dorado_mostaza"),
+        ("Masajes Linfáticos", "Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.",           60, 22000, "masaje",       "verde_salvia"),
+        ("Tuina",              "Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.",           60, 22000, "herramientas", "dorado_mostaza"),
     ]
+
     result = []
-    for nombre, desc, dur, precio in items:
+    for nombre, desc, dur, precio, icono, icono_color in items:
         s = db.query(Servicio).filter(Servicio.nombre == nombre).first()
         if not s:
-            s = Servicio(nombre=nombre, descripcion=desc, duracion=dur, precio=precio)
+            s = Servicio(nombre=nombre, descripcion=desc, duracion=dur, precio=precio, icono=icono, icono_color=icono_color)
             db.add(s)
             db.flush()
             print(f"  + Servicio '{nombre}'")
         else:
-            print(f"  . Servicio '{nombre}' already exists")
+            changed = False
+            if s.icono != icono:
+                s.icono = icono
+                changed = True
+            if s.icono_color != icono_color:
+                s.icono_color = icono_color
+                changed = True
+            if changed:
+                print(f"  ~ Servicio '{nombre}' actualizado")
+            else:
+                print(f"  . Servicio '{nombre}' already exists")
         result.append(s)
     return result
-
 
 def _seed_pacientes_y_citas(db, servicios: list[Servicio]):
     today = date.today()
@@ -160,9 +175,13 @@ def _seed_promocion(db, servicios: list[Servicio]):
 
 def _seed_disponibilidad(db):
     blocks = [
+        (0, time(9, 0),  time(13, 0)),   # Monday  09:00–13:00
         (1, time(9, 0),  time(13, 0)),   # Tuesday 09:00–13:00
-        (4, time(14, 0), time(18, 0)),   # Friday  14:00–18:00
+        (2, time(9, 0),  time(13, 0)),   # Wednesday 09:00–13:00
+        (3, time(9, 0),  time(13, 0)),   # Thursday 09:00–13:00
+        (4, time(9, 0),  time(13, 0)),   # Friday 09:00–13:00
     ]
+
     for dia, inicio, fin in blocks:
         existing = db.query(BloqueDisponibilidad).filter(
             BloqueDisponibilidad.dia_semana == dia,
@@ -219,7 +238,6 @@ def main():
     print(f"  Username: {ADMIN_USERNAME}")
     print(f"  Password: {ADMIN_PASSWORD}")
     print("-" * 40)
-
 
 if __name__ == "__main__":
     main()

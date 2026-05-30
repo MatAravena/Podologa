@@ -44,6 +44,8 @@ class PacienteOut(ORMBase):
 class ServicioCreate(BaseModel):
     nombre: str = Field(..., min_length=2, max_length=255)
     descripcion: str | None = None
+    icono: str | None = Field(default=None, max_length=64)
+    icono_color: str | None = Field(default=None, max_length=50)
     duracion: int = Field(..., gt=0, description="Duración en minutos")
     precio: Decimal = Field(..., gt=0, decimal_places=2)
 
@@ -53,6 +55,8 @@ class ServicioUpdate(BaseModel):
     descripcion: str | None = None
     subtitulo: str | None = Field(default=None, max_length=255)
     descripcion_larga: str | None = None
+    icono: str | None = Field(default=None, max_length=64)
+    icono_color: str | None = Field(default=None, max_length=50)
     duracion: int | None = Field(default=None, gt=0)
     precio: Decimal | None = Field(default=None, gt=0, decimal_places=2)
 
@@ -64,6 +68,8 @@ class ServicioOut(ORMBase):
     subtitulo: str | None
     descripcion_larga: str | None
     fotos_urls: str | None  # raw JSON array text
+    icono: str | None
+    icono_color: str | None
     duracion: int
     precio: Decimal
     created_at: datetime
@@ -225,6 +231,24 @@ class PromocionOut(ORMBase):
 
 
 # ─── Opinion ──────────────────────────────────────────────────────────────────
+
+class OpinionUpdate(BaseModel):
+    nombre: str | None = Field(default=None, min_length=2, max_length=255)
+    apellido: str | None = Field(default=None, min_length=1, max_length=255)
+    email: EmailStr | None = None
+    texto: str | None = Field(default=None, min_length=10, max_length=2000)
+    puntuacion: Decimal | None = Field(default=None, ge=Decimal("0.5"), le=Decimal("5.0"))
+
+    @field_validator("puntuacion")
+    @classmethod
+    def puntuacion_must_be_half_increment(cls, v: Decimal | None) -> Decimal | None:
+        if v is None:
+            return v
+        remainder = (v * 2) % 1
+        if remainder != 0:
+            raise ValueError("La puntuación debe ser múltiplo de 0.5")
+        return v
+
 
 class OpinionCreate(BaseModel):
     nombre: str = Field(..., min_length=2, max_length=255)
