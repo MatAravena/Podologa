@@ -37,7 +37,7 @@ export class AdminAuthService {
   logout(): void {
     this.token.set(null);
     if (this.isBrowser) localStorage.removeItem(TOKEN_KEY);
-    this.router.navigate(['/admin/login']);
+    this.router.navigate(['/']);
   }
 
   private _loadToken(): string | null {

@@ -9,19 +9,32 @@
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="promo-form">
 
+        <!-- Toggle: global vs specific -->
+        <div class="global-toggle">
+          <mat-slide-toggle
+            [checked]="globalToggle()"
+            (change)="globalToggle.set($event.checked)"
+            aria-label="Aplicar descuento a todos los servicios"
+          >
+            Todos los servicios
+          </mat-slide-toggle>
+          @if (globalToggle()) {
+            <span class="global-toggle__hint">El descuento se aplicará a los {{ servicios().length }} servicios</span>
+          }
+        </div>
+
         <div class="form-row">
-          <!-- Servicio -->
-          <mat-form-field appearance="outline" class="form-field form-field--wide">
-            <mat-label>Servicio</mat-label>
-            <mat-select formControlName="servicio_id">
-              @for (s of servicios(); track s.id) {
-                <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
-              }
-            </mat-select>
-            @if (form.get('servicio_id')?.invalid && form.get('servicio_id')?.touched) {
-              <mat-error>Selecciona un servicio</mat-error>
-            }
-          </mat-form-field>
+          <!-- Servicio (hidden when global) -->
+          @if (!globalToggle()) {
+            <mat-form-field appearance="outline" class="form-field form-field--wide">
+              <mat-label>Servicio</mat-label>
+              <mat-select formControlName="servicio_id">
+                @for (s of servicios(); track s.id) {
+                  <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
 
           <!-- Descuento % -->
           <mat-form-field appearance="outline" class="form-field form-field--short">
@@ -40,6 +53,24 @@
             }
           </mat-form-field>
         </div>
+
+        <!-- Preview table when global discount + percentage entered -->
+        @if (globalToggle() && previewServicios().length > 0) {
+          <div class="global-preview" aria-label="Vista previa de precios con descuento">
+            <p class="global-preview__label">Vista previa de precios con descuento</p>
+            <ul class="global-preview__list" role="list">
+              @for (s of previewServicios(); track s.id) {
+                <li class="global-preview__item">
+                  <span class="global-preview__nombre">{{ s.nombre }}</span>
+                  <span class="global-preview__precio">
+                    <s class="global-preview__old">${{ s.precio | number:'1.0-0' }}</s>
+                    <strong class="global-preview__new">${{ s.precioConDescuento | number:'1.0-0' }}</strong>
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
 
         <!-- Descripción -->
         <mat-form-field appearance="outline" class="form-field">
@@ -126,7 +157,9 @@
                 </span>
               </div>
 
-              <h3 class="promo-card__service">{{ promo.servicio.nombre }}</h3>
+              <h3 class="promo-card__service">
+                @if (promo.servicio) { {{ promo.servicio.nombre }} } @else { Todos los servicios }
+              </h3>
               @if (promo.descripcion) {
                 <p class="promo-card__desc">{{ promo.descripcion }}</p>
               }
@@ -158,7 +191,7 @@
                   class="promo-card__delete"
                   [disabled]="deleting() === promo.id"
                   (click)="deletePromo(promo)"
-                  [attr.aria-label]="'Eliminar promoción de ' + promo.servicio.nombre"
+                  [attr.aria-label]="'Eliminar promoción de ' + (promo.servicio?.nombre ?? 'todos los servicios')"
                 >
                   <mat-icon>delete</mat-icon>
                 </button>

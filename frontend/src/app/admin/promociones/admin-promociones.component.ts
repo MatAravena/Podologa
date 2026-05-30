@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
+  computed,
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -18,8 +19,9 @@ import { MatInputModule }     from '@angular/material/input';
 import { MatSelectModule }    from '@angular/material/select';
 import { MatIconModule }      from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatChipsModule }     from '@angular/material/chips';
+import { MatChipsModule }      from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { DecimalPipe }          from '@angular/common';
 import { catchError, of } from 'rxjs';
 
 import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
@@ -35,7 +37,7 @@ export interface ServicioApi {
 
 export interface PromocionApi {
   id: number;
-  servicio_id: number;
+  servicio_id: number | null;
   porcentaje_descuento: string;
   descripcion: string | null;
   fecha_inicio: string;
@@ -44,7 +46,7 @@ export interface PromocionApi {
   hora_fin: string | null;
   activo: boolean;
   created_at: string;
-  servicio: ServicioApi;
+  servicio: ServicioApi | null;
 }
 
 @Component({
@@ -52,6 +54,7 @@ export interface PromocionApi {
   imports: [
     AdminNavbarComponent,
     DatePipe,
+    DecimalPipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -72,14 +75,24 @@ export class AdminPromocionesComponent implements OnInit {
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
 
-  readonly promociones = signal<PromocionApi[]>([]);
-  readonly servicios   = signal<ServicioApi[]>([]);
-  readonly loading     = signal(true);
-  readonly saving      = signal(false);
-  readonly deleting    = signal<number | null>(null);
+  readonly promociones   = signal<PromocionApi[]>([]);
+  readonly servicios     = signal<ServicioApi[]>([]);
+  readonly loading       = signal(true);
+  readonly saving        = signal(false);
+  readonly deleting      = signal<number | null>(null);
+  readonly globalToggle  = signal(false);
+
+  readonly previewServicios = computed(() => {
+    const pct = Number(this.form.get('porcentaje_descuento')?.value) || 0;
+    if (pct <= 0) return [];
+    return this.servicios().map(s => ({
+      ...s,
+      precioConDescuento: Math.round(Number(s.precio) * (1 - pct / 100)),
+    }));
+  });
 
   readonly form = this.fb.nonNullable.group({
-    servicio_id:           ['', Validators.required],
+    servicio_id:           [''],
     porcentaje_descuento:  ['', [Validators.required, Validators.min(1), Validators.max(100)]],
     descripcion:           [''],
     fecha_inicio:          ['', Validators.required],
@@ -118,20 +131,23 @@ export class AdminPromocionesComponent implements OnInit {
 
     const v = this.form.getRawValue();
 
-    // Validate date range
+    if (!this.globalToggle() && !v.servicio_id) {
+      this.snack.open('Selecciona un servicio o activa "Todos los servicios".', 'Cerrar', { duration: 4000 });
+      return;
+    }
+
     if (v.fecha_fin && v.fecha_inicio && v.fecha_fin < v.fecha_inicio) {
       this.snack.open('La fecha de fin debe ser posterior a la de inicio.', 'Cerrar', { duration: 4000 });
       return;
     }
 
-    // Validate optional hour range
     if ((v.hora_inicio && !v.hora_fin) || (!v.hora_inicio && v.hora_fin)) {
       this.snack.open('Si defines un rango horario, debes completar ambas horas.', 'Cerrar', { duration: 4000 });
       return;
     }
 
     const payload: Record<string, unknown> = {
-      servicio_id:          Number(v.servicio_id),
+      servicio_id:          this.globalToggle() ? null : (Number(v.servicio_id) || null),
       porcentaje_descuento: v.porcentaje_descuento,
       descripcion:          v.descripcion || null,
       fecha_inicio:         v.fecha_inicio,
@@ -178,7 +194,8 @@ export class AdminPromocionesComponent implements OnInit {
   }
 
   deletePromo(promo: PromocionApi): void {
-    const ok = confirm(`¿Eliminar la promoción "${promo.porcentaje_descuento}% off ${promo.servicio.nombre}"?\nEsta acción no se puede deshacer.`);
+    const target = promo.servicio?.nombre ?? 'todos los servicios';
+    const ok = confirm(`¿Eliminar la promoción "${promo.porcentaje_descuento}% off ${target}"?\nEsta acción no se puede deshacer.`);
     if (!ok) return;
 
     this.deleting.set(promo.id);
