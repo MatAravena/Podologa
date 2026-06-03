@@ -5,6 +5,47 @@
 - **Backend**: Python / FastAPI, SQLAlchemy, Alembic, PostgreSQL
 - **Design**: uipro Beauty & Spa tokens (warm, professional, trustworthy)
 
+## ⚠️ Puertos FIJOS (NO cambiar nunca)
+- **Backend: `8000`** — `uvicorn main:app --reload --port 8000` (fijado en `package.json`)
+- **Frontend: `4200`** — `ng serve --port 4200` (fijado en `frontend/package.json`)
+- `frontend/src/environments/environment.ts` → `apiUrl: 'http://localhost:8000'` (fijado, con comentario de advertencia)
+- Si la API "no lee la DB", casi siempre es un backend viejo corriendo en otro puerto → cerrar esa instancia, NO cambiar la config.
+
+---
+
+## 🔴 Bugs & Pendientes Activos (prioridad)
+
+### ✅ CAUSA RAÍZ: backend desactualizado en puerto 8003
+La mayoría de estos bugs venían de que `environment.ts` apuntaba a `http://localhost:8003`, donde corría una **instancia vieja del backend** (sin router de pacientes ni columnas de iconos). El backend actual corre en `8000` (puerto documentado en README/`package.json`). Confirmado: `8003/admin/pacientes` → 404, `8000/admin/pacientes` → 401.
+- [x] **Corregido `environment.ts`** → ahora apunta a `http://localhost:8000`
+- [x] **Limpieza DB** — eliminados 3 servicios viejos del seed inicial ("Podología General", "Tratamiento de Hongos", "Reflexología Podal") + sus citas/promos; quedan los 7 reales con iconos y colores
+- [x] **Fix SCSS** — alineación de items en `admin-servicios.component.scss` (flex + ellipsis)
+- [ ] **Acción del usuario:** correr el backend en `8000` (`npm run backend`) y cerrar la instancia vieja en `8003`; reiniciar `ng serve` para tomar el nuevo `environment.ts`
+- [ ] **Verificar end-to-end** tras reiniciar: admin/servicios lista+edita, home lista solo DB, admin/pacientes funciona, portal `/mi-historial/:token`
+
+### Notificaciones a pacientes _(no mandatorio)_
+El envío es **opcional y controlado por la admin** mediante un checkbox — nunca automático.
+- [ ] **Checkbox "Enviar al paciente"** en el editor de notas / al guardar — la admin decide caso por caso si se notifica
+- [ ] Sub-opciones (checkboxes): **enviar por email** y/o **enviar por WhatsApp**
+- [ ] **Validación previa al envío:**
+  - Email: validar formato (`EmailStr` en backend ya lo cubre; validar también en FE antes de habilitar el checkbox)
+  - Teléfono: validar que sea **número chileno válido** (formato `+56 9 XXXX XXXX`, móvil de 9 dígitos empezando en 9) — si no es válido, deshabilitar la opción WhatsApp y mostrar aviso
+- [ ] Enviar el **contenido de las notas marcadas como visibles** + la **fecha ideal sugerida para la próxima cita**
+- [ ] Reutilizar infraestructura existente: `notifications/mailer.py` (email) y `whatsapp/cloud_api.py` (WhatsApp)
+- [ ] Endpoint `POST /admin/pacientes/{id}/notificar` con body `{ canal: ["email"|"whatsapp"], incluir_notas: bool, proxima_cita: date | null }`
+- [ ] Mostrar feedback de éxito/error por canal (ej: "Email enviado ✓, WhatsApp falló — número inválido")
+
+### 🔒 Seguridad — datos de salud (prioridad alta)
+Los datos contienen información personal de salud → requieren protección reforzada.
+- [ ] **Auditar prevención de SQL injection** — confirmar que todo usa SQLAlchemy ORM con parámetros ligados (no f-strings/concatenación en queries); revisar especialmente `routers/pacientes.py` (búsqueda `?q=` con `ilike`)
+- [ ] **Conexiones seguras (HTTPS/TLS)** — forzar HTTPS en producción; revisar headers de seguridad (HSTS, CSP, X-Content-Type-Options, X-Frame-Options)
+- [ ] **Tokens de portal de pacientes** — `access_token` da acceso a datos de salud sin login; evaluar expiración del token y rate limiting en `/pacientes/{token}/perfil` (ya usa `secrets.token_urlsafe(32)` ✓)
+- [ ] **Validación y sanitización de inputs** — revisar endpoints que reciben texto libre (notas, opiniones) contra XSS al renderizar en el frontend
+- [ ] **Rate limiting / protección fuerza bruta** en `/auth/login`
+- [ ] **Secrets management** — verificar que `SECRET_KEY`, credenciales DB y API keys vengan de `.env` (vía `config.py` ✓) y que `.env` no esté versionado
+- [ ] **Logs sin datos sensibles** — no loguear contenidos de notas clínicas, tokens ni contraseñas
+- [ ] Considerar **cifrado en reposo** del campo `contenido` de `NotaPaciente`
+
 ---
 
 ## Pages / Routes
@@ -46,7 +87,7 @@
 - [x] **Menú superior unificado para todas las páginas admin** — `AdminNavbarComponent` compartido con nav centrado y `routerLinkActive`
 - [x] **Admin opiniones: CRUD completo** — crear, editar y eliminar desde panel admin; backend `PATCH /opiniones/{id}` implementado
 - [x] **Admin servicios: precio como entero** — etiqueta simplificada a "Precio", formato `number:'1.0-0'`
-- [ ] **Logout redirige al home** — al cerrar sesión desde cualquier página del panel admin, redirigir al usuario a `/` en lugar de quedarse en la misma URL (actualmente `AdminAuthService.logout()` borra el token pero no navega); implementar con `Router.navigate(['/'])` dentro de `logout()` en `admin-auth.service.ts`
+- [x] **Logout redirige al home** — `AdminAuthService.logout()` navega a `/` tras borrar el token
 
 ---
 
@@ -230,6 +271,12 @@ Los 7 servicios hardcodeados en `home.component.ts` (líneas 84–91) deben inse
 **Frontend — home page**
 - [x] Leer `icono` desde `GET /servicios`; fallback `'bienestar'` si es null
 
+**Migración de iconos — eliminar Material Icons**
+- [ ] Auditar todos los componentes y templates Angular en busca de `<mat-icon>` y referencias a nombres de Material Icons (strings como `'star'`, `'close'`, `'check'`, etc.)
+- [ ] Reemplazar cada `<mat-icon>` por `<app-icon>` usando los SVGs de `src/assets/icons/`
+- [ ] Para iconos funcionales sin equivalente en assets (flechas, cierre de modal, etc.), crear los SVGs faltantes en los 3 tamaños (16px, 24px, 32px) y agregarlos a `src/assets/icons/`
+- [ ] Una vez migrados todos los usos, eliminar `MatIconModule` de los módulos/imports que ya no lo necesiten
+
 ---
 
 ### Paleta de colores de marca para íconos de servicios
@@ -260,11 +307,10 @@ Reemplazar los colores genéricos de `_tokens.scss` con la paleta oficial de 4 c
   - Tuina → `dorado_mostaza`
 
 **Frontend**
-- [ ] Crear `src/app/shared/colors/brand-colors.ts` — constante `BRAND_COLORS` con los 4 colores (clave, label, hex)
-- [ ] En `admin-servicios`: reemplazar los 8 swatches de `_tokens.scss` por los 4 swatches de `BRAND_COLORS`; almacenar el nombre clave en el form control `icono_color`
-- [ ] En `home.component.ts`: resolver hex desde `BRAND_COLORS` al mapear la respuesta API (`color: BRAND_COLORS[s.icono_color]?.hex ?? '#c2607a'`)
-- [ ] En `servicio-detalle.component.ts`: mismo lookup antes de aplicar `--icon-bg`
-- [ ] Actualizar los valores del fallback estático en `home.component.ts` con los nombres de la paleta
+- [x] Crear `src/app/shared/colors/brand-colors.ts` — `BRAND_COLORS`, `BRAND_COLOR_MAP`, `resolveColor(key)`
+- [x] En `admin-servicios`: 4 swatches de marca; almacena clave (`'verde_salvia'`) en DB
+- [x] En `home.component.ts`: `resolveColor(s.icono_color)` mapea clave → hex; fallback estático usa claves
+- [x] En `servicio-detalle.component.ts`: mismo `resolveColor()` antes de aplicar `--icon-bg`
 
 ---
 
@@ -300,7 +346,7 @@ Reemplazar los colores genéricos de `_tokens.scss` con la paleta oficial de 4 c
 - [x] Mostrar badge de descuento animado en el selector de servicios del formulario de reserva
 - [x] Panel admin `/admin/promociones` — crear, activar/desactivar, eliminar
 - [x] Lógica: al crear cita en horario de promoción, guardar precio con descuento aplicado en `Cita`
-- [ ] **Descuento global sobre todos los servicios** — en `/admin/promociones`, agregar opción de crear una promoción que aplique a todos los servicios simultáneamente; mostrar lista de servicios afectados con el precio resultante como vista previa
+- [x] **Descuento global sobre todos los servicios** — toggle "Todos los servicios" en `/admin/promociones`; preview con precios originales tachados y precios con descuento; `servicio_id = null` en DB; migration `010` aplicada
 - [ ] **Publicar promoción en redes sociales** _(futuro)_ — desde el panel de promociones, botón para publicar la promoción activa en Instagram/Facebook usando el agente IA de captions; reutilizar la infraestructura de `social/meta.py` y `social/caption_generator.py`
 
 ### Tests Unitarios e Integración
@@ -324,21 +370,21 @@ Reemplazar los colores genéricos de `_tokens.scss` con la paleta oficial de 4 c
 Área privada donde los pacientes pueden consultar sus notas, comentarios post-cita y sugerencias de tratamiento registradas por la podóloga.
 
 **Modelo / Backend**
-- [ ] Modelo `NotaPaciente` (paciente_id FK, cita_id FK nullable, contenido Text, tipo: `["seguimiento","sugerencia","recordatorio","otro"]`, fecha_creacion, visible_paciente bool)
-- [ ] Migration `007_add_notas_paciente.py`
-- [ ] Endpoints: `GET/POST /admin/pacientes/{id}/notas` (solo admin), `GET /pacientes/{token}/notas` (acceso por token único sin login)
-- [ ] Generar `access_token` único por paciente al crear la primera nota; enviar por email/WhatsApp
-- [ ] Endpoint `GET /pacientes/{token}/perfil` — devuelve nombre, resumen de citas y notas visibles
+- [x] Modelo `NotaPaciente` (paciente_id FK, cita_id FK nullable, contenido Text, tipo, created_at, visible_paciente bool)
+- [x] Migration `011_add_notas_paciente.py` — tabla `notas_paciente` + columna `access_token` en `pacientes`
+- [x] Endpoints: `GET/POST/PATCH/DELETE /admin/pacientes/{id}/notas` (solo admin), `GET /pacientes/{token}/perfil` (token sin login)
+- [x] Generar `access_token` único por paciente con `POST /admin/pacientes/{id}/generar-token` (regenerable)
+- [x] Endpoint `GET /pacientes/{token}/perfil` — devuelve nombre + notas visibles (`visible_paciente=true`)
 
 **Frontend — vista paciente**
-- [ ] Ruta `/mi-historial/:token` — página pública sin login, accesible solo con token
-- [ ] Muestra: nombre del paciente, lista de notas/sugerencias de la podóloga (solo las marcadas `visible_paciente=true`), fecha de cada entrada
-- [ ] Diseño en línea con el resto del sitio (tokens de la marca Libélula)
+- [x] Ruta `/mi-historial/:token` — página pública sin login, accesible solo con token
+- [x] Muestra: nombre del paciente, lista de notas/sugerencias visibles, fecha de cada entrada
+- [x] Diseño en línea con el resto del sitio (tokens de la marca Libélula)
 
 **Frontend — panel admin**
-- [ ] En `/admin/citas` (o sección de pacientes): botón "Agregar nota" por paciente
-- [ ] Formulario: tipo de nota, contenido, checkbox "visible para el paciente"
-- [ ] Lista de notas anteriores del paciente con opción de editar/eliminar
+- [x] Sección `/admin/pacientes` con botón "Agregar nota" por paciente
+- [x] Formulario: tipo de nota, contenido, checkbox "visible para el paciente"
+- [x] Lista de notas anteriores del paciente con opción de editar/eliminar
 
 ---
 
@@ -346,16 +392,18 @@ Reemplazar los colores genéricos de `_tokens.scss` con la paleta oficial de 4 c
 Sistema de bitácora interna donde la podóloga registra observaciones, sugerencias de tratamiento y seguimiento por paciente. Base para el portal de pacientes.
 
 **Modelo / Backend**
-- [ ] Integrado con `NotaPaciente` (mismo modelo, campo `tipo` distingue el uso)
-- [ ] Endpoint `GET /admin/pacientes` — lista de pacientes con resumen de últimas notas
-- [ ] Endpoint `GET /admin/pacientes/{id}` — perfil completo: datos, historial de citas, todas las notas
+- [x] Integrado con `NotaPaciente` (mismo modelo, campo `tipo` distingue el uso)
+- [x] Endpoint `GET /admin/pacientes` — lista de pacientes con búsqueda `?q=`
+- [x] Endpoint `GET /admin/pacientes/{id}` — perfil completo: datos + todas las notas
 
 **Frontend — panel admin**
-- [ ] Ruta `/admin/pacientes` — lista de pacientes registrados (búsqueda por nombre/email)
-- [ ] Vista de perfil por paciente: historial de citas + log de notas/sugerencias
-- [ ] Editor de notas con soporte para tipo: seguimiento post-cita, sugerencia de tratamiento, recordatorio preventivo, otro
-- [ ] Opción de marcar nota como "visible para el paciente" (se muestra en `/mi-historial/:token`)
-- [ ] Botón "Compartir historial" — genera/regenera link con token único para el paciente
+- [x] Ruta `/admin/pacientes` — lista de pacientes registrados (búsqueda por nombre/email)
+- [x] Vista de perfil por paciente: log de notas/sugerencias (master-detail)
+- [x] Editor de notas con tipo: seguimiento, sugerencia, recordatorio, otro
+- [x] Opción de marcar nota como "visible para el paciente" (se muestra en `/mi-historial/:token`)
+- [x] Botón "Compartir historial" — genera/regenera link con token único + copiar al portapapeles
+
+> _Nota futura:_ el perfil admin aún no muestra el historial de **citas** del paciente (solo notas). Agregar cuando sea necesario.
 
 ---
 
