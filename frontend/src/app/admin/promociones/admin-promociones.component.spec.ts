@@ -6,12 +6,14 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { vi } from 'vitest';
 
 import { AdminPromocionesComponent, PromocionApi, ServicioApi } from './admin-promociones.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 import { environment } from '../../../environments/environment';
 
 const MOCK_SERVICIOS: ServicioApi[] = [
-  { id: 1, nombre: 'Podología', duracion: 60, precio: '30000' },
-  { id: 2, nombre: 'Reiki',     duracion: 60, precio: '25000' },
+  { id: 1, nombre: 'Podología', descripcion: null, subtitulo: null, descripcion_larga: null,
+    fotos_urls: null, icono: null, icono_color: null, duracion: 60, precio: 30000 },
+  { id: 2, nombre: 'Reiki', descripcion: null, subtitulo: null, descripcion_larga: null,
+    fotos_urls: null, icono: null, icono_color: null, duracion: 60, precio: 25000 },
 ];
 
 const MOCK_PROMOCIONES: PromocionApi[] = [

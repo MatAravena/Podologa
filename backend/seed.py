@@ -29,24 +29,27 @@ from models import (
     User,
 )
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin1234"
-ADMIN_EMAIL    = "admin@libelula.cl"
+def _seed_admin(db):
+    """Create the admin from SEED_ADMIN_* env vars. Skips if no password set
+    (no insecure default). For local dev, set SEED_ADMIN_PASSWORD in your .env."""
+    from config import settings
 
+    if not settings.SEED_ADMIN_PASSWORD:
+        print("  . SEED_ADMIN_PASSWORD vacío -- no se crea admin (defínelo en .env)")
+        return None
 
-def _seed_admin(db) -> User:
-    user = db.query(User).filter(User.username == ADMIN_USERNAME).first()
+    user = db.query(User).filter(User.username == settings.SEED_ADMIN_USERNAME).first()
     if not user:
         user = User(
-            username=ADMIN_USERNAME,
-            email=ADMIN_EMAIL,
-            hashed_password=hash_password(ADMIN_PASSWORD),
+            username=settings.SEED_ADMIN_USERNAME,
+            email=settings.SEED_ADMIN_EMAIL,
+            hashed_password=hash_password(settings.SEED_ADMIN_PASSWORD),
             is_admin=True,
             is_active=True,
         )
         db.add(user)
         db.flush()
-        print("  + Admin user created")
+        print(f"  + Admin user '{settings.SEED_ADMIN_USERNAME}' created")
     else:
         print("  . Admin user already exists -- skipping")
     return user
@@ -55,13 +58,13 @@ def _seed_admin(db) -> User:
 def _seed_servicios(db) -> list[Servicio]:
     items = [
         # (nombre, descripcion, duracion_min, precio_clp, icono, icono_color)
-        ("Podología",          "Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.",       45, 25000, "podologia",   "rosa_empolvado"),
-        ("Reiki",              "Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.", 60, 20000, "reiki",        "verde_salvia"),
-        ("Reflexología",       "Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.",              60, 20000, "reflexologia", "verde_salvia"),
-        ("Esencias Florales",  "Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.",               45, 18000, "aromaterapia", "verde_salvia"),
-        ("Auriculoterapia",    "Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.",         45, 18000, "ayuda",        "dorado_mostaza"),
-        ("Masajes Linfáticos", "Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.",           60, 22000, "masaje",       "verde_salvia"),
-        ("Tuina",              "Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.",           60, 22000, "herramientas", "dorado_mostaza"),
+        ("Podología",          "Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.",       45, 25000, "podologia",       "ciruela"),
+        ("Reiki",              "Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.", 60, 20000, "reiki",            "verde_salvia"),
+        ("Reflexología",       "Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.",              60, 20000, "reflexologia",     "verde_salvia"),
+        ("Esencias Florales",  "Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.",               45, 18000, "aromaterapia",     "verde_salvia"),
+        ("Auriculoterapia",    "Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.",         45, 18000, "auriculoterapia",  "ciruela"),
+        ("Masajes Linfáticos", "Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.",           60, 22000, "masaje",           "verde_salvia"),
+        ("Tuina",              "Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.",           60, 22000, "herramientas",     "dorado_mostaza"),
     ]
 
     result = []
@@ -232,11 +235,16 @@ def main():
     finally:
         db.close()
 
+    from config import settings
     print("-" * 40)
-    print("Admin credentials:")
-    print(f"  URL:      http://localhost:4200/admin/login")
-    print(f"  Username: {ADMIN_USERNAME}")
-    print(f"  Password: {ADMIN_PASSWORD}")
+    if settings.SEED_ADMIN_PASSWORD:
+        print("Admin credentials:")
+        print(f"  URL:      http://localhost:4200/admin/login")
+        print(f"  Username: {settings.SEED_ADMIN_USERNAME}")
+        print(f"  Password: (el valor de SEED_ADMIN_PASSWORD en tu .env)")
+    else:
+        print("No se creó admin (SEED_ADMIN_PASSWORD vacío).")
+        print("Define SEED_ADMIN_PASSWORD en backend/.env y vuelve a correr.")
     print("-" * 40)
 
 if __name__ == "__main__":

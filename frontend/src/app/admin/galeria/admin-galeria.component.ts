@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule }    from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,15 +17,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
-import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
-import { GaleriaPostApi }       from '../../galeria/galeria.component';
-import { environment }          from '../../../environments/environment';
+import { AdminAuthService }   from '../admin-auth/admin-auth.service';
+import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
+import { GaleriaService, GaleriaPost, CaptionOut } from '../../services/galeria/galeria.service';
 
-interface CaptionOut {
-  caption: string;
-  ai_generated: boolean;
-}
+/** Alias kept for template/spec readability. */
+type GaleriaPostApi = GaleriaPost;
 
 @Component({
   selector: 'app-admin-galeria',
@@ -48,7 +44,7 @@ interface CaptionOut {
 })
 export class AdminGaleriaComponent implements OnInit {
   readonly auth   = inject(AdminAuthService);
-  private readonly http  = inject(HttpClient);
+  private readonly galeriaService = inject(GaleriaService);
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
 
@@ -75,13 +71,11 @@ export class AdminGaleriaComponent implements OnInit {
     publicar:    [false],
   });
 
-  readonly apiUrl = environment.apiUrl;
-
   ngOnInit(): void { this.loadPosts(); }
 
   private loadPosts(): void {
-    this.http.get<GaleriaPostApi[]>(`${this.apiUrl}/galeria`).pipe(
-      catchError(() => of([] as GaleriaPostApi[]))
+    this.galeriaService.listar().pipe(
+      catchError(() => of([] as GaleriaPost[]))
     ).subscribe(list => { this.posts.set(list); this.loading.set(false); });
   }
 
@@ -106,7 +100,7 @@ export class AdminGaleriaComponent implements OnInit {
     fd.append('file',        this.selectedFile);
 
     this.uploading.set(true);
-    this.http.post<GaleriaPostApi>(`${this.apiUrl}/galeria`, fd).pipe(
+    this.galeriaService.subir(fd).pipe(
       catchError(() => {
         this.snack.open('Error al subir el archivo.', 'Cerrar', { duration: 4000 });
         this.uploading.set(false);
@@ -147,12 +141,12 @@ export class AdminGaleriaComponent implements OnInit {
     const post = this.captionPost();
     if (!post) return;
     this.generatingCaption.set(true);
-    this.http.post<CaptionOut>(`${this.apiUrl}/galeria/${post.id}/generar-caption`, {
+    this.galeriaService.generarCaption(post.id, {
       tono: this.captionTono() || null,
       contexto_extra: this.captionContexto() || null,
     }).pipe(
       catchError(() => of(null))
-    ).subscribe(res => {
+    ).subscribe((res: CaptionOut | null) => {
       this.generatingCaption.set(false);
       if (res) {
         this.captionText.set(res.caption);
@@ -167,7 +161,7 @@ export class AdminGaleriaComponent implements OnInit {
     const post = this.captionPost();
     if (!post) return;
     this.publishing.set(post.id);
-    this.http.post<GaleriaPostApi>(`${this.apiUrl}/galeria/${post.id}/publicar`, {
+    this.galeriaService.publicar(post.id, {
       caption: this.captionText() || null,
     }).pipe(
       catchError(() => of(null))
@@ -186,7 +180,7 @@ export class AdminGaleriaComponent implements OnInit {
   deletePost(post: GaleriaPostApi): void {
     if (!confirm(`¿Eliminar "${post.titulo}"? Esta acción no se puede deshacer.`)) return;
     this.deleting.set(post.id);
-    this.http.delete(`${this.apiUrl}/galeria/${post.id}`).pipe(
+    this.galeriaService.eliminar(post.id).pipe(
       catchError(() => of(null))
     ).subscribe(() => {
       this.deleting.set(null);
@@ -196,7 +190,6 @@ export class AdminGaleriaComponent implements OnInit {
   }
 
   mediaUrl(post: GaleriaPostApi): string {
-    if (post.media_url.startsWith('http')) return post.media_url;
-    return `${this.apiUrl.replace('/api', '')}${post.media_url}`;
+    return this.galeriaService.mediaUrl(post.media_url);
   }
 }

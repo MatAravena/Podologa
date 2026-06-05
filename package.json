@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"yellow,cyan\" \"npm run backend\" \"npm run frontend\"",
-    "frontend": "npm --prefix frontend run start",
-    "backend": "cd backend && .\\venv\\Scripts\\python -m uvicorn main:app --reload --port 8000",
+    "dev": "concurrently --names \"BACKEND,FRONTEND\" --prefix-colors \"yellow,cyan\" \"npm run be\" \"npm run fe\"",
+    "fe": "npm --prefix frontend run start",
+    "be": "cd backend && .\\venv\\Scripts\\python -m uvicorn main:app --reload --port 8000",
     "frontend:build": "npm --prefix frontend run build",
     "frontend:test": "npm --prefix frontend run test",
     "install:frontend": "npm --prefix frontend install"

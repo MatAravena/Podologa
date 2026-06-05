@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
 class DummyComponent {}
 
 import { AdminLoginComponent } from './admin-login.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 
 describe('AdminLoginComponent', () => {
   let fixture: ComponentFixture<AdminLoginComponent>;

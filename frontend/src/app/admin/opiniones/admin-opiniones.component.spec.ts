@@ -6,12 +6,12 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { vi } from 'vitest';
 
 import { AdminOpinionesComponent, OpinionApi } from './admin-opiniones.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 import { environment } from '../../../environments/environment';
 
 const MOCK_OPINIONES: OpinionApi[] = [
-  { id: 1, nombre: 'María', apellido: 'García', email: 'maria@test.cl', texto: 'Excelente', puntuacion: 5, servicios_ids: null, created_at: '2026-01-01T10:00:00' },
-  { id: 2, nombre: 'Juan',  apellido: 'Pérez',  email: null,            texto: 'Muy bueno', puntuacion: 4, servicios_ids: null, created_at: '2026-01-02T11:00:00' },
+  { id: 1, nombre: 'María', apellido: 'García', email: 'maria@test.cl', telefono: null, foto_url: null, texto: 'Excelente', puntuacion: 5, servicios_ids: null, created_at: '2026-01-01T10:00:00', updated_at: '2026-01-01T10:00:00' },
+  { id: 2, nombre: 'Juan',  apellido: 'Pérez',  email: null,            telefono: null, foto_url: null, texto: 'Muy bueno', puntuacion: 4, servicios_ids: null, created_at: '2026-01-02T11:00:00', updated_at: '2026-01-02T11:00:00' },
 ];
 
 describe('AdminOpinionesComponent', () => {

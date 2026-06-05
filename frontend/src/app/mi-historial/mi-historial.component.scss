@@ -1,0 +1,162 @@
+@use 'tokens' as *;
+
+.mh-page {
+  min-height: 100vh;
+  background: $grad-hero;
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.mh-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba($pink-dark, 0.3);
+    border-top-color: $pink-deep;
+    border-radius: 50%;
+    animation: mh-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes mh-spin { to { transform: rotate(360deg); } }
+
+// ── Not found ─────────────────────────────────────────────────────────────────
+.mh-not-found {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 2rem;
+
+  mat-icon { font-size: 3.5rem; width: 3.5rem; height: 3.5rem; color: $pink-dark; }
+  h1 { font-family: $font-heading; color: $text; margin: 0; }
+  p { color: $text-mid; max-width: 360px; margin: 0; }
+
+  &__btn { background: $pink-deep !important; color: #fff !important; margin-top: 0.5rem; }
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.mh-hero {
+  text-align: center;
+  padding: 3rem 1.5rem 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+
+  &__badge {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $grad-pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: $shadow-pink;
+
+    mat-icon { color: #fff; font-size: 2rem; width: 2rem; height: 2rem; }
+  }
+
+  &__brand {
+    display: block;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $pink-deep;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 2rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 0.5rem;
+  }
+
+  &__subtitle {
+    color: $text-mid;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// ── Content ───────────────────────────────────────────────────────────────────
+.mh-content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.mh-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: $text-light;
+
+  mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; margin-bottom: 0.5rem; }
+  p { margin: 0; max-width: 320px; margin-inline: auto; }
+}
+
+.mh-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mh-note {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 12px rgba(200, 140, 160, 0.08);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.625rem;
+  }
+
+  &__tipo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $pink-deep;
+    background: rgba($pink-deep, 0.1);
+    border-radius: 20px;
+    padding: 3px 12px;
+  }
+
+  &__date { font-size: 0.8125rem; color: $text-light; }
+
+  &__content {
+    font-size: 0.95rem;
+    color: $text;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+}
+
+// ── CTA ───────────────────────────────────────────────────────────────────────
+.mh-cta {
+  text-align: center;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid $border;
+
+  p { color: $text-mid; margin: 0 0 1rem; }
+
+  &__btn { background: $grad-gold !important; color: #fff !important; }
+}

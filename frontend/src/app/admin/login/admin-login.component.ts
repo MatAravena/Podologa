@@ -12,7 +12,7 @@ import { MatInputModule }     from '@angular/material/input';
 import { MatIconModule }      from '@angular/material/icon';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 
 @Component({
   selector: 'app-admin-login',

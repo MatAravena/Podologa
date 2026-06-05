@@ -7,7 +7,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -24,30 +23,14 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { DecimalPipe }          from '@angular/common';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
-import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
-import { environment }          from '../../../environments/environment';
+import { AdminAuthService }   from '../admin-auth/admin-auth.service';
+import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
+import { ServiciosService, Servicio } from '../../services/servicios/servicios.service';
+import { PromocionesService, Promocion, PromocionCreate } from '../../services/promociones/promociones.service';
 
-export interface ServicioApi {
-  id: number;
-  nombre: string;
-  duracion: number;
-  precio: string;
-}
-
-export interface PromocionApi {
-  id: number;
-  servicio_id: number | null;
-  porcentaje_descuento: string;
-  descripcion: string | null;
-  fecha_inicio: string;
-  fecha_fin: string;
-  hora_inicio: string | null;
-  hora_fin: string | null;
-  activo: boolean;
-  created_at: string;
-  servicio: ServicioApi | null;
-}
+/** Re-exported for the component spec. */
+export type ServicioApi = Servicio;
+export type PromocionApi = Promocion;
 
 @Component({
   selector: 'app-admin-promociones',
@@ -71,12 +54,13 @@ export interface PromocionApi {
 })
 export class AdminPromocionesComponent implements OnInit {
   readonly auth = inject(AdminAuthService);
-  private readonly http  = inject(HttpClient);
+  private readonly serviciosService   = inject(ServiciosService);
+  private readonly promocionesService = inject(PromocionesService);
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
 
-  readonly promociones   = signal<PromocionApi[]>([]);
-  readonly servicios     = signal<ServicioApi[]>([]);
+  readonly promociones   = signal<Promocion[]>([]);
+  readonly servicios     = signal<Servicio[]>([]);
   readonly loading       = signal(true);
   readonly saving        = signal(false);
   readonly deleting      = signal<number | null>(null);
@@ -107,14 +91,14 @@ export class AdminPromocionesComponent implements OnInit {
   }
 
   private loadServicios(): void {
-    this.http.get<ServicioApi[]>(`${environment.apiUrl}/servicios`).pipe(
-      catchError(() => of([] as ServicioApi[])),
+    this.serviciosService.listar().pipe(
+      catchError(() => of([] as Servicio[])),
     ).subscribe(list => this.servicios.set(list));
   }
 
   private loadPromociones(): void {
-    this.http.get<PromocionApi[]>(`${environment.apiUrl}/promociones`).pipe(
-      catchError(() => of([] as PromocionApi[])),
+    this.promocionesService.listar().pipe(
+      catchError(() => of([] as Promocion[])),
     ).subscribe(list => {
       this.promociones.set(list);
       this.loading.set(false);
@@ -146,7 +130,7 @@ export class AdminPromocionesComponent implements OnInit {
       return;
     }
 
-    const payload: Record<string, unknown> = {
+    const payload: PromocionCreate = {
       servicio_id:          this.globalToggle() ? null : (Number(v.servicio_id) || null),
       porcentaje_descuento: v.porcentaje_descuento,
       descripcion:          v.descripcion || null,
@@ -157,7 +141,7 @@ export class AdminPromocionesComponent implements OnInit {
     };
 
     this.saving.set(true);
-    this.http.post<PromocionApi>(`${environment.apiUrl}/promociones`, payload).pipe(
+    this.promocionesService.crear(payload).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada.' : 'Error al crear la promoción.',
@@ -177,9 +161,7 @@ export class AdminPromocionesComponent implements OnInit {
   }
 
   toggleActivo(promo: PromocionApi): void {
-    this.http.patch<PromocionApi>(`${environment.apiUrl}/promociones/${promo.id}`, {
-      activo: !promo.activo,
-    }).pipe(
+    this.promocionesService.actualizar(promo.id, { activo: !promo.activo }).pipe(
       catchError(() => {
         this.snack.open('Error al actualizar la promoción.', 'Cerrar', { duration: 4000 });
         return of(null);
@@ -199,7 +181,7 @@ export class AdminPromocionesComponent implements OnInit {
     if (!ok) return;
 
     this.deleting.set(promo.id);
-    this.http.delete(`${environment.apiUrl}/promociones/${promo.id}`).pipe(
+    this.promocionesService.eliminar(promo.id).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada.' : 'Error al eliminar.',

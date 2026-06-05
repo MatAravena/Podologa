@@ -7,7 +7,7 @@ import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 
 import { ReservasComponent } from './reservas.component';
-import { ReservasService, ServicioApi, HorarioDisponible } from '../shared/reservas/reservas.service';
+import { ReservasService, ServicioApi, HorarioDisponible } from '../services/reservas/reservas.service';
 
 const MOCK_SERVICIOS: ServicioApi[] = [
   { id: 1, nombre: 'Podología', descripcion: null, duracion: 60, precio: '30000' },

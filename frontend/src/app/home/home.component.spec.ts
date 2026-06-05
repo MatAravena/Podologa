@@ -7,30 +7,41 @@
  */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { HomeComponent } from './home.component';
-import { TestimonialsService } from '../shared/testimonials/testimonials.service';
 
 describe('HomeComponent (global page test)', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let component: HomeComponent;
   let el: HTMLElement;
+  let http: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HomeComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
-        TestimonialsService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
+    http = TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+    // ngOnInit fires GETs for contacto + servicios + opiniones; answer them.
+    http.match(r => r.url.includes('/config/contacto')).forEach(r => r.flush(null));
+    http.match(r => r.url.includes('/servicios')).forEach(r => r.flush([]));
+    http.match(r => r.url.includes('/opiniones')).forEach(r => r.flush([]));
     fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;
   });
+
+  afterEach(() => http.verify());
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
@@ -119,6 +130,14 @@ describe('HomeComponent (global page test)', () => {
     component.calificacion.set(5);
 
     component.onSubmit();
+    // The review is persisted via POST /opiniones; flush the request.
+    const req = http.expectOne(r => r.method === 'POST' && r.url.includes('/opiniones'));
+    req.flush({
+      id: 1, nombre: 'María', apellido: 'García', email: null, telefono: null,
+      foto_url: null, texto: 'Excelente servicio, muy recomendable para todos.',
+      puntuacion: 5, servicios_ids: null,
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    });
     expect(component.enviado()).toBe(true);
   });
 

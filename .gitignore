@@ -290,3 +290,6 @@ baseline.json
 /frontend/.vscode
 /backend/.vscode
 /.playwright-mcp/
+security_audit.txt
+SECURITY-AUDIT-2026-05-31.txt
+DEPLOY-ADMIN-NOTES.txt

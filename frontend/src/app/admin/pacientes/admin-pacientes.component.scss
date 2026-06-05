@@ -1,0 +1,316 @@
+@use 'tokens' as *;
+
+.admin-shell { min-height: 100vh; background: #faf8f6; display: flex; flex-direction: column; }
+
+.admin-content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.info-text { color: #9a847a; font-size: 0.9rem; padding: 1rem 0; }
+
+// ── Master-detail layout ──────────────────────────────────────────────────────
+.pac-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+// ── Patient list ──────────────────────────────────────────────────────────────
+.pac-list {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__header {
+    padding: 12px 16px;
+    border-bottom: 1px solid $border;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0;
+  }
+
+  &__search { padding: 8px 12px; }
+
+  &__search-field { width: 100%; }
+
+  &__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 65vh;
+    overflow-y: auto;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+
+    &:hover { background: #faf5f0; }
+
+    &--active { background: rgba($pink-dark, 0.08); }
+  }
+
+  &__item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: $grad-pink;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__item-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__item-name { font-weight: 600; color: $text; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__item-email { font-size: 0.75rem; color: $text-mid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__item-portal { color: #7dba7d; font-size: 1rem !important; }
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+.pac-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &--loading { padding: 2rem; background: #fff; border-radius: 16px; }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid $border;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  }
+
+  &__name {
+    font-family: $font-heading;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 4px;
+  }
+
+  &__meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: $text-mid;
+    flex-wrap: wrap;
+  }
+
+  &__since { color: $text-light; font-style: italic; }
+}
+
+.pac-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  color: $text-light;
+  text-align: center;
+
+  mat-icon { font-size: 3rem; width: 3rem; height: 3rem; }
+  p { font-size: 0.95rem; max-width: 300px; margin: 0; }
+}
+
+// ── Portal link section ───────────────────────────────────────────────────────
+.pac-portal {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__link-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f5faf2;
+    border: 1px solid #c5ddb8;
+    border-radius: 8px;
+    padding: 8px 12px;
+
+    mat-icon { color: #4a8a4a; flex-shrink: 0; }
+  }
+
+  &__url {
+    flex: 1;
+    font-size: 0.8125rem;
+    color: #4a8a4a;
+    word-break: break-all;
+    font-family: monospace;
+  }
+
+  &__regen { color: $text-mid !important; font-size: 0.8125rem !important; }
+
+  &__empty { color: $text-light; font-size: 0.875rem; margin: 0; }
+
+  &__gen-btn {
+    align-self: flex-start;
+    background: #7dba7d !important;
+    color: #fff !important;
+  }
+}
+
+// ── Note form ─────────────────────────────────────────────────────────────────
+.pac-notes-form {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 1rem;
+  }
+}
+
+.notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__field { width: 100%; &--full { width: 100%; } }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__visible { flex-shrink: 0; }
+
+  &__actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+  &__submit { background: $pink-deep !important; color: #fff !important; }
+}
+
+// ── Notes list ────────────────────────────────────────────────────────────────
+.pac-notes-list {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 1rem;
+  }
+
+  &__count { font-size: 0.9rem; font-weight: 400; color: $text-light; }
+}
+
+.notes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.note-card {
+  border: 1.5px solid $border;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  background: #faf8f6;
+  transition: border-color 0.2s;
+
+  &--visible { border-color: #a8d5a2; background: #f5fdf4; }
+  &--editing { border-color: $pink-deep; background: rgba($pink-pale, 0.5); }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  &__tipo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $pink-deep;
+    background: rgba($pink-deep, 0.1);
+    border-radius: 20px;
+    padding: 2px 10px;
+  }
+
+  &__badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4a8a4a;
+    background: rgba(#4a8a4a, 0.1);
+    border-radius: 20px;
+    padding: 2px 10px;
+  }
+
+  &__date { font-size: 0.75rem; color: $text-light; margin-left: auto; }
+
+  &__content {
+    font-size: 0.9rem;
+    color: $text;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
+    white-space: pre-wrap;
+  }
+
+  &__actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+  &__edit { color: $pink-deep !important; font-size: 0.8125rem !important; }
+
+  &__delete {
+    --mdc-outlined-button-outline-color: #e53e3e;
+    color: #e53e3e !important;
+    font-size: 0.8125rem !important;
+  }
+}

@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { vi } from 'vitest';
 
 import { AdminServiciosComponent, ServicioAdminApi } from './admin-servicios.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 import { environment } from '../../../environments/environment';
 
 const MOCK_SERVICIOS: ServicioAdminApi[] = [
@@ -17,8 +17,10 @@ const MOCK_SERVICIOS: ServicioAdminApi[] = [
     subtitulo: 'Para el bienestar de tus pies',
     descripcion_larga: 'Descripción larga de prueba.',
     fotos_urls: '["https://example.com/a.jpg"]',
+    icono: 'podologia',
+    icono_color: 'rosa_empolvado',
     duracion: 45,
-    precio: '25000.00',
+    precio: 25000,
   },
   {
     id: 2,
@@ -27,8 +29,10 @@ const MOCK_SERVICIOS: ServicioAdminApi[] = [
     subtitulo: null,
     descripcion_larga: null,
     fotos_urls: null,
+    icono: 'reiki',
+    icono_color: 'verde_salvia',
     duracion: 60,
-    precio: '30000.00',
+    precio: 30000,
   },
 ];
 
@@ -55,6 +59,9 @@ describe('AdminServiciosComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     httpMock.expectOne(`${environment.apiUrl}/servicios`).flush(MOCK_SERVICIOS);
+    // The icon picker loads its catalog from the static manifest; answer it.
+    httpMock.match(r => r.url.includes('/assets/icons/manifest.json'))
+      .forEach(r => r.flush({ icons: [] }));
   });
 
   afterEach(() => httpMock.verify());

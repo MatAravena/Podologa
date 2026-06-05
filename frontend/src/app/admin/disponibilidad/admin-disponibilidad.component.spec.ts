@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { vi } from 'vitest';
 
 import { AdminDisponibilidadComponent, BloqueApi, BloqueoApi } from './admin-disponibilidad.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 import { environment } from '../../../environments/environment';
 
 const MOCK_BLOQUES: BloqueApi[] = [

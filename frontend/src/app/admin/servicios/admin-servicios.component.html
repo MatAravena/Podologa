@@ -80,7 +80,7 @@
 
                 <mat-form-field appearance="outline" class="as-form__field">
                   <mat-label>Precio</mat-label>
-                  <input matInput formControlName="precio" placeholder="25000" />
+                  <input matInput type="number" formControlName="precio" placeholder="25000" />
                   @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
                     <mat-error>El precio es obligatorio</mat-error>
                   }
@@ -106,10 +106,11 @@
                   </div>
                 }
 
+                
                 <!-- Icon grid (grayscale) -->
                 <p class="as-icon-picker__label">Ícono</p>
                 <div class="as-icon-picker__grid">
-                  @for (ic of iconosDisponibles; track ic) {
+                  @for (ic of iconosDisponibles(); track ic) {
                     <button
                       type="button"
                       class="as-icon-picker__btn"
@@ -203,7 +204,7 @@
 
                 <mat-form-field appearance="outline" class="as-form__field">
                   <mat-label>Precio</mat-label>
-                  <input matInput formControlName="precio" placeholder="25000" />
+                  <input matInput type="number" step="1" min="1" formControlName="precio" placeholder="25000" />
                   @if (form.get('precio')?.invalid && form.get('precio')?.touched) {
                     <mat-error>El precio es obligatorio</mat-error>
                   }
@@ -238,7 +239,7 @@
                 <!-- Icon grid (grayscale) -->
                 <p class="as-icon-picker__label">Ícono</p>
                 <div class="as-icon-picker__grid">
-                  @for (ic of iconosDisponibles; track ic) {
+                  @for (ic of iconosDisponibles(); track ic) {
                     <button
                       type="button"
                       class="as-icon-picker__btn"

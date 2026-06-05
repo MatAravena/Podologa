@@ -6,7 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule }    from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,21 +15,13 @@ import { MatSelectModule }    from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService }    from '../../shared/admin/admin-auth.service';
-import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { AdminAuthService }    from '../admin-auth/admin-auth.service';
+import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
 import { StarRatingComponent }  from '../../shared/star-rating/star-rating.component';
-import { environment }          from '../../../environments/environment';
+import { OpinionesService, Opinion } from '../../services/opiniones/opiniones.service';
 
-export interface OpinionApi {
-  id: number;
-  nombre: string;
-  apellido: string;
-  email: string | null;
-  texto: string;
-  puntuacion: number;
-  servicios_ids: string | null;
-  created_at: string;
-}
+/** Re-exported for the component spec. */
+export type OpinionApi = Opinion;
 
 @Component({
   selector: 'app-admin-opiniones',
@@ -51,7 +42,7 @@ export interface OpinionApi {
   styleUrl:    './admin-opiniones.component.scss',
 })
 export class AdminOpinionesComponent implements OnInit {
-  private readonly http  = inject(HttpClient);
+  private readonly opinionesService = inject(OpinionesService);
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
   readonly auth          = inject(AdminAuthService);
@@ -78,7 +69,7 @@ export class AdminOpinionesComponent implements OnInit {
   }
 
   private loadOpiniones(): void {
-    this.http.get<OpinionApi[]>(`${environment.apiUrl}/opiniones`).pipe(
+    this.opinionesService.listar().pipe(
       catchError(() => of([] as OpinionApi[]))
     ).subscribe(list => {
       this.opiniones.set(list);
@@ -122,7 +113,7 @@ export class AdminOpinionesComponent implements OnInit {
   private create(): void {
     const v = this.form.getRawValue();
     this.saving.set(true);
-    this.http.post<OpinionApi>(`${environment.apiUrl}/opiniones`, {
+    this.opinionesService.crear({
       nombre:     v.nombre,
       apellido:   v.apellido,
       email:      v.email || null,
@@ -149,7 +140,7 @@ export class AdminOpinionesComponent implements OnInit {
     if (!op) return;
     const v = this.form.getRawValue();
     this.saving.set(true);
-    this.http.patch<OpinionApi>(`${environment.apiUrl}/opiniones/${op.id}`, {
+    this.opinionesService.actualizar(op.id, {
       nombre:     v.nombre,
       apellido:   v.apellido,
       email:      v.email || null,
@@ -175,7 +166,7 @@ export class AdminOpinionesComponent implements OnInit {
     const ok = confirm(`¿Eliminar la opinión de ${op.nombre} ${op.apellido}?\nEsta acción no se puede deshacer.`);
     if (!ok) return;
     this.deleting.set(op.id);
-    this.http.delete(`${environment.apiUrl}/opiniones/${op.id}`).pipe(
+    this.opinionesService.eliminar(op.id).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada. Inicia sesión de nuevo.' : 'Error al eliminar.',

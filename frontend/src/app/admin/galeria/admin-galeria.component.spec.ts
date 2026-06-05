@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { vi } from 'vitest';
 
 import { AdminGaleriaComponent } from './admin-galeria.component';
-import { AdminAuthService } from '../../shared/admin/admin-auth.service';
+import { AdminAuthService } from '../admin-auth/admin-auth.service';
 import { GaleriaPostApi } from '../../galeria/galeria.component';
 import { environment } from '../../../environments/environment';
 

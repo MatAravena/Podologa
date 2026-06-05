@@ -21,7 +21,8 @@ import {
   ServicioApi,
   HorarioDisponible,
   PromocionVigenteApi,
-} from '../shared/reservas/reservas.service';
+} from '../services/reservas/reservas.service';
+import { ContactoService } from '../services/contacto/contacto.service';
 
 const SERVICIOS_FALLBACK = [
   'Podología',
@@ -57,6 +58,7 @@ export class ReservasComponent implements OnInit {
   private readonly fb      = inject(FormBuilder);
   private readonly snack   = inject(MatSnackBar);
   private readonly service = inject(ReservasService);
+  readonly contactoService = inject(ContactoService);
 
   // ── Remote state ────────────────────────────────────────────────
   readonly serviciosApi    = signal<ServicioApi[]>([]);
@@ -104,6 +106,7 @@ export class ReservasComponent implements OnInit {
 
   // ── Lifecycle ────────────────────────────────────────────────────
   ngOnInit(): void {
+    this.contactoService.load();
     this.service.getServicios().pipe(
       catchError(() => of([] as ServicioApi[]))
     ).subscribe(list => {

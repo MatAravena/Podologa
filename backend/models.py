@@ -58,8 +58,12 @@ class Paciente(TimestampMixin, Base):
     email = Column(String(255), unique=True, index=True, nullable=True)
     telefono = Column(String(20), nullable=True)
     notas = Column(Text, nullable=True)
+    access_token = Column(String(64), unique=True, nullable=True, index=True)  # portal público paciente
+    access_token_expira = Column(DateTime(timezone=True), nullable=True)        # caducidad del token de portal
 
-    citas = relationship("Cita", back_populates="paciente", cascade="all, delete-orphan")
+    citas         = relationship("Cita", back_populates="paciente", cascade="all, delete-orphan")
+    notas_clinicas = relationship("NotaPaciente", back_populates="paciente", cascade="all, delete-orphan",
+                                  order_by="NotaPaciente.created_at.desc()")
 
     def __repr__(self) -> str:
         return f"<Paciente id={self.id} nombre={self.nombre!r}>"
@@ -77,7 +81,7 @@ class Servicio(TimestampMixin, Base):
     icono       = Column(String(64), nullable=True)     # custom SVG icon name (e.g. 'podologia')
     icono_color = Column(String(50), nullable=True)     # brand color key name (e.g. 'verde_salvia'), resolved to hex in frontend
     duracion    = Column(Integer, nullable=False)       # en minutos
-    precio      = Column(Numeric(10), nullable=False)
+    precio      = Column(Integer, nullable=False)
 
     citas = relationship("Cita", back_populates="servicio")
 
@@ -99,7 +103,7 @@ class Cita(TimestampMixin, Base):
         index=True,
     )
     google_event_id = Column(String(255), unique=True, nullable=True)
-    precio_final = Column(Numeric(10), nullable=True)   # set when a promo discount is applied
+    precio_final = Column(Integer, nullable=True)        # set when a promo discount is applied
     promocion_id = Column(Integer, ForeignKey("promociones.id", ondelete="SET NULL"), nullable=True, index=True)
 
     paciente_id = Column(Integer, ForeignKey("pacientes.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -172,7 +176,7 @@ class Promocion(Base):
     __tablename__ = "promociones"
 
     id = Column(Integer, primary_key=True, index=True)
-    servicio_id = Column(Integer, ForeignKey("servicios.id", ondelete="CASCADE"), nullable=False, index=True)
+    servicio_id = Column(Integer, ForeignKey("servicios.id", ondelete="SET NULL"), nullable=True, index=True)  # None = applies to all services
     porcentaje_descuento = Column(Numeric(5), nullable=False)  # e.g. 20.00 = 20%
     descripcion = Column(String(500), nullable=True)
     fecha_inicio = Column(Date, nullable=False)
@@ -203,3 +207,24 @@ class Opinion(TimestampMixin, Base):
 
     def __repr__(self) -> str:
         return f"<Opinion id={self.id} nombre={self.nombre!r} puntuacion={self.puntuacion}>"
+
+
+class NotaPaciente(Base):
+    """Clinical note written by the podiatrist for a specific patient."""
+    __tablename__ = "notas_paciente"
+
+    id = Column(Integer, primary_key=True, index=True)
+    paciente_id = Column(Integer, ForeignKey("pacientes.id", ondelete="CASCADE"), nullable=False, index=True)
+    cita_id     = Column(Integer, ForeignKey("citas.id",    ondelete="SET NULL"), nullable=True,  index=True)
+    contenido   = Column(Text, nullable=False)
+    tipo        = Column(String(20), nullable=False, default="seguimiento")
+    # tipo values: seguimiento | sugerencia | recordatorio | otro
+    visible_paciente = Column(Boolean, default=False, nullable=False)
+    created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at  = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    paciente = relationship("Paciente", back_populates="notas_clinicas")
+    cita     = relationship("Cita")
+
+    def __repr__(self) -> str:
+        return f"<NotaPaciente id={self.id} paciente_id={self.paciente_id} tipo={self.tipo!r}>"

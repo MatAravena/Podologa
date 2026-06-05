@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "changeme"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 hours
     ALGORITHM: str = "HS256"
+    PORTAL_TOKEN_EXPIRE_DAYS: int = 90  # patient portal link lifetime
+
+    # ── Default admin (seeded by migration 014 if no admin exists) ────────────
+    # Set these via env vars BEFORE first deploy. If SEED_ADMIN_PASSWORD is empty
+    # the migration will SKIP creating the default admin (no insecure default).
+    SEED_ADMIN_USERNAME: str = "admin"
+    SEED_ADMIN_EMAIL: str = "admin@libelula.cl"
+    SEED_ADMIN_PASSWORD: str = ""  # empty = do not seed an admin (no admin1234 fallback)
 
     # ── WhatsApp Cloud API ────────────────────────────────────────────────────
     WHATSAPP_PHONE_NUMBER_ID: str = ""

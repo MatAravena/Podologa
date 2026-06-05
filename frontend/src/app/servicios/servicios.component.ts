@@ -6,40 +6,29 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule }   from '@angular/material/icon';
 import { catchError, of }  from 'rxjs';
-import { environment }     from '../../../environments/environment';
-import { AppIconComponent } from '../../shared/icon/app-icon.component';
-import { resolveColor }     from '../../shared/colors/brand-colors';
+import { AppIconComponent } from '../shared/icon/app-icon.component';
+import { resolveColor }     from '../shared/colors/brand-colors';
+import { ServiciosService, Servicio } from '../services/servicios/servicios.service';
 
-export interface ServicioDetalleApi {
-  id: number;
-  nombre: string;
-  descripcion: string | null;
-  subtitulo: string | null;
-  descripcion_larga: string | null;
-  fotos_urls: string | null;   // JSON array
-  icono: string | null;
-  icono_color: string | null;
-  duracion: number;
-  precio: string;
-}
+/** Re-exported for the component spec. */
+export type ServicioApi = Servicio;
 
 @Component({
-  selector: 'app-servicio-detalle',
+  selector: 'app-servicios',
   imports: [RouterLink, DecimalPipe, MatButtonModule, MatIconModule, AppIconComponent],
-  templateUrl: './servicio-detalle.component.html',
-  styleUrl: './servicio-detalle.component.scss',
+  templateUrl: './servicios.component.html',
+  styleUrl: './servicios.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ServicioDetalleComponent implements OnInit {
-  private readonly http  = inject(HttpClient);
+export class ServiciosComponent implements OnInit {
+  private readonly serviciosService = inject(ServiciosService);
   private readonly route = inject(ActivatedRoute);
 
-  readonly servicio  = signal<ServicioDetalleApi | null>(null);
+  readonly servicio  = signal<Servicio | null>(null);
   readonly loading   = signal(true);
   readonly notFound  = signal(false);
   readonly fotos     = signal<string[]>([]);
@@ -47,7 +36,7 @@ export class ServicioDetalleComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    this.http.get<ServicioDetalleApi>(`${environment.apiUrl}/servicios/${id}`).pipe(
+    this.serviciosService.obtener(id!).pipe(
       catchError(() => of(null))
     ).subscribe(s => {
       if (!s) { this.notFound.set(true); }

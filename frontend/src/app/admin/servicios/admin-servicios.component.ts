@@ -6,7 +6,6 @@ import {
   computed,
   OnInit,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule }           from '@angular/material/button';
@@ -17,34 +16,16 @@ import { MatProgressSpinnerModule }  from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, of } from 'rxjs';
 
-import { AdminAuthService }     from '../../shared/admin/admin-auth.service';
-import { AdminNavbarComponent }  from '../../shared/admin/admin-navbar/admin-navbar.component';
+import { AdminAuthService }     from '../admin-auth/admin-auth.service';
+import { AdminNavbarComponent }  from '../admin-auth/admin-navbar/admin-navbar.component';
 import { AppIconComponent }      from '../../shared/icon/app-icon.component';
+import { IconCatalogService }    from '../../shared/icon/icon-catalog.service';
 import { BRAND_COLORS, resolveColor } from '../../shared/colors/brand-colors';
-import { environment }           from '../../../environments/environment';
+import { ServiciosService, Servicio, ServicioCreate, ServicioUpdate } from '../../services/servicios/servicios.service';
 
-export interface ServicioAdminApi {
-  id: number;
-  nombre: string;
-  descripcion: string | null;
-  subtitulo: string | null;
-  descripcion_larga: string | null;
-  fotos_urls: string | null;
-  icono: string | null;
-  icono_color: string | null;
-  duracion: number;
-  precio: string;
-}
+/** Re-exported for the component spec. */
+export type ServicioAdminApi = Servicio;
 
-
-export const ICONOS_DISPONIBLES = [
-  'podologia','reiki','reflexologia','aromaterapia','masaje','hidroterapia',
-  'parafina','pedicura','bienestar','ayuda','herramientas','clientes',
-  'reservar','horarios','inicio','sobre_mi','galeria','servicios',
-  'disponibilidad','promociones','opiniones','contacto','ubicacion',
-  'redes','pagos','estadisticas','mensajes','notificaciones','crear_cita',
-  'buscar','ajustes','panel','salir','libelula',
-] as const;
 
 @Component({
   selector: 'app-admin-servicios',
@@ -66,9 +47,10 @@ export const ICONOS_DISPONIBLES = [
 })
 export class AdminServiciosComponent implements OnInit {
   readonly auth   = inject(AdminAuthService);
-  private readonly http  = inject(HttpClient);
+  private readonly serviciosService = inject(ServiciosService);
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
+  private readonly iconCatalog = inject(IconCatalogService);
 
   readonly servicios        = signal<ServicioAdminApi[]>([]);
   readonly loading          = signal(true);
@@ -84,7 +66,7 @@ export class AdminServiciosComponent implements OnInit {
     return s?.fotos_urls ? (JSON.parse(s.fotos_urls) as string[]) : [];
   });
 
-  readonly iconosDisponibles = ICONOS_DISPONIBLES;
+  readonly iconosDisponibles = this.iconCatalog.icons;
   readonly brandColors       = BRAND_COLORS;
   readonly resolveColor      = resolveColor;
 
@@ -96,16 +78,17 @@ export class AdminServiciosComponent implements OnInit {
     icono:            [''],
     icono_color:      [''],
     duracion:         [0,  [Validators.required, Validators.min(1)]],
-    precio:           ['', [Validators.required]],
+    precio:           [0, [Validators.required, Validators.min(1)]],
   });
 
   ngOnInit(): void {
+    this.iconCatalog.load();
     this.loadServicios();
   }
 
   private loadServicios(): void {
-    this.http.get<ServicioAdminApi[]>(`${environment.apiUrl}/servicios`).pipe(
-      catchError(() => of([] as ServicioAdminApi[]))
+    this.serviciosService.listar().pipe(
+      catchError(() => of([] as Servicio[]))
     ).subscribe(list => {
       this.servicios.set(list);
       this.loading.set(false);
@@ -136,7 +119,7 @@ export class AdminServiciosComponent implements OnInit {
   startCreate(): void {
     this.selected.set(null);
     this.creating.set(true);
-    this.form.reset({ duracion: 0, precio: '' });
+    this.form.reset({ duracion: 0, precio: 0 });
   }
 
   cancelCreate(): void {
@@ -148,15 +131,15 @@ export class AdminServiciosComponent implements OnInit {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving.set(true);
     const v = this.form.getRawValue();
-    const body = {
-      nombre:      v.nombre,
+    const body: ServicioCreate = {
+      nombre:      v.nombre ?? '',
       descripcion: v.descripcion || null,
       icono:       v.icono || null,
       icono_color: v.icono_color || null,
       duracion:    Number(v.duracion),
-      precio:      v.precio,
+      precio:      Number(v.precio),
     };
-    this.http.post<ServicioAdminApi>(`${environment.apiUrl}/servicios`, body).pipe(
+    this.serviciosService.crear(body).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada.' : 'Error al crear el servicio.',
@@ -180,19 +163,17 @@ export class AdminServiciosComponent implements OnInit {
     if (this.form.invalid || !this.selected()) return;
     this.saving.set(true);
     const v = this.form.getRawValue();
-    const body = {
-      nombre:            v.nombre,
+    const body: ServicioUpdate = {
+      nombre:            v.nombre ?? '',
       descripcion:       v.descripcion || null,
       subtitulo:         v.subtitulo || null,
       descripcion_larga: v.descripcion_larga || null,
       icono:             v.icono || null,
       icono_color:       v.icono_color || null,
       duracion:          Number(v.duracion),
-      precio:            v.precio,
+      precio:            Number(v.precio),
     };
-    this.http.patch<ServicioAdminApi>(
-      `${environment.apiUrl}/servicios/${this.selected()!.id}`, body
-    ).pipe(
+    this.serviciosService.actualizar(this.selected()!.id, body).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada.' : 'Error al guardar.',
@@ -214,7 +195,7 @@ export class AdminServiciosComponent implements OnInit {
   deleteServicio(s: ServicioAdminApi): void {
     if (!confirm(`¿Eliminar el servicio "${s.nombre}"? Esta acción no se puede deshacer.`)) return;
     this.deletingServicio.set(s.id);
-    this.http.delete(`${environment.apiUrl}/servicios/${s.id}`).pipe(
+    this.serviciosService.eliminar(s.id).pipe(
       catchError(() => {
         this.snack.open('Error al eliminar el servicio.', 'Cerrar', { duration: 4000 });
         return of(null);
@@ -234,11 +215,7 @@ export class AdminServiciosComponent implements OnInit {
     input.value = '';
 
     this.uploadingFoto.set(true);
-    const fd = new FormData();
-    fd.append('file', file);
-    this.http.post<ServicioAdminApi>(
-      `${environment.apiUrl}/servicios/${this.selected()!.id}/fotos`, fd
-    ).pipe(
+    this.serviciosService.subirFoto(this.selected()!.id, file).pipe(
       catchError(err => {
         this.snack.open(
           err.status === 415 ? 'Formato no permitido. Usa jpg, png o webp.' :
@@ -260,9 +237,7 @@ export class AdminServiciosComponent implements OnInit {
   deleteFoto(index: number): void {
     if (!confirm('¿Eliminar esta foto?')) return;
     this.deletingFoto.set(index);
-    this.http.delete<ServicioAdminApi>(
-      `${environment.apiUrl}/servicios/${this.selected()!.id}/fotos/${index}`
-    ).pipe(
+    this.serviciosService.eliminarFoto(this.selected()!.id, index).pipe(
       catchError(() => {
         this.snack.open('Error al eliminar la foto.', 'Cerrar', { duration: 4000 });
         return of(null);

@@ -35,8 +35,72 @@ class PacienteOut(ORMBase):
     email: str | None
     telefono: str | None
     notas: str | None
+    access_token: str | None
+    access_token_expira: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+# ─── NotaPaciente ──────────────────────────────────────────────────────────────
+
+TIPOS_NOTA = ["seguimiento", "sugerencia", "recordatorio", "otro"]
+
+
+class NotaPacienteCreate(BaseModel):
+    contenido: str = Field(..., min_length=1, max_length=5000)
+    tipo: str = Field(default="seguimiento")
+    cita_id: int | None = None
+    visible_paciente: bool = False
+
+    @field_validator("tipo")
+    @classmethod
+    def tipo_valido(cls, v: str) -> str:
+        if v not in TIPOS_NOTA:
+            raise ValueError(f"tipo debe ser uno de: {TIPOS_NOTA}")
+        return v
+
+
+class NotaPacienteUpdate(BaseModel):
+    contenido: str | None = Field(default=None, min_length=1, max_length=5000)
+    tipo: str | None = None
+    visible_paciente: bool | None = None
+
+    @field_validator("tipo")
+    @classmethod
+    def tipo_valido(cls, v: str | None) -> str | None:
+        if v is not None and v not in TIPOS_NOTA:
+            raise ValueError(f"tipo debe ser uno de: {TIPOS_NOTA}")
+        return v
+
+
+class NotaPacienteOut(ORMBase):
+    id: int
+    paciente_id: int
+    cita_id: int | None
+    contenido: str
+    tipo: str
+    visible_paciente: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class PacienteDetalleOut(ORMBase):
+    id: int
+    nombre: str
+    email: str | None
+    telefono: str | None
+    notas: str | None
+    access_token: str | None
+    access_token_expira: datetime | None
+    created_at: datetime
+    updated_at: datetime
+    notas_clinicas: list[NotaPacienteOut] = []
+
+
+class PortalPacienteOut(ORMBase):
+    """Public-facing patient profile — only visible notes."""
+    nombre: str
+    notas_clinicas: list[NotaPacienteOut] = []
 
 
 # ─── Servicio ─────────────────────────────────────────────────────────────────
@@ -47,7 +111,7 @@ class ServicioCreate(BaseModel):
     icono: str | None = Field(default=None, max_length=64)
     icono_color: str | None = Field(default=None, max_length=50)
     duracion: int = Field(..., gt=0, description="Duración en minutos")
-    precio: Decimal = Field(..., gt=0, decimal_places=2)
+    precio: int = Field(..., gt=0)
 
 
 class ServicioUpdate(BaseModel):
@@ -58,7 +122,7 @@ class ServicioUpdate(BaseModel):
     icono: str | None = Field(default=None, max_length=64)
     icono_color: str | None = Field(default=None, max_length=50)
     duracion: int | None = Field(default=None, gt=0)
-    precio: Decimal | None = Field(default=None, gt=0, decimal_places=2)
+    precio: int | None = Field(default=None, gt=0)
 
 
 class ServicioOut(ORMBase):
@@ -71,7 +135,7 @@ class ServicioOut(ORMBase):
     icono: str | None
     icono_color: str | None
     duracion: int
-    precio: Decimal
+    precio: int
     created_at: datetime
     updated_at: datetime
 
@@ -104,7 +168,7 @@ class CitaOut(ORMBase):
     duracion: int
     estado: EstadoCita
     google_event_id: str | None
-    precio_final: Decimal | None
+    precio_final: int | None
     promocion_id: int | None
     paciente_id: int
     servicio_id: int | None
@@ -188,7 +252,7 @@ class FechaBloqueoOut(ORMBase):
 # ─── Promocion ────────────────────────────────────────────────────────────────
 
 class PromocionCreate(BaseModel):
-    servicio_id: int
+    servicio_id: int | None = None  # None = global discount on all services
     porcentaje_descuento: Decimal = Field(..., gt=Decimal("0"), le=Decimal("100"), decimal_places=2)
     descripcion: str | None = Field(default=None, max_length=500)
     fecha_inicio: date
@@ -218,7 +282,7 @@ class PromocionUpdate(BaseModel):
 
 class PromocionOut(ORMBase):
     id: int
-    servicio_id: int
+    servicio_id: int | None  # None = applies to all services
     porcentaje_descuento: Decimal
     descripcion: str | None
     fecha_inicio: date
@@ -227,7 +291,7 @@ class PromocionOut(ORMBase):
     hora_fin: time | None
     activo: bool
     created_at: datetime
-    servicio: ServicioOut
+    servicio: ServicioOut | None  # None when promotion is global
 
 
 # ─── Opinion ──────────────────────────────────────────────────────────────────

@@ -43,7 +43,7 @@
 
     <div class="hero__visual" aria-hidden="true">
       <div class="hero__visual-frame">
-        <img ngSrc="/images/ChatGPT Image 21 abr 2026, 22_52_37.png" alt="" class="hero__visual-img" width="480" height="480" priority />
+        <img ngSrc="/assets/images/podologa.png" alt="" class="hero__visual-img" width="480" height="480" priority />
       </div>
       <div class="hero__petal hero__petal--1"></div>
       <div class="hero__petal hero__petal--2"></div>
@@ -86,10 +86,10 @@
         Profesional certificada
       </div>
       <div class="about__frame">
-        <img ngSrc="/images/profesional.svg" alt="Ilustración de la podóloga" class="about__frame-img" width="400" height="500" />
+        <img ngSrc="/assets/images/profesional.svg" alt="Ilustración de la podóloga" class="about__frame-img" width="400" height="500" />
       </div>
       <div class="about__chip about__chip--bottom" aria-label="Mas de 10 años de experiencia">
-        <span class="about__chip-number">+10</span>
+        <span class="about__chip-number">+20</span>
         <span class="about__chip-text">años de<br>experiencia</span>
       </div>
     </div>
@@ -98,7 +98,7 @@
       <span class="section-label">Sobre mí</span>
       <h2 class="section-title">Un cuidado que va<br>más allá del <em>pie</em></h2>
       <p class="about__text">
-        Soy podóloga con formación universitaria y especialización en terapias complementarias.
+        Soy podóloga con formación tecnica profesional y especialización en terapias complementarias.
         Mi enfoque integra el cuidado clínico del pie con técnicas holísticas para promover
         el bienestar del cuerpo y la mente en su totalidad.
       </p>
@@ -301,7 +301,7 @@
     </a>
     <p class="cta-final__note">
       También puedes contactarte por
-      <a href="https://wa.me/569XXXXXXXX" class="cta-final__link"
+      <a [href]="contactoService.whatsappUrl()" class="cta-final__link"
         aria-label="Contactar por WhatsApp" target="_blank" rel="noopener noreferrer">
         WhatsApp
       </a>

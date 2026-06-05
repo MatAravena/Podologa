@@ -10,7 +10,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AdminAuthService } from '../admin/admin-auth.service';
+import { AdminAuthService } from '../../admin/admin-auth/admin-auth.service';
 
 interface NavLink {
   label: string;

@@ -3,7 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 
 import { AdminAuthService } from '../admin-auth.service';
-import { AppIconComponent } from '../../icon/app-icon.component';
+import { AppIconComponent } from '../../../shared/icon/app-icon.component';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -22,6 +22,7 @@ import { AppIconComponent } from '../../icon/app-icon.component';
         <a routerLink="/admin/servicios"      routerLinkActive="active" mat-button>Servicios</a>
         <a routerLink="/admin/disponibilidad" routerLinkActive="active" mat-button>Disponibilidad</a>
         <a routerLink="/admin/promociones"    routerLinkActive="active" mat-button>Promociones</a>
+        <a routerLink="/admin/pacientes"      routerLinkActive="active" mat-button>Pacientes</a>
       </nav>
 
       <div class="admin-bar__actions">

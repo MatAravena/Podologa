@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminAuthGuard } from './shared/admin/admin-auth.guard';
+import { adminAuthGuard } from './admin/admin-auth/admin-auth.guard';
 
 export const routes: Routes = [
   {
@@ -20,7 +20,12 @@ export const routes: Routes = [
   {
     path: 'servicios/:id',
     loadComponent: () =>
-      import('./servicios/detalle/servicio-detalle.component').then((m) => m.ServicioDetalleComponent),
+      import('./servicios/servicios.component').then((m) => m.ServiciosComponent),
+  },
+  {
+    path: 'mi-historial/:token',
+    loadComponent: () =>
+      import('./mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent),
   },
   // ── Admin ────────────────────────────────────────────────────────────────────
   {
@@ -56,6 +61,12 @@ export const routes: Routes = [
     path: 'admin/servicios',
     loadComponent: () =>
       import('./admin/servicios/admin-servicios.component').then((m) => m.AdminServiciosComponent),
+    canActivate: [adminAuthGuard],
+  },
+  {
+    path: 'admin/pacientes',
+    loadComponent: () =>
+      import('./admin/pacientes/admin-pacientes.component').then((m) => m.AdminPacientesComponent),
     canActivate: [adminAuthGuard],
   },
   {

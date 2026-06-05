@@ -15,6 +15,70 @@
 
 ## 🔴 Bugs & Pendientes Activos (prioridad)
 
+### 🧹 Auditoría: solo datos reales desde la DB (eliminar hardcodeados)
+Asegurar que toda la app consuma datos reales almacenados en la base de datos y eliminar cualquier valor hardcodeado / placeholder / mock que quede en el frontend.
+- [x] **`TestimonialsService` eliminado** — era `localStorage`-only (`libelula_testimonios`), nunca leía del backend. El home ahora usa `OpinionesService` (`GET /opiniones`). Borrado el servicio + su carpeta + uso en `home.component.ts`/`home.component.spec.ts`.
+- [x] **Auditoría del frontend completada** (grep de `localStorage`/`mock`/`placeholder`/`dummy`/static arrays):
+  - ✅ `localStorage` se usa **solo** en `admin-auth.service.ts` para el token JWT (correcto, no es dato de negocio)
+  - ✅ Todos los `mock`/`MOCK` están en `*.spec.ts` (fixtures de test, correcto)
+  - ✅ La lista estática de servicios en `home.component.ts` es **fallback SSR intencional**; verificado que `ngOnInit` la sobreescribe con `GET /servicios`
+  - ℹ️ `razones` y `stats` en `home.component.ts` son **contenido de marketing estático** (no existe modelo en BE) — aceptable; se podría mover a config si se quiere editar sin deploy
+  - ✅ Cada sección con datos (servicios, opiniones, galería, disponibilidad, promociones) ya lee desde su endpoint vía su servicio (ver capa de servicios)
+- [ ] ⚠️ **Contacto con placeholder hardcodeado** — `wa.me/569XXXXXXXX` y `+56 9 XXXX XXXX` están en `home.component.html`, `reservas.component.html` y `footer.component.html`. El número real lo tiene la dueña (no inventar). El BE guarda contacto en `config/app.json` pero **no lo expone por API**. Opciones:
+  - [ ] Rápido: reemplazar el placeholder por el número real en los 3 templates
+  - [ ] Limpio: endpoint `GET /config/contacto` (lee `config/app.json`) + `ContactoService`/config en el FE, para editar sin tocar código y eliminar la duplicación entre los 3 templates
+
+### 🧹 Eliminar listas hardcodeadas de servicios/horarios (la DB + `seed.py` son la fuente de verdad)
+La DB ya tiene todos los datos (sembrados por `backend/seed.py` y la migration `014_seed_default_data`). Reemplazar las **listas estáticas de negocio** que aún viven en el frontend por datos reales desde el endpoint correspondiente.
+
+> ⚠️ **No confundir con fixtures de test:** los `MOCK_*` en `*.spec.ts` (ej. `admin-promociones.component.spec.ts` → `MOCK_SERVICIOS`/`MOCK_PROMOCIONES`) **NO se eliminan** — son cómo los unit tests corren sin backend. Esto aplica solo a datos hardcodeados en código de producción.
+
+**Datos de negocio hardcodeados a eliminar:**
+- [ ] `reservas.component.ts` — `SERVICIOS_FALLBACK` (7 nombres, línea ~27) y `HORARIOS_FALLBACK` (9 slots, línea ~37). Hoy se usan como fallback offline y mientras carga la API. Sustituir por: lista vacía + estado de carga (skeleton/spinner) y dejar que `ServiciosService`/`getDisponibilidad` llenen desde DB.
+- [ ] `home.component.ts` — `NOMBRES_SERVICIOS` (línea ~57), `servicios` signal estático (7 servicios con descripción/icono/color, línea ~101). El array de `servicios` es el **fallback SSR**; los checkboxes del formulario de reseña usan `NOMBRES_SERVICIOS`. Migrar ambos a los nombres reales de `GET /servicios`.
+- [ ] `footer.component.ts` — `servicios` array (7 nombres, línea ~24). Cargar desde `ServiciosService.listar()` (o un signal compartido) en vez de la lista fija. _(los `links` de navegación NO son datos de negocio — se quedan)_
+
+**Decisión a tomar antes de implementar (tradeoff SSR/offline):**
+- [ ] Definir qué mostrar mientras la API responde o si falla: **skeleton/spinner** (recomendado) vs. mantener un fallback. Hoy el fallback evita "pantalla vacía" en el prerender SSR de `/` y en `/reservas`. Si se elimina sin reemplazo, el home prerenderizado mostraría la sección de servicios vacía hasta hidratar.
+- [ ] Considerar que `SSR` de `/` hoy NO hace fetch (los datos llegan en cliente). Si se quiere que el HTML inicial ya traiga servicios reales, habría que habilitar fetch en servidor (ver `routes.server.ts`).
+
+**Fuera de alcance (sin modelo en BE):**
+- [ ] `razones` y `stats` en `home.component.ts` son **contenido de marketing** sin tabla en la DB. Si se quieren "no hardcodeados", primero crear modelo/endpoint o moverlos a `config/app.json` (como contacto).
+
+### ✅ Opiniones en Home ahora trae datos reales del BE
+- [x] `home.component.ts` consume `GET /opiniones` vía `OpinionesService`; el promedio y el total se calculan desde los datos reales del BE (ya no `localStorage`)
+- [x] El formulario público de reseñas hace `POST /opiniones` (antes solo guardaba en `localStorage`) — persiste nombre, apellido, email, teléfono, foto (base64), texto, puntuación y `servicios_ids` (mapeados nombre→id)
+- [x] La nueva opinión se antepone a la lista en vivo tras el POST; mapeo `Opinion` (`texto`/`puntuacion`/`created_at`/`foto_url`/`servicios_ids`) → tarjeta del home
+- [x] Tests verdes (home spec actualizado a HTTP testing + submit async)
+
+### ✅ Capa de servicios API (conexión FE ↔ BE) — COMPLETADO
+Ya **ningún componente usa `HttpClient` directo**; cada recurso del backend tiene su servicio en `shared/<recurso>/`. Verificado: grep de `HttpClient|http.get|post|patch|delete` en `*.component.ts` → **0 resultados**.
+- [x] **`OpinionesService`** (`shared/opiniones/`) — `GET/POST/PATCH/DELETE /opiniones`. Lo usan `home` y `admin/opiniones`.
+- [x] **`ServiciosService`** (`shared/servicios/`) — `listar/obtener/crear/actualizar/eliminar` + `subirFoto/eliminarFoto`. Lo usan `home`, `servicios`, `admin/servicios`, `admin/promociones`. `precio` ahora tipado `number` (entero CLP).
+- [x] **`PromocionesService`** (`shared/promociones/`) — `listar/vigentes/crear/actualizar/eliminar`. Lo usa `admin/promociones`.
+- [x] **`GaleriaService`** (`shared/galeria/`) — `listar/subir/generarCaption/publicar/eliminar` + helper `mediaUrl()` (dedup de los dos componentes). Lo usan `galeria`, `admin/galeria`.
+- [x] **`PacientesService`** (`shared/pacientes/`) — `listar/obtener/crearNota/actualizarNota/eliminarNota/generarToken/perfilPublico`. Lo usan `admin/pacientes`, `mi-historial`.
+- [x] **`DisponibilidadService`** (`shared/disponibilidad/`) — `listarBloques/listarBloqueos/crearBloque/eliminarBloque/crearBloqueo/eliminarBloqueo`. Lo usa `admin/disponibilidad`.
+- [x] Interfaces TS por recurso definidas en cada servicio (alineadas con schemas Pydantic); los componentes re-exportan alias (`*Api`) para no romper specs. Base URL centralizada en cada servicio (`environment.apiUrl`).
+- [x] Build de producción verde + **suite Vitest 22/22 archivos, 172/172 tests** ✓
+- [x] **`*.service.spec.ts` dedicados** para los 6 servicios nuevos (`OpinionesService`, `ServiciosService`, `PromocionesService`, `GaleriaService`, `PacientesService`, `DisponibilidadService`) — cubren URL + método + body + respuesta de cada endpoint con `HttpTestingController` (+37 tests)
+- [ ] _(opcional, deuda menor)_ `ReservasService` mantiene `getServicios/getDisponibilidad/getPromocionesVigentes` propios (fachada del flujo de reserva); se puede consolidar contra los nuevos servicios más adelante. `reservas` no hace llamadas crudas, por eso quedó fuera del barrido.
+
+### 🧪 Deuda de tests: specs Jasmine bajo runner Vitest (pre-existente)
+El proyecto migró al test builder de **Vitest** (Angular 21) pero varios specs usan API de **Jasmine** y datos desactualizados. No se detectaba porque `ng build` no typecheckea specs. Encontrado y arreglado lo que tocaba esta sesión; queda barrido general:
+- [x] `servicios.component.spec.ts` — `toBeTrue()` → `toBe(true)`, MOCK con `icono`/`icono_color`
+- [x] `admin-servicios.component.spec.ts` — `precio` string→number, MOCK con `icono`/`icono_color`, flush del `GET /assets/icons/manifest.json` del icon-picker
+- [x] Barrido de matchers Jasmine completado — grep de `toBeTrue/toBeFalse/jasmine.*/createSpyObj/spyOn(` en specs → 0 (el único `spyOn` es `vi.spyOn`, API de Vitest). Toda la suite corre en Vitest.
+- [x] Agregados `*.spec.ts` para los 6 servicios nuevos (ver sección de capa de servicios)
+
+### ✅ Renombre `servicios/detalle` → `servicios`
+- [x] Carpeta `servicios/detalle/` → `servicios/`; archivos `servicio-detalle.component.*` → `servicios.component.*`
+- [x] `ServicioDetalleComponent` → `ServiciosComponent`, selector `app-servicio-detalle` → `app-servicios`, interfaz `ServicioDetalleApi` → `ServicioApi`
+- [x] Imports relativos corregidos (la carpeta subió un nivel) y rutas actualizadas en `routes.ts`
+
+### ✅ Rutas duplicadas resueltas
+- [x] Había dos archivos de rutas: `routes.ts` (activo, vía `config.ts`) y `app.routes.ts` (huérfano, sin enganchar). El huérfano tenía rutas que faltaban en el activo → `/mi-historial/:token` y `/admin/pacientes` caían al `**` redirect. Mergeadas en `routes.ts` y borrado `app.routes.ts`.
+
 ### ✅ CAUSA RAÍZ: backend desactualizado en puerto 8003
 La mayoría de estos bugs venían de que `environment.ts` apuntaba a `http://localhost:8003`, donde corría una **instancia vieja del backend** (sin router de pacientes ni columnas de iconos). El backend actual corre en `8000` (puerto documentado en README/`package.json`). Confirmado: `8003/admin/pacientes` → 404, `8000/admin/pacientes` → 401.
 - [x] **Corregido `environment.ts`** → ahora apunta a `http://localhost:8000`
@@ -35,16 +99,31 @@ El envío es **opcional y controlado por la admin** mediante un checkbox — nun
 - [ ] Endpoint `POST /admin/pacientes/{id}/notificar` con body `{ canal: ["email"|"whatsapp"], incluir_notas: bool, proxima_cita: date | null }`
 - [ ] Mostrar feedback de éxito/error por canal (ej: "Email enviado ✓, WhatsApp falló — número inválido")
 
-### 🔒 Seguridad — datos de salud (prioridad alta)
-Los datos contienen información personal de salud → requieren protección reforzada.
-- [ ] **Auditar prevención de SQL injection** — confirmar que todo usa SQLAlchemy ORM con parámetros ligados (no f-strings/concatenación en queries); revisar especialmente `routers/pacientes.py` (búsqueda `?q=` con `ilike`)
-- [ ] **Conexiones seguras (HTTPS/TLS)** — forzar HTTPS en producción; revisar headers de seguridad (HSTS, CSP, X-Content-Type-Options, X-Frame-Options)
-- [ ] **Tokens de portal de pacientes** — `access_token` da acceso a datos de salud sin login; evaluar expiración del token y rate limiting en `/pacientes/{token}/perfil` (ya usa `secrets.token_urlsafe(32)` ✓)
-- [ ] **Validación y sanitización de inputs** — revisar endpoints que reciben texto libre (notas, opiniones) contra XSS al renderizar en el frontend
-- [ ] **Rate limiting / protección fuerza bruta** en `/auth/login`
-- [ ] **Secrets management** — verificar que `SECRET_KEY`, credenciales DB y API keys vengan de `.env` (vía `config.py` ✓) y que `.env` no esté versionado
-- [ ] **Logs sin datos sensibles** — no loguear contenidos de notas clínicas, tokens ni contraseñas
+### 🔒 Seguridad — datos de salud (auditoría 2026-05-31)
+Los datos contienen información personal de salud → protección reforzada.
+
+**✅ Auditado / Implementado:**
+- [x] **SQL injection — PROTEGIDO** — 0 queries crudas en `routers/`; todo usa SQLAlchemy ORM con parámetros ligados. El `ilike(f"%{q}%")` de pacientes es seguro (el f-string arma solo el valor del patrón LIKE, que va ligado; no estructura SQL)
+- [x] **Headers de seguridad** — middleware en `main.py`: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`; `Strict-Transport-Security` (HSTS) solo en producción
+- [x] **CORS endurecido** — métodos y headers explícitos (ya no `["*"]`); orígenes desde `config/app.json`
+- [x] **Rate limiting** — `rate_limit.py` (in-memory, sin dependencias): `/auth/login` 5/min por IP (anti fuerza bruta) y `/pacientes/{token}/perfil` 20/min por IP (anti enumeración)
+- [x] **Guard de SECRET_KEY** — el backend se niega a arrancar en producción si `SECRET_KEY` es `changeme` o < 32 chars
+- [x] **Docs ocultas en producción** — `/docs` y `/redoc` deshabilitados cuando `APP_ENV=production`
+- [x] **`.env` NO versionado** — verificado: solo `backend/.env.example` está en git; `.env`/`.envrc`/`venv` en `.gitignore` ✓
+- [x] **Token de portal** — `secrets.token_urlsafe(32)` = 256 bits de entropía ✓
+- [x] **Secrets desde `.env`** vía `config.py` ✓
+- [x] **Login no filtra info** — mensaje genérico "Usuario o contraseña incorrectos" (no revela si el usuario existe) ✓
+- [x] **Password mínimo 8 chars** en bootstrap de admin ✓
+- [x] **XSS** — escaneado el frontend: 0 usos de `[innerHTML]` / `bypassSecurityTrust`; Angular escapa interpolaciones por defecto ✓
+
+**⏳ Pendiente (requiere infra/decisiones):**
+- [ ] **HTTPS/TLS real** — depende del hosting (Vercel/Nginx/Caddy); el código ya emite HSTS en prod, pero el certificado y la redirección HTTP→HTTPS se configuran en el proxy/hosting
+- [x] **Expiración de token de portal** — `access_token_expira` (migration `012`), caducidad configurable vía `PORTAL_TOKEN_EXPIRE_DAYS` (default 90 días); el portal rechaza tokens vencidos con 404 genérico
+- [ ] **CSP (Content-Security-Policy)** — definir según assets (Cloudinary, Google Fonts) antes de activarlo
+- [ ] **Rate limiter multi-worker** — el actual es in-memory (sirve `--workers 1`); para multi-instancia migrar a Redis (`slowapi`)
+- [ ] **Logs sin datos sensibles** — revisar que no se logueen notas clínicas, tokens ni contraseñas
 - [ ] Considerar **cifrado en reposo** del campo `contenido` de `NotaPaciente`
+- [x] **`/auth/bootstrap` endurecido** — además del `bootstrap_secret`, ahora rechaza la creación si ya existe cualquier admin (evita crear admins con un SECRET_KEY filtrado)
 
 ---
 
@@ -271,6 +350,11 @@ Los 7 servicios hardcodeados en `home.component.ts` (líneas 84–91) deben inse
 **Frontend — home page**
 - [x] Leer `icono` desde `GET /servicios`; fallback `'bienestar'` si es null
 
+**Ícono de la app (favicon y PWA)**
+- [ ] Reemplazar el favicon genérico de Angular por `src/assets/icons/libelulas_icons/dragonfly_icon.ico` en `frontend/src/index.html` (etiqueta `<link rel="icon">`)
+- [ ] Usar la misma imagen como `apple-touch-icon` y en los manifests de PWA (`manifest.webmanifest` / `ngsw-config.json`) si están presentes
+- [ ] Verificar que el ícono aparezca correctamente en la pestaña del navegador, al agregar a pantalla de inicio (móvil) y en el historial del navegador
+
 **Migración de iconos — eliminar Material Icons**
 - [ ] Auditar todos los componentes y templates Angular en busca de `<mat-icon>` y referencias a nombres de Material Icons (strings como `'star'`, `'close'`, `'check'`, etc.)
 - [ ] Reemplazar cada `<mat-icon>` por `<app-icon>` usando los SVGs de `src/assets/icons/`
@@ -422,6 +506,32 @@ Sistema de bitácora interna donde la podóloga registra observaciones, sugerenc
   - _Solo audio personalizado_ → ElevenLabs + imagen estática en post
 - [ ] Integración posible: admin escribe script → API genera video → se publica en RRSS automáticamente
 - [ ] Considerar costo/privacidad antes de implementar (requiere consentimiento explícito de imagen)
+
+---
+
+### Gestión de Usuarios Admin (baja prioridad — al final de la lista)
+Hoy el admin por defecto se crea por migración (`014_seed_default_data.py`) y se gestiona manualmente en Railway/DB. Esta página es un "nice to have" para administrar usuarios desde la UI sin tocar la base de datos.
+
+**Backend**
+- [ ] Endpoint `GET /admin/usuarios` — listar usuarios admin (solo admin)
+- [ ] Endpoint `POST /admin/usuarios` — crear nuevo usuario admin (username, email, password)
+- [ ] Endpoint `PATCH /admin/usuarios/{id}/password` — cambiar la propia contraseña (verificar contraseña actual)
+- [ ] Endpoint `PATCH /admin/usuarios/{id}` — activar/desactivar usuario, editar email
+- [ ] Endpoint `DELETE /admin/usuarios/{id}` — eliminar usuario (no permitir eliminar el último admin activo)
+- [ ] Schemas: `UsuarioCreate`, `UsuarioUpdate`, `PasswordChange`, `UsuarioOut` (nunca exponer `hashed_password`)
+- [ ] Validar contraseña mínimo 8 chars; reutilizar `hash_password` / `verify_password` de `auth.py`
+
+**Frontend — panel admin**
+- [ ] Ruta `/admin/usuarios` (lazy, protegida con `adminAuthGuard`) + link en `AdminNavbarComponent`
+- [ ] Lista de usuarios con estado (activo/inactivo) y email
+- [ ] Formulario "Cambiar mi contraseña" (contraseña actual + nueva + confirmación)
+- [ ] Formulario "Crear nuevo usuario admin"
+- [ ] Acciones: activar/desactivar, eliminar (con confirmación y guardia del último admin)
+
+**Seguridad**
+- [ ] Solo un admin autenticado puede gestionar usuarios
+- [ ] No permitir que un usuario se desactive/elimine a sí mismo si es el último admin activo
+- [ ] Cambios de contraseña requieren re-verificar la contraseña actual
 
 ---
 

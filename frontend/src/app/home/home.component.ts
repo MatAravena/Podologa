@@ -9,9 +9,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser, NgOptimizedImage, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
-import { environment } from '../../environments/environment';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -27,15 +25,28 @@ import { MatFormFieldModule} from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
-import { TestimonialsService } from '../shared/testimonials/testimonials.service';
+import { OpinionesService, Opinion } from '../services/opiniones/opiniones.service';
+import { ServiciosService, Servicio as ServicioApi } from '../services/servicios/servicios.service';
+import { ContactoService }     from '../services/contacto/contacto.service';
 import { AppIconComponent }    from '../shared/icon/app-icon.component';
 import { resolveColor }        from '../shared/colors/brand-colors';
 import { StarRatingComponent } from '../shared/star-rating/star-rating.component';
 
 interface Servicio { nombre: string; descripcion: string; icono: string; color: string; }
-interface ServicioApi { id: number; nombre: string; descripcion: string | null; icono: string | null; icono_color: string | null; }
 interface Razon    { titulo: string; descripcion: string; icono: string; }
 interface Stat     { valor: string; etiqueta: string; }
+
+/** View model for an opinion card (derived from the backend `Opinion`). */
+interface TestimonioView {
+  id: number;
+  nombre: string;
+  apellido: string;
+  fecha: string;
+  calificacion: number;
+  comentario: string;
+  fotoUrl: string | null;
+  servicios: string[];
+}
 
 /** At least 1 service must be checked */
 function atLeastOneServicio(control: AbstractControl): ValidationErrors | null {
@@ -77,11 +88,14 @@ const NOMBRES_SERVICIOS = [
 export class HomeComponent implements OnInit {
   private readonly fb       = inject(FormBuilder);
   private readonly snack    = inject(MatSnackBar);
-  private readonly http     = inject(HttpClient);
-  readonly testimonialsService = inject(TestimonialsService);
+  private readonly serviciosService = inject(ServiciosService);
+  private readonly opinionesService = inject(OpinionesService);
+  readonly contactoService          = inject(ContactoService);
   private readonly isBrowser   = isPlatformBrowser(inject(PLATFORM_ID));
 
-  readonly servicioIds = signal<Map<string, number>>(new Map());
+  readonly servicioIds   = signal<Map<string, number>>(new Map());
+  /** Reverse map id → service name, used to label opinion service tags. */
+  private readonly serviciosPorId = signal<Map<number, string>>(new Map());
 
   // ── Static data ──────────────────────────────────────────────────
   readonly servicios = signal<Servicio[]>([
@@ -139,20 +153,55 @@ export class HomeComponent implements OnInit {
     return Object.entries(vals).filter(([, v]) => v).map(([k]) => k);
   });
 
-  /** Promedio global from service */
-  readonly promedioCalificacion = this.testimonialsService.promedioCalificacion;
-  readonly totalTestimonios     = this.testimonialsService.totalTestimonios;
-  readonly testimonios          = this.testimonialsService.testimonios;
+  // ── Opiniones (real data from the backend) ───────────────────────
+  private readonly _opiniones = signal<Opinion[]>([]);
+
+  /** Opinions mapped to the card view model, newest first. */
+  readonly testimonios = computed<TestimonioView[]>(() => {
+    const porId = this.serviciosPorId();
+    return this._opiniones().map(op => ({
+      id:           op.id,
+      nombre:       op.nombre,
+      apellido:     op.apellido,
+      fecha:        op.created_at,
+      calificacion: op.puntuacion,
+      comentario:   op.texto,
+      fotoUrl:      op.foto_url,
+      servicios:    this.parseServicios(op.servicios_ids, porId),
+    }));
+  });
+
+  readonly totalTestimonios = computed(() => this._opiniones().length);
+
+  readonly promedioCalificacion = computed(() => {
+    const list = this._opiniones();
+    if (!list.length) return 0;
+    return list.reduce((sum, op) => sum + op.puntuacion, 0) / list.length;
+  });
+
+  /** Parse the raw JSON `servicios_ids` into readable service names. */
+  private parseServicios(raw: string | null, porId: Map<number, string>): string[] {
+    if (!raw) return [];
+    try {
+      const ids = JSON.parse(raw) as number[];
+      return ids.map(id => porId.get(id)).filter((n): n is string => !!n);
+    } catch {
+      return [];
+    }
+  }
 
   ngOnInit(): void {
+    this.contactoService.load();
     if (!this.isBrowser) return;
-    this.http.get<ServicioApi[]>(`${environment.apiUrl}/servicios`).pipe(
+    this.serviciosService.listar().pipe(
       catchError(() => of([] as ServicioApi[]))
     ).subscribe(list => {
       if (list.length === 0) return;
-      const map = new Map<string, number>();
-      for (const s of list) map.set(s.nombre, s.id);
+      const map   = new Map<string, number>();
+      const byId  = new Map<number, string>();
+      for (const s of list) { map.set(s.nombre, s.id); byId.set(s.id, s.nombre); }
       this.servicioIds.set(map);
+      this.serviciosPorId.set(byId);
       this.servicios.set(list.map(s => ({
         nombre:      s.nombre,
         descripcion: s.descripcion ?? '',
@@ -160,6 +209,10 @@ export class HomeComponent implements OnInit {
         color:       resolveColor(s.icono_color),
       })));
     });
+
+    this.opinionesService.listar().pipe(
+      catchError(() => of([] as Opinion[]))
+    ).subscribe(list => this._opiniones.set(list));
   }
 
   servicioId(nombre: string): number | null {
@@ -202,30 +255,39 @@ export class HomeComponent implements OnInit {
       telefono: string;
     };
 
-    const serviciosUsados = Object.entries(v.serviciosGroup)
+    const serviciosIds = Object.entries(v.serviciosGroup)
       .filter(([, checked]) => checked)
-      .map(([name]) => name);
+      .map(([name]) => this.servicioId(name))
+      .filter((id): id is number => id !== null);
 
-    this.testimonialsService.agregar({
-      nombre:       v.nombre.trim(),
-      apellido:     v.apellido.trim(),
-      comentario:   v.comentario.trim(),
-      servicios:    serviciosUsados,
-      calificacion: this.calificacion(),
-      email:    v.email?.trim() || undefined,
-      telefono: v.telefono?.trim() || undefined,
-      fotoUrl:  this.fotoPreview() ?? undefined,
-    });
+    this.opinionesService.crear({
+      nombre:        v.nombre.trim(),
+      apellido:      v.apellido.trim(),
+      texto:         v.comentario.trim(),
+      puntuacion:    this.calificacion(),
+      servicios_ids: serviciosIds,
+      email:    v.email?.trim() || null,
+      telefono: v.telefono?.trim() || null,
+      foto_url: this.fotoPreview() ?? null,
+    }).pipe(
+      catchError(() => {
+        this.enviando.set(false);
+        this.snack.open('No pudimos guardar tu opinión. Inténtalo de nuevo.', 'Cerrar', { duration: 5000 });
+        return of(null);
+      })
+    ).subscribe(opinion => {
+      if (!opinion) return;
+      this._opiniones.update(list => [opinion, ...list]);
+      this.enviando.set(false);
+      this.enviado.set(true);
+      this.form.reset();
+      this.calificacion.set(5);
+      this.fotoPreview.set(null);
 
-    this.enviando.set(false);
-    this.enviado.set(true);
-    this.form.reset();
-    this.calificacion.set(5);
-    this.fotoPreview.set(null);
-
-    this.snack.open('¡Gracias por tu opinión! Ya aparece en el sitio.', 'Cerrar', {
-      duration: 5000,
-      panelClass: ['snack-success'],
+      this.snack.open('¡Gracias por tu opinión! Ya aparece en el sitio.', 'Cerrar', {
+        duration: 5000,
+        panelClass: ['snack-success'],
+      });
     });
   }
 

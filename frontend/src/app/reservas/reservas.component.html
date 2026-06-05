@@ -59,8 +59,8 @@
         </div>
         <div>
           <h3 class="info-card__title">Consultas por WhatsApp</h3>
-          <a href="https://wa.me/569XXXXXXXX" class="info-card__link" aria-label="Escribir por WhatsApp">
-            +56 9 XXXX XXXX
+          <a [href]="contactoService.whatsappUrl()" class="info-card__link" aria-label="Escribir por WhatsApp">
+            {{ contactoService.contacto()?.phone ?? '+56 9 XXXX XXXX' }}
           </a>
         </div>
       </div>

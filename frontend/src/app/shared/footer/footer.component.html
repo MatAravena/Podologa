@@ -24,7 +24,7 @@
         <!-- Social links -->
         <div class="footer__social" aria-label="Redes sociales">
           <a
-            href="https://wa.me/569XXXXXXXX"
+            [href]="contactoService.whatsappUrl()"
             class="footer__social-link"
             target="_blank"
             rel="noopener noreferrer"
@@ -73,7 +73,7 @@
       <div class="footer__col" aria-label="Servicios ofrecidos">
         <h3 class="footer__col-title">Servicios</h3>
         <ul class="footer__list" role="list">
-          @for (s of servicios; track s) {
+          @for (s of servicios(); track s) {
             <li>
               <a routerLink="/" fragment="servicios" class="footer__link">{{ s }}</a>
             </li>
@@ -100,8 +100,8 @@
 
         <div class="footer__contact-item">
           <mat-icon aria-hidden="true">phone</mat-icon>
-          <a href="https://wa.me/569XXXXXXXX" class="footer__link" target="_blank" rel="noopener noreferrer">
-            +56 9 XXXX XXXX
+          <a [href]="contactoService.whatsappUrl()" class="footer__link" target="_blank" rel="noopener noreferrer">
+            {{ contactoService.contacto()?.phone ?? '+56 9 XXXX XXXX' }}
           </a>
         </div>
 

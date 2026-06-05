@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from auth import create_access_token, hash_password, verify_password
 from database import get_db
 from models import User
+from rate_limit import rate_limit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -23,7 +24,12 @@ class RegisterAdminIn(BaseModel):
     bootstrap_secret: str  # must match settings.SECRET_KEY to prevent abuse
 
 
-@router.post("/login", response_model=TokenOut)
+@router.post(
+    "/login",
+    response_model=TokenOut,
+    # Brute-force protection: max 5 login attempts per IP per minute
+    dependencies=[Depends(rate_limit("login", limit=5, window=60))],
+)
 def login(
     form: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
@@ -48,6 +54,14 @@ def bootstrap_admin(payload: RegisterAdminIn, db: Session = Depends(get_db)):
     from config import settings
     if payload.bootstrap_secret != settings.SECRET_KEY:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Secreto incorrecto")
+
+    # Bootstrap is a one-time operation: once any admin exists, refuse.
+    # This prevents creating new admins via a leaked SECRET_KEY.
+    if db.query(User).filter(User.is_admin == True).first():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El bootstrap ya fue utilizado. Crea nuevos admins desde el panel.",
+        )
 
     existing = db.query(User).filter(
         (User.username == payload.username) | (User.email == payload.email)

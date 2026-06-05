@@ -7,7 +7,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { forkJoin, of, catchError } from 'rxjs';
 import { MatButtonModule }    from '@angular/material/button';
@@ -18,27 +17,13 @@ import { MatIconModule }      from '@angular/material/icon';
 import { MatTabsModule }      from '@angular/material/tabs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { AdminAuthService }   from '../../shared/admin/admin-auth.service';
-import { AdminNavbarComponent } from '../../shared/admin/admin-navbar/admin-navbar.component';
-import { environment }          from '../../../environments/environment';
+import { AdminAuthService }   from '../admin-auth/admin-auth.service';
+import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
+import { DisponibilidadService, Bloque, Bloqueo, BloqueCreate } from '../../services/disponibilidad/disponibilidad.service';
 
-export interface BloqueApi {
-  id: number;
-  dia_semana: number | null;
-  fecha_especifica: string | null;
-  hora_inicio: string;
-  hora_fin: string;
-  activo: boolean;
-  created_at: string;
-}
-
-export interface BloqueoApi {
-  id: number;
-  fecha: string;
-  motivo: string | null;
-  activo: boolean;
-  created_at: string;
-}
+/** Re-exported for templates/specs. */
+export type BloqueApi = Bloque;
+export type BloqueoApi = Bloqueo;
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -62,12 +47,12 @@ const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', '
 })
 export class AdminDisponibilidadComponent implements OnInit {
   readonly auth   = inject(AdminAuthService);
-  private readonly http  = inject(HttpClient);
+  private readonly disponibilidadService = inject(DisponibilidadService);
   private readonly snack = inject(MatSnackBar);
   private readonly fb    = inject(FormBuilder);
 
-  readonly bloques     = signal<BloqueApi[]>([]);
-  readonly bloqueos    = signal<BloqueoApi[]>([]);
+  readonly bloques     = signal<Bloque[]>([]);
+  readonly bloqueos    = signal<Bloqueo[]>([]);
   readonly loading     = signal(true);
   readonly saving      = signal(false);
   readonly deletingBloque  = signal<number | null>(null);
@@ -111,20 +96,18 @@ export class AdminDisponibilidadComponent implements OnInit {
     return Math.round(ms / 86_400_000) + 1;
   });
 
-  readonly apiUrl = environment.apiUrl;
-
   ngOnInit(): void {
     this.load();
   }
 
   private load(): void {
     this.loading.set(true);
-    this.http.get<BloqueApi[]>(`${this.apiUrl}/admin/disponibilidad/bloques`).pipe(
-      catchError(() => of([] as BloqueApi[]))
+    this.disponibilidadService.listarBloques().pipe(
+      catchError(() => of([] as Bloque[]))
     ).subscribe(list => this.bloques.set(list));
 
-    this.http.get<BloqueoApi[]>(`${this.apiUrl}/admin/disponibilidad/bloqueos`).pipe(
-      catchError(() => of([] as BloqueoApi[]))
+    this.disponibilidadService.listarBloqueos().pipe(
+      catchError(() => of([] as Bloqueo[]))
     ).subscribe(list => { this.bloqueos.set(list); this.loading.set(false); });
   }
 
@@ -134,24 +117,24 @@ export class AdminDisponibilidadComponent implements OnInit {
     if (this.bloqueForm.invalid) return;
     const v = this.bloqueForm.getRawValue();
 
-    const payload: Record<string, unknown> = {
+    const payload: BloqueCreate = {
       hora_inicio: v.hora_inicio,
       hora_fin:    v.hora_fin,
       activo:      true,
     };
 
     if (v.tipo === 'semanal') {
-      payload['dia_semana'] = v.dia_semana;
+      payload.dia_semana = v.dia_semana;
     } else {
       if (!v.fecha_especifica) {
         this.snack.open('Debes seleccionar una fecha específica.', 'Cerrar', { duration: 3000 });
         return;
       }
-      payload['fecha_especifica'] = v.fecha_especifica;
+      payload.fecha_especifica = v.fecha_especifica;
     }
 
     this.saving.set(true);
-    this.http.post<BloqueApi>(`${this.apiUrl}/admin/disponibilidad/bloques`, payload).pipe(
+    this.disponibilidadService.crearBloque(payload).pipe(
       catchError(() => {
         this.snack.open('Error al guardar el bloque.', 'Cerrar', { duration: 4000 });
         this.saving.set(false);
@@ -170,7 +153,7 @@ export class AdminDisponibilidadComponent implements OnInit {
   eliminarBloque(id: number): void {
     if (!confirm('¿Eliminar este bloque horario?')) return;
     this.deletingBloque.set(id);
-    this.http.delete(`${this.apiUrl}/admin/disponibilidad/bloques/${id}`).pipe(
+    this.disponibilidadService.eliminarBloque(id).pipe(
       catchError(() => of(null))
     ).subscribe(() => {
       this.deletingBloque.set(null);
@@ -217,14 +200,13 @@ export class AdminDisponibilidadComponent implements OnInit {
     this.saving.set(true);
 
     const requests = fechas.map(fecha =>
-      this.http.post<BloqueoApi>(`${this.apiUrl}/admin/disponibilidad/bloqueos`, {
-        fecha, motivo, activo: true,
-      }).pipe(catchError(() => of(null)))
+      this.disponibilidadService.crearBloqueo({ fecha, motivo, activo: true })
+        .pipe(catchError(() => of(null)))
     );
 
     forkJoin(requests).subscribe(results => {
       this.saving.set(false);
-      const added = results.filter((r): r is BloqueoApi => r !== null);
+      const added = results.filter((r): r is Bloqueo => r !== null);
       if (added.length > 0) {
         this.bloqueos.update(list =>
           [...list, ...added].sort((a, b) => a.fecha.localeCompare(b.fecha))
@@ -244,7 +226,7 @@ export class AdminDisponibilidadComponent implements OnInit {
   eliminarBloqueo(id: number): void {
     if (!confirm('¿Desbloquear esta fecha?')) return;
     this.deletingBloqueo.set(id);
-    this.http.delete(`${this.apiUrl}/admin/disponibilidad/bloqueos/${id}`).pipe(
+    this.disponibilidadService.eliminarBloqueo(id).pipe(
       catchError(() => of(null))
     ).subscribe(() => {
       this.deletingBloqueo.set(null);

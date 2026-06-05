@@ -664,6 +664,7 @@
 
   mat-card-actions {
     padding: 0 $s3 $s3 !important;
+    justify-content: space-around;
   }
 
   // Service number (top-right, watermark style)

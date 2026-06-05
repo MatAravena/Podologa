@@ -4,27 +4,29 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { provideRouter, ActivatedRoute } from '@angular/router';
 import { signal } from '@angular/core';
 
-import { ServicioDetalleComponent, ServicioDetalleApi } from './servicio-detalle.component';
+import { ServiciosComponent, ServicioApi } from './servicios.component';
 
-const MOCK: ServicioDetalleApi = {
+const MOCK: ServicioApi = {
   id: 1,
   nombre: 'Podología',
   descripcion: 'Cuidado del pie.',
   subtitulo: 'Para el bienestar de tus pies',
   descripcion_larga: 'Descripción larga de prueba.',
   fotos_urls: '["https://example.com/a.jpg","https://example.com/b.jpg"]',
+  icono: 'podologia',
+  icono_color: 'rosa_empolvado',
   duracion: 45,
-  precio: '25000.00',
+  precio: 25000,
 };
 
-describe('ServicioDetalleComponent', () => {
-  let fixture: ComponentFixture<ServicioDetalleComponent>;
-  let component: ServicioDetalleComponent;
+describe('ServiciosComponent', () => {
+  let fixture: ComponentFixture<ServiciosComponent>;
+  let component: ServiciosComponent;
   let http: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ServicioDetalleComponent],
+      imports: [ServiciosComponent],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -36,7 +38,7 @@ describe('ServicioDetalleComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ServicioDetalleComponent);
+    fixture = TestBed.createComponent(ServiciosComponent);
     component = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);
   });
@@ -67,7 +69,7 @@ describe('ServicioDetalleComponent', () => {
     fixture.detectChanges();
     http.expectOne(r => r.url.includes('/servicios/1')).error(new ProgressEvent('error'));
     fixture.detectChanges();
-    expect(component.notFound()).toBeTrue();
+    expect(component.notFound()).toBe(true);
   });
 
   it('should open and close lightbox', () => {

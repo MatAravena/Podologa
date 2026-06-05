@@ -14,6 +14,7 @@ from datetime import date, datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from auth import get_current_admin
@@ -43,7 +44,8 @@ def listar_vigentes(
     servicio_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    """Return all active promotions valid right now, optionally filtered by service."""
+    """Return active promotions for today — global ones (servicio_id=NULL) always included;
+    service-specific ones included only when servicio_id filter matches."""
     today = date.today()
     query = db.query(Promocion).filter(
         Promocion.activo.is_(True),
@@ -51,11 +53,13 @@ def listar_vigentes(
         Promocion.fecha_fin >= today,
     )
     if servicio_id is not None:
-        query = query.filter(Promocion.servicio_id == servicio_id)
+        # Return global promos + promos for this specific service
+        query = query.filter(
+            or_(Promocion.servicio_id.is_(None), Promocion.servicio_id == servicio_id)
+        )
+    # else: return all (global + service-specific)
 
     promos = query.order_by(Promocion.porcentaje_descuento.desc()).all()
-
-    # Filter by current hour if promo has a time window
     return [p for p in promos if _is_currently_active(p)]
 
 
