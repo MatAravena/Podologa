@@ -170,6 +170,22 @@
             </a>
           </mat-card-actions>
         </mat-card>
+      } @empty {
+        @if (cargandoServicios()) {
+          @for (i of [0,1,2,3,4,5]; track i) {
+            <mat-card class="service-card service-card--skeleton" aria-hidden="true">
+              <mat-card-content>
+                <div class="service-card__icon-wrap"></div>
+                <h3 class="service-card__title">&nbsp;</h3>
+                <p class="service-card__desc">&nbsp;</p>
+              </mat-card-content>
+            </mat-card>
+          }
+        } @else {
+          <p class="services__empty" role="status">
+            No pudimos cargar los servicios en este momento. Vuelve a intentarlo más tarde.
+          </p>
+        }
       }
     </div>
 
@@ -419,7 +435,7 @@
             Servicios utilizados <span aria-hidden="true">*</span>
           </legend>
           <div class="review-form__checks">
-            @for (nombre of nombresServicios; track nombre) {
+            @for (nombre of nombresServicios(); track nombre) {
               <mat-checkbox
                 class="review-form__check"
                 [formControlName]="nombre"

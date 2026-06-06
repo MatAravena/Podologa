@@ -13,6 +13,12 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { HomeComponent } from './home.component';
 
+const SERVICIO_NOMBRES = ['Podología', 'Reiki', 'Reflexología', 'Esencias Florales', 'Auriculoterapia', 'Masajes Linfáticos', 'Tuina'];
+const MOCK_SERVICIOS = SERVICIO_NOMBRES.map((nombre, i) => ({
+  id: i + 1, nombre, descripcion: `Descripción de ${nombre}`, subtitulo: null, descripcion_larga: null,
+  fotos_urls: null, icono: 'bienestar', icono_color: 'verde_salvia', duracion: 60, precio: 20000,
+}));
+
 describe('HomeComponent (global page test)', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let component: HomeComponent;
@@ -35,7 +41,7 @@ describe('HomeComponent (global page test)', () => {
     fixture.detectChanges();
     // ngOnInit fires GETs for contacto + servicios + opiniones; answer them.
     http.match(r => r.url.includes('/config/contacto')).forEach(r => r.flush(null));
-    http.match(r => r.url.includes('/servicios')).forEach(r => r.flush([]));
+    http.match(r => r.url.includes('/servicios')).forEach(r => r.flush(MOCK_SERVICIOS));
     http.match(r => r.url.includes('/opiniones')).forEach(r => r.flush([]));
     fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;

@@ -54,16 +54,6 @@ function atLeastOneServicio(control: AbstractControl): ValidationErrors | null {
   return Object.values(val).some(v => v) ? null : { required: true };
 }
 
-const NOMBRES_SERVICIOS = [
-  'Podología',
-  'Reiki',
-  'Reflexología',
-  'Esencias Florales',
-  'Auriculoterapia',
-  'Masajes Linfáticos',
-  'Tuina',
-] as const;
-
 @Component({
   selector: 'app-home',
   imports: [
@@ -97,16 +87,11 @@ export class HomeComponent implements OnInit {
   /** Reverse map id → service name, used to label opinion service tags. */
   private readonly serviciosPorId = signal<Map<number, string>>(new Map());
 
-  // ── Static data ──────────────────────────────────────────────────
-  readonly servicios = signal<Servicio[]>([
-    { nombre: 'Podología',          descripcion: 'Diagnóstico y tratamiento integral del pie, uñas y piel. Cuidado profesional para tu bienestar y movilidad.',                            icono: 'podologia',   color: resolveColor('rosa_empolvado') },
-    { nombre: 'Reiki',              descripcion: 'Técnica de equilibrio energético que promueve la relajación profunda y la sanación natural del cuerpo y la mente.',                       icono: 'reiki',        color: resolveColor('verde_salvia')   },
-    { nombre: 'Reflexología',       descripcion: 'Masaje terapéutico en puntos reflejos del pie que conectan con órganos y sistemas de todo el cuerpo.',                                    icono: 'reflexologia', color: resolveColor('verde_salvia')   },
-    { nombre: 'Esencias Florales',  descripcion: 'Terapia floral de Bach para equilibrar estados emocionales y acompañar procesos de cambio interior.',                                     icono: 'aromaterapia', color: resolveColor('verde_salvia')   },
-    { nombre: 'Auriculoterapia',    descripcion: 'Estimulación de puntos del pabellón auricular para tratar diversas condiciones de salud de forma natural.',                               icono: 'ayuda',        color: resolveColor('dorado_mostaza') },
-    { nombre: 'Masajes Linfáticos', descripcion: 'Técnica suave que activa el sistema linfático, reduce la retención de líquidos y refuerza las defensas.',                                 icono: 'masaje',       color: resolveColor('verde_salvia')   },
-    { nombre: 'Tuina',              descripcion: 'Masaje terapéutico de la medicina tradicional china sobre meridianos y puntos de acupresión del cuerpo.',                                 icono: 'herramientas', color: resolveColor('dorado_mostaza') },
-  ]);
+  // ── Servicios (real data from the backend) ───────────────────────
+  /** Service cards, loaded from `GET /servicios` (empty while loading). */
+  readonly servicios = signal<Servicio[]>([]);
+  /** True until the first services response arrives (drives the skeleton). */
+  readonly cargandoServicios = signal(true);
 
   readonly razones = signal<Razon[]>([
     { titulo: 'Profesional Certificada', descripcion: 'Más de 10 años de experiencia y formación continua en podología clínica y terapias complementarias.', icono: 'sobre_mi' },
@@ -122,7 +107,8 @@ export class HomeComponent implements OnInit {
     { valor: '100%', etiqueta: 'Dedicación' },
   ]);
 
-  readonly nombresServicios = NOMBRES_SERVICIOS;
+  /** Service names for the review-form checkboxes, derived from loaded services. */
+  readonly nombresServicios = computed(() => this.servicios().map(s => s.nombre));
 
   // ── Review form ───────────────────────────────────────────────────
   readonly calificacion = signal<number>(5);
@@ -130,10 +116,10 @@ export class HomeComponent implements OnInit {
   readonly enviando     = signal(false);
   readonly enviado      = signal(false);
 
-  /** Build a dynamic group for the service checkboxes */
-  private buildServiciosGroup() {
+  /** Build a dynamic group with one checkbox control per service name. */
+  private buildServiciosGroup(names: readonly string[]) {
     const group: Record<string, [boolean]> = {};
-    for (const s of NOMBRES_SERVICIOS) group[s] = [false];
+    for (const s of names) group[s] = [false];
     return this.fb.group(group, { validators: atLeastOneServicio });
   }
 
@@ -141,7 +127,7 @@ export class HomeComponent implements OnInit {
     nombre:   ['', [Validators.required, Validators.minLength(2)]],
     apellido: ['', [Validators.required, Validators.minLength(2)]],
     comentario: ['', [Validators.required, Validators.minLength(20), Validators.maxLength(600)]],
-    serviciosGroup: this.buildServiciosGroup(),
+    serviciosGroup: this.buildServiciosGroup([]),
     // Optional
     email:    ['', [Validators.email]],
     telefono: ['', [Validators.pattern(/^\+?[0-9\s\-()]{7,20}$/)]],
@@ -196,6 +182,7 @@ export class HomeComponent implements OnInit {
     this.serviciosService.listar().pipe(
       catchError(() => of([] as ServicioApi[]))
     ).subscribe(list => {
+      this.cargandoServicios.set(false);
       if (list.length === 0) return;
       const map   = new Map<string, number>();
       const byId  = new Map<number, string>();
@@ -208,6 +195,8 @@ export class HomeComponent implements OnInit {
         icono:       s.icono ?? 'bienestar',
         color:       resolveColor(s.icono_color),
       })));
+      // Rebuild the review-form checkboxes to match the real service names.
+      this.form.setControl('serviciosGroup', this.buildServiciosGroup(list.map(s => s.nombre)));
     });
 
     this.opinionesService.listar().pipe(

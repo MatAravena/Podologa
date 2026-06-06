@@ -1373,3 +1373,39 @@
     outline-offset: 3px;
   }
 }
+
+// ── Servicios: loading skeleton + empty state ───────────────────────
+.services__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.55);
+  padding: 2rem 1rem;
+}
+
+.service-card--skeleton {
+  pointer-events: none;
+  min-height: 16rem;
+
+  .service-card__icon-wrap {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .service-card__title,
+  .service-card__desc {
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .service-card__title { height: 1.25rem; width: 60%; margin: 1rem 0 0.5rem; }
+  .service-card__desc  { height: 3rem;    width: 100%; }
+
+  animation: service-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes service-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
