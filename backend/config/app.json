@@ -15,7 +15,9 @@
   },
   "cors_origins": [
     "http://localhost:4200",
-    "http://localhost:4000"
+    "http://localhost:4000",
+    "https://terapiaslibelula.cl",
+    "https://www.terapiaslibelula.cl"
   ],
   "cors_origin_regex": "https://podologa[a-z0-9-]*\\.vercel\\.app"
 }

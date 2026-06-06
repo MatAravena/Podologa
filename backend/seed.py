@@ -92,10 +92,11 @@ def _seed_servicios(db) -> list[Servicio]:
 
 def _seed_pacientes_y_citas(db, servicios: list[Servicio]):
     today = date.today()
+
     records = [
-        ("Ana López",    "ana.lopez@example.com",    "+56912345678", servicios[0], today + timedelta(days=3),  time(10, 0), EstadoCita.CONFIRMADA),
-        ("Carlos Ruiz",  "carlos.ruiz@example.com",  "+56987654321", servicios[1], today - timedelta(days=7),  time(15, 30), EstadoCita.COMPLETADA),
+        ("Matias Aravena",    "matute@example.com",    "+56912345678", servicios[0], today + timedelta(days=3),  time(10, 0), EstadoCita.CONFIRMADA),
     ]
+
     for nombre, email, tel, servicio, fecha, hora, estado in records:
         p = db.query(Paciente).filter(Paciente.email == email).first()
         if not p:
