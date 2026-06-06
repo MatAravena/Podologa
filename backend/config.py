@@ -83,6 +83,10 @@ class Settings(BaseSettings):
     # Example: CORS_EXTRA_ORIGINS=https://libelula.cl,https://www.libelula.cl
     CORS_EXTRA_ORIGINS: str = ""
 
+    # Regex matching allowed origins (overrides app.json cors_origin_regex).
+    # Example: CORS_ORIGIN_REGEX=https://podologa[a-z0-9-]*\.vercel\.app
+    CORS_ORIGIN_REGEX: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # ── JSON config accessors (lazy-loaded once) ──────────────────────────────
@@ -109,6 +113,14 @@ class Settings(BaseSettings):
             extra = [o.strip() for o in self.CORS_EXTRA_ORIGINS.split(",") if o.strip()]
             return base + extra
         return base
+
+    @property
+    def cors_origin_regex(self) -> str | None:
+        """Regex matching allowed origins (e.g. Vercel production + preview URLs).
+
+        Overridable via the CORS_ORIGIN_REGEX env var; falls back to app.json.
+        """
+        return self.CORS_ORIGIN_REGEX or self.app_config.get("cors_origin_regex")
 
 
 settings = Settings()

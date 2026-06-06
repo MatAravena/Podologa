@@ -5,13 +5,8 @@
     "phone": "+56 9 XXXX XXXX",
     "email": "contacto@libelula.cl",
     "address": "Santiago, Chile",
-    "instagram": "@libelula.podologia",
-    "facebook": "libelulapodologia"
-  },
-  "business_hours": {
-    "monday_friday": { "open": "09:00", "close": "19:00" },
-    "saturday":      { "open": "09:00", "close": "13:00" },
-    "sunday":        null
+    "instagram": "@podologiayterapias_libelula",
+    "facebook": null
   },
   "booking": {
     "slot_duration_default_minutes": 60,
@@ -20,7 +15,7 @@
   },
   "cors_origins": [
     "http://localhost:4200",
-    "http://localhost:4000",
-    "https://podologa-production.up.railway.app"
-  ]
+    "http://localhost:4000"
+  ],
+  "cors_origin_regex": "https://podologa[a-z0-9-]*\\.vercel\\.app"
 }

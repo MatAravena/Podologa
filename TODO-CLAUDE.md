@@ -24,23 +24,28 @@ Asegurar que toda la app consuma datos reales almacenados en la base de datos y 
   - ✅ La lista estática de servicios en `home.component.ts` es **fallback SSR intencional**; verificado que `ngOnInit` la sobreescribe con `GET /servicios`
   - ℹ️ `razones` y `stats` en `home.component.ts` son **contenido de marketing estático** (no existe modelo en BE) — aceptable; se podría mover a config si se quiere editar sin deploy
   - ✅ Cada sección con datos (servicios, opiniones, galería, disponibilidad, promociones) ya lee desde su endpoint vía su servicio (ver capa de servicios)
-- [ ] ⚠️ **Contacto con placeholder hardcodeado** — `wa.me/569XXXXXXXX` y `+56 9 XXXX XXXX` están en `home.component.html`, `reservas.component.html` y `footer.component.html`. El número real lo tiene la dueña (no inventar). El BE guarda contacto en `config/app.json` pero **no lo expone por API**. Opciones:
-  - [ ] Rápido: reemplazar el placeholder por el número real en los 3 templates
-  - [ ] Limpio: endpoint `GET /config/contacto` (lee `config/app.json`) + `ContactoService`/config en el FE, para editar sin tocar código y eliminar la duplicación entre los 3 templates
+- [x] ✅ **Contacto centralizado en API (datos de contacto ya no hardcodeados en templates)** — implementado el camino "Limpio":
+  - [x] Endpoint `GET /config/contacto` (router `configuracion.py`, lee `config/app.json`; no expone secretos/CORS) + test backend.
+  - [x] `ContactoService` (FE) con `contacto()` + computeds `whatsappUrl`, `instagramUrl`, `facebookUrl`, `instagramHandle` y `horarios()` (formatea `business_hours`).
+  - [x] Wired en `home` (WhatsApp CTA), `reservas` (WhatsApp + dirección + horarios) y `footer` (WhatsApp + Instagram + Facebook + dirección + horarios). Verificado: 0 handles/horarios/URLs de contacto hardcodeados en templates.
+  - [ ] ⚠️ **Acción de la dueña:** poner el **teléfono real** en `config/app.json` → `contact.phone` (hoy `+56 9 XXXX XXXX` es placeholder; no inventar). Al hacerlo, el WhatsApp y el número mostrado se actualizan solos en los 3 lugares.
+  - [ ] _(opcional)_ Exponer la edición de `config/app.json` (contacto) desde el panel admin para editar sin redeploy.
 
 ### 🧹 Eliminar listas hardcodeadas de servicios/horarios (la DB + `seed.py` son la fuente de verdad)
 La DB ya tiene todos los datos (sembrados por `backend/seed.py` y la migration `014_seed_default_data`). Reemplazar las **listas estáticas de negocio** que aún viven en el frontend por datos reales desde el endpoint correspondiente.
 
 > ⚠️ **No confundir con fixtures de test:** los `MOCK_*` en `*.spec.ts` (ej. `admin-promociones.component.spec.ts` → `MOCK_SERVICIOS`/`MOCK_PROMOCIONES`) **NO se eliminan** — son cómo los unit tests corren sin backend. Esto aplica solo a datos hardcodeados en código de producción.
 
-**Datos de negocio hardcodeados a eliminar:**
-- [ ] `reservas.component.ts` — `SERVICIOS_FALLBACK` (7 nombres, línea ~27) y `HORARIOS_FALLBACK` (9 slots, línea ~37). Hoy se usan como fallback offline y mientras carga la API. Sustituir por: lista vacía + estado de carga (skeleton/spinner) y dejar que `ServiciosService`/`getDisponibilidad` llenen desde DB.
-- [ ] `home.component.ts` — `NOMBRES_SERVICIOS` (línea ~57), `servicios` signal estático (7 servicios con descripción/icono/color, línea ~101). El array de `servicios` es el **fallback SSR**; los checkboxes del formulario de reseña usan `NOMBRES_SERVICIOS`. Migrar ambos a los nombres reales de `GET /servicios`.
-- [ ] `footer.component.ts` — `servicios` array (7 nombres, línea ~24). Cargar desde `ServiciosService.listar()` (o un signal compartido) en vez de la lista fija. _(los `links` de navegación NO son datos de negocio — se quedan)_
+**Datos de negocio hardcodeados eliminados (✅ hecho):**
+- [x] `reservas.component.ts` — eliminados `SERVICIOS_FALLBACK` y `HORARIOS_FALLBACK`. Servicios y horarios vienen 100% de la API; se quitó también la bandera `apiOnline` y la **simulación de envío offline** (`setTimeout` que fingía éxito — era un "mock" de comportamiento). Estados de carga: `cargandoServicios` + `@empty` en el select de servicios y en el de horarios (mensajes "Cargando…/No hay…/Elige una fecha primero").
+- [x] `home.component.ts` — eliminados `NOMBRES_SERVICIOS` y el array estático de `servicios`. `servicios` arranca vacío y se llena desde `GET /servicios`; `nombresServicios` es ahora `computed` de los servicios cargados; los checkboxes del form de reseña se reconstruyen (`setControl`) con los nombres reales. Skeleton de carga (`cargandoServicios` + `@empty`) y mensaje de error si la API falla.
+- [x] `footer.component.ts` — eliminado el array fijo de 7 servicios; ahora carga nombres desde `ServiciosService.listar()` en un signal. _(los `links` de navegación se mantienen: no son datos de negocio)_
+- [x] Verificado: grep de `SERVICIOS_FALLBACK|HORARIOS_FALLBACK|NOMBRES_SERVICIOS|apiOnline` → 0 resultados.
+- [x] Specs actualizados (home, footer, reservas) para reflejar carga desde API; **build verde + suite 23/23 archivos, 177/177 tests**.
 
-**Decisión a tomar antes de implementar (tradeoff SSR/offline):**
-- [ ] Definir qué mostrar mientras la API responde o si falla: **skeleton/spinner** (recomendado) vs. mantener un fallback. Hoy el fallback evita "pantalla vacía" en el prerender SSR de `/` y en `/reservas`. Si se elimina sin reemplazo, el home prerenderizado mostraría la sección de servicios vacía hasta hidratar.
-- [ ] Considerar que `SSR` de `/` hoy NO hace fetch (los datos llegan en cliente). Si se quiere que el HTML inicial ya traiga servicios reales, habría que habilitar fetch en servidor (ver `routes.server.ts`).
+**Tradeoff SSR resuelto con skeleton (no fallback):**
+- [x] Mientras la API responde o si falla se muestra **skeleton/estado vacío** en vez de datos falsos. El prerender SSR de `/` muestra el skeleton de servicios hasta que el cliente hidrata y trae los datos reales.
+- [ ] _(opcional, futuro)_ Si se quiere que el HTML inicial ya traiga servicios reales (mejor SEO/LCP), habilitar fetch en servidor (ver `routes.server.ts`).
 
 **Fuera de alcance (sin modelo en BE):**
 - [ ] `razones` y `stats` en `home.component.ts` son **contenido de marketing** sin tabla en la DB. Si se quieren "no hardcodeados", primero crear modelo/endpoint o moverlos a `config/app.json` (como contacto).

@@ -36,7 +36,10 @@
         </div>
         <div>
           <h3 class="info-card__title">Ubicación</h3>
-          <p class="info-card__text">Santiago, Chile<br><em>(dirección exacta al confirmar hora)</em></p>
+          <p class="info-card__text">
+            @if (contactoService.contacto()?.address; as address) { {{ address }}<br> }
+            <em>(dirección exacta al confirmar hora)</em>
+          </p>
         </div>
       </div>
 
@@ -47,8 +50,9 @@
         <div>
           <h3 class="info-card__title">Horarios de atención</h3>
           <p class="info-card__text">
-            Lunes a Viernes: 9:00 – 19:00 hs<br>
-            Sábados: 9:00 – 13:00 hs
+            @for (h of contactoService.horarios(); track h.dias) {
+              {{ h.dias }}: {{ h.horario }} hs<br>
+            }
           </p>
         </div>
       </div>

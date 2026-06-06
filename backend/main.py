@@ -34,9 +34,12 @@ app = FastAPI(
 )
 
 # ── CORS (origins read from config/app.json — never "*") ──────────────────────
+# Exact origins (localhost dev) plus a regex for the Vercel frontend
+# (production + preview deploys). Never uses "*".
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],

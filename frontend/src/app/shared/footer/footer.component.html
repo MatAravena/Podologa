@@ -33,7 +33,7 @@
             <mat-icon aria-hidden="true">phone</mat-icon>
           </a>
           <a
-            href="https://instagram.com/libelula.podologia"
+            [href]="contactoService.instagramUrl()"
             class="footer__social-link"
             target="_blank"
             rel="noopener noreferrer"
@@ -41,15 +41,17 @@
           >
             <mat-icon aria-hidden="true">photo_camera</mat-icon>
           </a>
-          <a
-            href="https://facebook.com/libelulapodologia"
-            class="footer__social-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook de Libélula"
-          >
-            <mat-icon aria-hidden="true">facebook</mat-icon>
-          </a>
+          @if (contactoService.contacto()?.facebook) {
+            <a
+              [href]="contactoService.facebookUrl()"
+              class="footer__social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook de Libélula"
+            >
+              <mat-icon aria-hidden="true">facebook</mat-icon>
+            </a>
+          }
         </div>
       </div>
 
@@ -85,18 +87,23 @@
       <address class="footer__col footer__contact" aria-label="Información de contacto">
         <h3 class="footer__col-title">Contacto</h3>
 
-        <div class="footer__contact-item">
-          <mat-icon aria-hidden="true">place</mat-icon>
-          <span>Santiago, Chile<br><em>(dirección al confirmar hora)</em></span>
-        </div>
+        @if (contactoService.contacto()?.address; as address) {
+          <div class="footer__contact-item">
+            <mat-icon aria-hidden="true">place</mat-icon>
+            <span>{{ address }}<br><em>(dirección al confirmar hora)</em></span>
+          </div>
+        }
 
-        <div class="footer__contact-item">
-          <mat-icon aria-hidden="true">schedule</mat-icon>
-          <span>
-            Lun – Vie: 9:00 – 19:00 hrs<br>
-            Sábados: 9:00 – 13:00 hrs
-          </span>
-        </div>
+        @if (contactoService.horarios().length) {
+          <div class="footer__contact-item">
+            <mat-icon aria-hidden="true">schedule</mat-icon>
+            <span>
+              @for (h of contactoService.horarios(); track h.dias) {
+                {{ h.dias }}: {{ h.horario }} hrs<br>
+              }
+            </span>
+          </div>
+        }
 
         <div class="footer__contact-item">
           <mat-icon aria-hidden="true">phone</mat-icon>
