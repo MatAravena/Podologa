@@ -68,4 +68,24 @@ describe('AdminOpinionesComponent', () => {
     httpMock.expectNone(`${environment.apiUrl}/opiniones/1`);
     expect(component.opiniones().length).toBe(before);
   });
+
+  it('confirmDelete should remove the opinion from the list after a 204 success', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const before = component.opiniones().length;
+    component.confirmDelete(MOCK_OPINIONES[0]);
+    const req = httpMock.expectOne(`${environment.apiUrl}/opiniones/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null, { status: 204, statusText: 'No Content' });
+    expect(component.opiniones().length).toBe(before - 1);
+    expect(component.opiniones().some(o => o.id === 1)).toBe(false);
+  });
+
+  it('confirmDelete should keep the opinion in the list when the request fails', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const before = component.opiniones().length;
+    component.confirmDelete(MOCK_OPINIONES[0]);
+    httpMock.expectOne(`${environment.apiUrl}/opiniones/1`)
+      .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
+    expect(component.opiniones().length).toBe(before);
+  });
 });

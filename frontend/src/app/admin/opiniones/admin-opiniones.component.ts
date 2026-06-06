@@ -166,22 +166,21 @@ export class AdminOpinionesComponent implements OnInit {
     const ok = confirm(`¿Eliminar la opinión de ${op.nombre} ${op.apellido}?\nEsta acción no se puede deshacer.`);
     if (!ok) return;
     this.deleting.set(op.id);
-    this.opinionesService.eliminar(op.id).pipe(
-      catchError(err => {
+    this.opinionesService.eliminar(op.id).subscribe({
+      next: () => {
+        this.deleting.set(null);
+        this.opiniones.update(list => list.filter(o => o.id !== op.id));
+        if (this.editing()?.id === op.id) this.cancel();
+        this.snack.open('Opinión eliminada.', 'Cerrar', { duration: 3000 });
+      },
+      error: err => {
+        this.deleting.set(null);
         this.snack.open(
           err.status === 401 ? 'Sesión expirada. Inicia sesión de nuevo.' : 'Error al eliminar.',
           'Cerrar', { duration: 4000 }
         );
         if (err.status === 401) this.auth.logout();
-        return of(null);
-      })
-    ).subscribe(res => {
-      this.deleting.set(null);
-      if (res !== null || res === undefined) {
-        this.opiniones.update(list => list.filter(o => o.id !== op.id));
-        if (this.editing()?.id === op.id) this.cancel();
-        this.snack.open('Opinión eliminada.', 'Cerrar', { duration: 3000 });
-      }
+      },
     });
   }
 }
