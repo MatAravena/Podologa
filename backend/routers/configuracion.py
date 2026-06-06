@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -14,7 +12,8 @@ class ContactoOut(BaseModel):
     address: str | None = None
     instagram: str | None = None
     facebook: str | None = None
-    business_hours: dict[str, Any] | None = None
+    # Note: opening hours are NOT here — they come from the podologist's real
+    # availability via GET /disponibilidad/semana (single source of truth).
 
 
 @router.get("/contacto", response_model=ContactoOut)
@@ -28,5 +27,4 @@ def obtener_contacto() -> ContactoOut:
         address=contact.get("address"),
         instagram=contact.get("instagram"),
         facebook=contact.get("facebook"),
-        business_hours=cfg.get("business_hours"),
     )

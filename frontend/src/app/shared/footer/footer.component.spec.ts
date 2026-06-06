@@ -31,6 +31,7 @@ describe('FooterComponent', () => {
       }))),
     );
     http.match(r => r.url.includes('/config/contacto')).forEach(r => r.flush(null));
+    http.match(r => r.url.includes('/disponibilidad/semana')).forEach(r => r.flush([]));
     fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;
   });

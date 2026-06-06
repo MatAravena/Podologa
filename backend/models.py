@@ -106,6 +106,14 @@ class Cita(TimestampMixin, Base):
     precio_final = Column(Integer, nullable=True)        # set when a promo discount is applied
     promocion_id = Column(Integer, ForeignKey("promociones.id", ondelete="SET NULL"), nullable=True, index=True)
 
+    # ── Patient self-confirmation (anti no-show) ──────────────────────────────
+    confirm_token = Column(String(64), unique=True, nullable=True, index=True)  # link único de confirmación
+    # respuesta del paciente: None = sin responder, True = asistirá, False = no asistirá
+    paciente_confirmo = Column(Boolean, nullable=True)
+    confirmacion_respondida_at = Column(DateTime(timezone=True), nullable=True)
+    confirmacion_48h_enviada = Column(Boolean, default=False, nullable=False)  # pedido de confirmación 48h
+    confirmacion_24h_enviada = Column(Boolean, default=False, nullable=False)  # seguimiento 24h
+
     paciente_id = Column(Integer, ForeignKey("pacientes.id", ondelete="CASCADE"), nullable=False, index=True)
     servicio_id = Column(Integer, ForeignKey("servicios.id", ondelete="SET NULL"), nullable=True, index=True)
 

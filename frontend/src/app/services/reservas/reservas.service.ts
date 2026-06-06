@@ -35,6 +35,15 @@ export interface CitaResponse {
   servicio: ServicioApi;
 }
 
+export interface ConfirmacionApi {
+  servicio: string;
+  fecha: string;          // "YYYY-MM-DD"
+  hora: string;           // "HH:MM"
+  estado: string;
+  paciente_confirmo: boolean | null;
+  paciente_nombre: string;
+}
+
 export interface PromocionVigenteApi {
   id: number;
   servicio_id: number;
@@ -73,5 +82,15 @@ export class ReservasService {
     let params = new HttpParams();
     if (servicioId) params = params.set('servicio_id', servicioId);
     return this.http.get<PromocionVigenteApi[]>(`${this.base}/promociones/vigentes`, { params });
+  }
+
+  /** GET /citas/confirmar/:token — details for the public confirmation page */
+  getConfirmacion(token: string): Observable<ConfirmacionApi> {
+    return this.http.get<ConfirmacionApi>(`${this.base}/citas/confirmar/${token}`);
+  }
+
+  /** POST /citas/confirmar/:token — patient confirms (true) or cancels (false) */
+  responderConfirmacion(token: string, asistira: boolean): Observable<ConfirmacionApi> {
+    return this.http.post<ConfirmacionApi>(`${this.base}/citas/confirmar/${token}`, { asistira });
   }
 }

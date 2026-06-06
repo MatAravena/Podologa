@@ -94,7 +94,7 @@ export class HomeComponent implements OnInit {
   readonly cargandoServicios = signal(true);
 
   readonly razones = signal<Razon[]>([
-    { titulo: 'Profesional Certificada', descripcion: 'Más de 10 años de experiencia y formación continua en podología clínica y terapias complementarias.', icono: 'sobre_mi' },
+    { titulo: 'Profesional Certificada', descripcion: 'Más de 20 años de experiencia y formación continua en podología clínica y terapias complementarias.', icono: 'sobre_mi' },
     { titulo: 'Atención Personalizada',  descripcion: 'Cada paciente recibe un tratamiento adaptado a sus necesidades específicas y objetivos de salud.', icono: 'clientes' },
     { titulo: 'Ambiente Tranquilo',       descripcion: 'Un espacio cálido y acogedor diseñado para que te sientas en calma desde el primer momento.', icono: 'inicio' },
     { titulo: 'Horarios Flexibles',       descripcion: 'Horas adaptadas a tu rutina. Reserva online de manera rápida y sencilla las 24 horas.', icono: 'horarios' },

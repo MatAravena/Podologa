@@ -50,8 +50,10 @@
         <div>
           <h3 class="info-card__title">Horarios de atención</h3>
           <p class="info-card__text">
-            @for (h of contactoService.horarios(); track h.dias) {
+            @for (h of disponibilidadService.horarioSemana(); track h.dias) {
               {{ h.dias }}: {{ h.horario }} hs<br>
+            } @empty {
+              Consulta la disponibilidad al elegir una fecha.
             }
           </p>
         </div>

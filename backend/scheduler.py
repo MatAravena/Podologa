@@ -8,17 +8,82 @@ Currently handles:
 Uses APScheduler (add to requirements.txt).
 Starts automatically when the FastAPI app starts.
 """
+import secrets
 from datetime import date, timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
 
 from database import SessionLocal
+from notifications.citas_notify import send_confirmacion_request
 from notifications.mailer import send_reminder
 from models import Cita, EstadoCita
 from whatsapp.cloud_api import send_text
 
 scheduler = AsyncIOScheduler(timezone="America/Santiago")
+
+
+def _send_confirmaciones() -> None:
+    """Daily job (08:00): ask patients to confirm attendance.
+
+    - 48h before: send the confirmation request once (any pending/confirmed cita).
+    - 24h before: send a follow-up ONLY if the patient hasn't responded yet.
+    Cancelled citas and those already answered are skipped.
+    """
+    today = date.today()
+    en_48h = today + timedelta(days=2)
+    en_24h = today + timedelta(days=1)
+
+    db: Session = SessionLocal()
+    try:
+        candidatas = (
+            db.query(Cita)
+            .filter(
+                Cita.fecha.in_([en_48h, en_24h]),
+                Cita.estado != EstadoCita.CANCELADA,
+            )
+            .all()
+        )
+
+        for cita in candidatas:
+            paciente = cita.paciente
+            servicio = cita.servicio
+            if not paciente or not servicio:
+                continue
+            # Patient already answered → nothing to ask.
+            if cita.paciente_confirmo is not None:
+                continue
+
+            es_48h = cita.fecha == en_48h
+            ya_enviada = cita.confirmacion_48h_enviada if es_48h else cita.confirmacion_24h_enviada
+            if ya_enviada:
+                continue
+            # 24h follow-up only makes sense if the 48h request already went out.
+            if not es_48h and not cita.confirmacion_48h_enviada:
+                continue
+
+            # Older citas may have no token yet — generate one on demand.
+            if not cita.confirm_token:
+                cita.confirm_token = secrets.token_urlsafe(32)
+
+            send_confirmacion_request(
+                email=paciente.email,
+                telefono=paciente.telefono,
+                nombre=paciente.nombre,
+                servicio=servicio.nombre,
+                fecha=cita.fecha.strftime("%d/%m/%Y"),
+                hora=cita.hora.strftime("%H:%M"),
+                token=cita.confirm_token,
+                seguimiento=not es_48h,
+            )
+
+            if es_48h:
+                cita.confirmacion_48h_enviada = True
+            else:
+                cita.confirmacion_24h_enviada = True
+            db.commit()
+    finally:
+        db.close()
 
 
 def _send_reminders() -> None:
@@ -85,6 +150,14 @@ def start_scheduler() -> None:
         hour=10,
         minute=0,
         id="daily_reminders",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _send_confirmaciones,
+        trigger="cron",
+        hour=8,
+        minute=0,
+        id="daily_confirmaciones",
         replace_existing=True,
     )
     scheduler.start()

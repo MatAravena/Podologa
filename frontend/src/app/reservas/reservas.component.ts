@@ -23,6 +23,7 @@ import {
   PromocionVigenteApi,
 } from '../services/reservas/reservas.service';
 import { ContactoService } from '../services/contacto/contacto.service';
+import { DisponibilidadService } from '../services/disponibilidad/disponibilidad.service';
 
 @Component({
   selector: 'app-reservas',
@@ -45,6 +46,7 @@ export class ReservasComponent implements OnInit {
   private readonly snack   = inject(MatSnackBar);
   private readonly service = inject(ReservasService);
   readonly contactoService = inject(ContactoService);
+  readonly disponibilidadService = inject(DisponibilidadService);
 
   // ── Remote state (all from the backend) ──────────────────────────
   readonly serviciosApi     = signal<ServicioApi[]>([]);
@@ -88,6 +90,7 @@ export class ReservasComponent implements OnInit {
   // ── Lifecycle ────────────────────────────────────────────────────
   ngOnInit(): void {
     this.contactoService.load();
+    this.disponibilidadService.loadHorarioSemana();
     this.service.getServicios().pipe(
       catchError(() => of([] as ServicioApi[])),
       finalize(() => this.cargandoServicios.set(false)),

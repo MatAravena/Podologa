@@ -1,0 +1,75 @@
+<div class="cf-page">
+
+  @if (loading()) {
+    <div class="cf-loading" aria-busy="true"><div class="cf-loading__spinner"></div></div>
+  } @else if (notFound()) {
+    <div class="cf-card cf-card--center">
+      <mat-icon class="cf-icon cf-icon--muted" aria-hidden="true">search_off</mat-icon>
+      <h1 class="cf-title">Cita no encontrada</h1>
+      <p class="cf-text">Este enlace no es válido o ya expiró. Si tienes dudas, contáctate con Libélula.</p>
+      <a mat-raised-button routerLink="/" class="cf-btn cf-btn--gold">Ir al inicio</a>
+    </div>
+  } @else if (cita(); as c) {
+
+    <div class="cf-card">
+      <div class="cf-brand" aria-hidden="true">
+        <span class="cf-brand__badge"><mat-icon>spa</mat-icon></span>
+        <span class="cf-brand__name">Libélula — Podología y Terapias</span>
+      </div>
+
+      <!-- Already answered (this session or previously) -->
+      @if (yaRespondida) {
+        @if (c.paciente_confirmo) {
+          <mat-icon class="cf-icon cf-icon--ok" aria-hidden="true">check_circle</mat-icon>
+          <h1 class="cf-title">¡Gracias, {{ c.paciente_nombre }}!</h1>
+          <p class="cf-text">Tu asistencia quedó <strong>confirmada</strong>. ¡Te esperamos!</p>
+        } @else {
+          <mat-icon class="cf-icon cf-icon--cancel" aria-hidden="true">cancel</mat-icon>
+          <h1 class="cf-title">Cita cancelada</h1>
+          <p class="cf-text">Registramos que <strong>no podrás asistir</strong>. Gracias por avisarnos.</p>
+          <a mat-stroked-button routerLink="/reservas" class="cf-btn cf-btn--outline">Reagendar otra hora</a>
+        }
+
+        <div class="cf-summary" role="group" aria-label="Detalle de la cita">
+          <div class="cf-summary__row"><span>Servicio</span><strong>{{ c.servicio }}</strong></div>
+          <div class="cf-summary__row"><span>Fecha</span><strong>{{ c.fecha | date:'EEEE d MMM yyyy' }}</strong></div>
+          <div class="cf-summary__row"><span>Hora</span><strong>{{ c.hora }} hrs</strong></div>
+        </div>
+
+      } @else {
+        <!-- Pending: ask to confirm or cancel -->
+        <h1 class="cf-title">Hola {{ c.paciente_nombre }}, ¿confirmas tu hora?</h1>
+        <p class="cf-text">Confírmanos si podrás asistir para mantener tu reserva.</p>
+
+        <div class="cf-summary" role="group" aria-label="Detalle de la cita">
+          <div class="cf-summary__row"><span>Servicio</span><strong>{{ c.servicio }}</strong></div>
+          <div class="cf-summary__row"><span>Fecha</span><strong>{{ c.fecha | date:'EEEE d MMM yyyy' }}</strong></div>
+          <div class="cf-summary__row"><span>Hora</span><strong>{{ c.hora }} hrs</strong></div>
+        </div>
+
+        <div class="cf-actions">
+          <button
+            mat-raised-button
+            class="cf-btn cf-btn--confirm"
+            [disabled]="saving()"
+            (click)="responder(true)"
+          >
+            <mat-icon>check</mat-icon>
+            Sí, asistiré
+          </button>
+          <button
+            mat-stroked-button
+            class="cf-btn cf-btn--cancel"
+            [disabled]="saving()"
+            (click)="responder(false)"
+          >
+            <mat-icon>close</mat-icon>
+            No podré asistir
+          </button>
+        </div>
+      }
+    </div>
+
+  }
+
+</div>

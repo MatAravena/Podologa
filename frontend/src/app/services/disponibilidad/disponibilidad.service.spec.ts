@@ -28,6 +28,23 @@ describe('DisponibilidadService', () => {
 
   afterEach(() => httpMock.verify());
 
+  it('loadHorarioSemana should GET /disponibilidad/semana once and store the result', () => {
+    const horario = [{ dias: 'Lunes a Viernes', horario: '09:00 – 19:00' }];
+    service.loadHorarioSemana();
+    service.loadHorarioSemana(); // idempotent — only one request
+    const req = httpMock.expectOne(`${environment.apiUrl}/disponibilidad/semana`);
+    expect(req.request.method).toBe('GET');
+    req.flush(horario);
+    expect(service.horarioSemana()).toEqual(horario);
+  });
+
+  it('horarioSemana should stay empty when the request fails', () => {
+    service.loadHorarioSemana();
+    httpMock.expectOne(`${environment.apiUrl}/disponibilidad/semana`)
+      .error(new ProgressEvent('error'));
+    expect(service.horarioSemana()).toEqual([]);
+  });
+
   it('listarBloques should GET /admin/disponibilidad/bloques', () => {
     let result: Bloque[] | undefined;
     service.listarBloques().subscribe(r => (result = r));

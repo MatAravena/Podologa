@@ -94,11 +94,11 @@
           </div>
         }
 
-        @if (contactoService.horarios().length) {
+        @if (disponibilidadService.horarioSemana().length) {
           <div class="footer__contact-item">
             <mat-icon aria-hidden="true">schedule</mat-icon>
             <span>
-              @for (h of contactoService.horarios(); track h.dias) {
+              @for (h of disponibilidadService.horarioSemana(); track h.dias) {
                 {{ h.dias }}: {{ h.horario }} hrs<br>
               }
             </span>

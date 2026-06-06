@@ -9,6 +9,48 @@ from models import BloqueDisponibilidad, Cita, EstadoCita, FechaBloqueo, Servici
 
 router = APIRouter(prefix="/disponibilidad", tags=["disponibilidad"])
 
+DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+
+@router.get("/semana", response_model=List[dict])
+def horario_semanal(db: Session = Depends(get_db)):
+    """Public weekly availability overview, derived from the podologist's
+    active weekly `BloqueDisponibilidad` rows. Consecutive days with identical
+    hours are collapsed into ranges, e.g. `Lunes a Viernes: 09:00 – 19:00`.
+    """
+    bloques = db.query(BloqueDisponibilidad).filter(
+        BloqueDisponibilidad.dia_semana.isnot(None),
+        BloqueDisponibilidad.activo.is_(True),
+    ).order_by(BloqueDisponibilidad.dia_semana, BloqueDisponibilidad.hora_inicio).all()
+
+    # hours string per weekday index (0=Mon … 6=Sun); a day may have several blocks
+    por_dia: dict[int, list[str]] = {}
+    for b in bloques:
+        por_dia.setdefault(b.dia_semana, []).append(
+            f"{str(b.hora_inicio)[:5]} – {str(b.hora_fin)[:5]}"
+        )
+
+    dias_con_horario = [(d, ", ".join(por_dia[d])) for d in range(7) if d in por_dia]
+
+    # collapse consecutive days that share the exact same hours into a range
+    result: List[dict] = []
+    i, n = 0, len(dias_con_horario)
+    while i < n:
+        start_day, horario = dias_con_horario[i]
+        j = i
+        while (
+            j + 1 < n
+            and dias_con_horario[j + 1][0] == dias_con_horario[j][0] + 1
+            and dias_con_horario[j + 1][1] == horario
+        ):
+            j += 1
+        end_day = dias_con_horario[j][0]
+        dias = DIAS_SEMANA[start_day] if start_day == end_day else f"{DIAS_SEMANA[start_day]} a {DIAS_SEMANA[end_day]}"
+        result.append({"dias": dias, "horario": horario})
+        i = j + 1
+
+    return result
+
 
 def _generate_slots(hora_inicio: time, hora_fin: time, duracion_min: int) -> List[str]:
     """Generate HH:MM slot strings from hora_inicio up to hora_fin - duracion."""

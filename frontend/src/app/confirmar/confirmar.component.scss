@@ -1,0 +1,141 @@
+@use 'tokens' as *;
+
+.cf-page {
+  min-height: 100vh;
+  background: $grad-hero;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.cf-loading {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba($pink-dark, 0.3);
+    border-top-color: $pink-deep;
+    border-radius: 50%;
+    animation: cf-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes cf-spin { to { transform: rotate(360deg); } }
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.cf-card {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(200, 140, 160, 0.15);
+
+  &--center { display: flex; flex-direction: column; align-items: center; }
+}
+
+.cf-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  &__badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: $grad-pink;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $shadow-pink;
+
+    mat-icon { color: #fff; }
+  }
+
+  &__name {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $pink-deep;
+    font-weight: 600;
+  }
+}
+
+.cf-icon {
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 0.5rem;
+
+  &--ok     { color: #4a8a4a; }
+  &--cancel { color: #c0392b; }
+  &--muted  { color: $text-light; }
+}
+
+.cf-title {
+  font-family: $font-heading;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 0.5rem;
+}
+
+.cf-text {
+  color: $text-mid;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+.cf-summary {
+  background: #faf5f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  text-align: left;
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 6px 0;
+    font-size: 0.9rem;
+
+    span   { color: $text-light; }
+    strong { color: $text; font-weight: 600; text-transform: capitalize; }
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.cf-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cf-btn {
+  mat-icon { margin-right: 6px; }
+
+  &--confirm {
+    background: linear-gradient(135deg, #7dba7d, #4a8a4a) !important;
+    color: #fff !important;
+  }
+
+  &--cancel {
+    --mdc-outlined-button-outline-color: #d99;
+    color: #c0392b !important;
+  }
+
+  &--gold   { background: $grad-gold !important; color: #fff !important; }
+  &--outline { color: $pink-deep !important; margin-top: 0.5rem; }
+}

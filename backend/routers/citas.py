@@ -1,4 +1,5 @@
-from datetime import date, time
+import secrets
+from datetime import date, datetime, time, timezone
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from integrations.google_calendar import calendar_service
-from notifications.mailer import send_confirmation
+from notifications.citas_notify import send_welcome
 from models import Cita, Paciente, Servicio, EstadoCita, Promocion
 from routers.promociones import _is_currently_active
 from schemas import CitaOut, CitaUpdate
@@ -94,22 +95,24 @@ def crear_cita(
         servicio_id=servicio.id,
         precio_final=precio_final,
         promocion_id=promocion_id,
+        confirm_token=secrets.token_urlsafe(32),  # unique link for self-confirmation
     )
     db.add(cita)
     db.commit()
     db.refresh(cita)
 
-    # Send confirmation email in background if patient has email
-    if payload.email:
-        fecha_str = payload.fecha.strftime("%d/%m/%Y")
-        background_tasks.add_task(
-            send_confirmation,
-            to_email=payload.email,
-            nombre=payload.nombre,
-            servicio=servicio.nombre,
-            fecha=fecha_str,
-            hora=payload.hora,
-        )
+    # Welcome message (email + WhatsApp) — thanks for booking, no action needed yet.
+    # The confirmation request goes out 48h before via the scheduler.
+    fecha_str = payload.fecha.strftime("%d/%m/%Y")
+    background_tasks.add_task(
+        send_welcome,
+        email=payload.email,
+        telefono=paciente.telefono,
+        nombre=payload.nombre,
+        servicio=servicio.nombre,
+        fecha=fecha_str,
+        hora=payload.hora,
+    )
 
     # Create Google Calendar event in background (fire-and-forget)
     background_tasks.add_task(
@@ -162,6 +165,75 @@ def obtener_cita(cita_id: int, db: Session = Depends(get_db)):
     if not cita:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
     return cita
+
+
+# ── Public self-confirmation (token-based, no login) ──────────────────────────
+
+class ConfirmacionOut(BaseModel):
+    """Read-only view of a cita for the public confirmation page."""
+    servicio: str
+    fecha: date
+    hora: str
+    estado: str
+    paciente_confirmo: bool | None
+    paciente_nombre: str
+
+
+class ConfirmacionRespuesta(BaseModel):
+    asistira: bool
+
+
+def _cita_por_token(token: str, db: Session) -> Cita:
+    cita = db.query(Cita).filter(Cita.confirm_token == token).first()
+    if not cita:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
+    return cita
+
+
+@router.get("/confirmar/{token}", response_model=ConfirmacionOut)
+def ver_confirmacion(token: str, db: Session = Depends(get_db)):
+    """Details shown on the public confirmation page."""
+    cita = _cita_por_token(token, db)
+    return ConfirmacionOut(
+        servicio=cita.servicio.nombre if cita.servicio else "Servicio",
+        fecha=cita.fecha,
+        hora=cita.hora.strftime("%H:%M"),
+        estado=cita.estado.value,
+        paciente_confirmo=cita.paciente_confirmo,
+        paciente_nombre=(cita.paciente.nombre.split()[0] if cita.paciente else ""),
+    )
+
+
+@router.post("/confirmar/{token}", response_model=ConfirmacionOut)
+def responder_confirmacion(
+    token: str,
+    payload: ConfirmacionRespuesta,
+    db: Session = Depends(get_db),
+):
+    """Patient confirms (asistira=True) or cancels (asistira=False) their attendance."""
+    cita = _cita_por_token(token, db)
+
+    cita.paciente_confirmo = payload.asistira
+    cita.confirmacion_respondida_at = datetime.now(timezone.utc)
+    cita.estado = EstadoCita.CONFIRMADA if payload.asistira else EstadoCita.CANCELADA
+    db.commit()
+    db.refresh(cita)
+
+    # If cancelled, remove the Google Calendar event (best-effort).
+    if not payload.asistira and cita.google_event_id:
+        try:
+            calendar_service.delete_event(cita.google_event_id)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[citas] calendar delete on patient-cancel failed: {exc}")
+
+    return ConfirmacionOut(
+        servicio=cita.servicio.nombre if cita.servicio else "Servicio",
+        fecha=cita.fecha,
+        hora=cita.hora.strftime("%H:%M"),
+        estado=cita.estado.value,
+        paciente_confirmo=cita.paciente_confirmo,
+        paciente_nombre=(cita.paciente.nombre.split()[0] if cita.paciente else ""),
+    )
 
 
 @router.patch("/{cita_id}/estado", response_model=CitaOut)

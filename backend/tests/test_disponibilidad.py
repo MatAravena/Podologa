@@ -175,3 +175,52 @@ class TestObtenerDisponibilidad:
         assert "09:00" in horas
         assert "10:30" in horas
         assert "12:00" not in horas
+
+
+class TestHorarioSemanal:
+    def test_returns_empty_when_no_blocks(self, client):
+        resp = client.get("/disponibilidad/semana")
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    def test_collapses_consecutive_days_with_same_hours(self, client, db):
+        for dia in range(5):  # Mon–Fri, identical hours
+            _seed_bloque(db, dia_semana=dia, hora_inicio=time(9, 0), hora_fin=time(19, 0))
+        _seed_bloque(db, dia_semana=5, hora_inicio=time(9, 0), hora_fin=time(13, 0))  # Sat
+
+        resp = client.get("/disponibilidad/semana")
+        assert resp.json() == [
+            {"dias": "Lunes a Viernes", "horario": "09:00 – 19:00"},
+            {"dias": "Sábado", "horario": "09:00 – 13:00"},
+        ]
+
+    def test_does_not_collapse_days_with_different_hours(self, client, db):
+        _seed_bloque(db, dia_semana=0, hora_inicio=time(9, 0), hora_fin=time(13, 0))
+        _seed_bloque(db, dia_semana=1, hora_inicio=time(14, 0), hora_fin=time(19, 0))
+
+        resp = client.get("/disponibilidad/semana")
+        assert resp.json() == [
+            {"dias": "Lunes", "horario": "09:00 – 13:00"},
+            {"dias": "Martes", "horario": "14:00 – 19:00"},
+        ]
+
+    def test_joins_split_shifts_within_a_day(self, client, db):
+        _seed_bloque(db, dia_semana=0, hora_inicio=time(9, 0), hora_fin=time(13, 0))
+        _seed_bloque(db, dia_semana=0, hora_inicio=time(15, 0), hora_fin=time(19, 0))
+
+        resp = client.get("/disponibilidad/semana")
+        assert resp.json() == [
+            {"dias": "Lunes", "horario": "09:00 – 13:00, 15:00 – 19:00"},
+        ]
+
+    def test_ignores_inactive_and_specific_date_blocks(self, client, db):
+        _seed_bloque(db, dia_semana=0, hora_inicio=time(9, 0), hora_fin=time(13, 0))
+        # inactive weekly block
+        inactive = BloqueDisponibilidad(dia_semana=1, hora_inicio=time(9, 0), hora_fin=time(13, 0), activo=False)
+        # specific-date block (no dia_semana) must not appear in the weekly overview
+        specific = BloqueDisponibilidad(fecha_especifica=_next_weekday(2), hora_inicio=time(9, 0), hora_fin=time(13, 0), activo=True)
+        db.add_all([inactive, specific])
+        db.commit()
+
+        resp = client.get("/disponibilidad/semana")
+        assert resp.json() == [{"dias": "Lunes", "horario": "09:00 – 13:00"}]

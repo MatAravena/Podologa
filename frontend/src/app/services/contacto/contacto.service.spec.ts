@@ -8,11 +8,6 @@ import { environment } from '../../../environments/environment';
 const MOCK: Contacto = {
   phone: '+56 9 1234 5678', email: 'contacto@libelula.cl', address: 'Santiago, Chile',
   instagram: '@libelula.podologia', facebook: 'libelulapodologia',
-  business_hours: {
-    monday_friday: { open: '09:00', close: '19:00' },
-    saturday:      { open: '09:00', close: '13:00' },
-    sunday:        null,
-  },
 };
 
 describe('ContactoService', () => {
@@ -71,18 +66,5 @@ describe('ContactoService', () => {
   it('social URLs should fall back to the network home when no handle is set', () => {
     expect(service.instagramUrl()).toBe('https://instagram.com/');
     expect(service.facebookUrl()).toBe('https://facebook.com/');
-  });
-
-  it('horarios should format business_hours, skipping closed days', () => {
-    service.load();
-    httpMock.expectOne(`${environment.apiUrl}/config/contacto`).flush(MOCK);
-    expect(service.horarios()).toEqual([
-      { dias: 'Lunes a Viernes', horario: '09:00 – 19:00' },
-      { dias: 'Sábados', horario: '09:00 – 13:00' },
-    ]);
-  });
-
-  it('horarios should be empty when business_hours is missing', () => {
-    expect(service.horarios()).toEqual([]);
   });
 });

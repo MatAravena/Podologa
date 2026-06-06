@@ -1,7 +1,13 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+
+/** A line of the public weekly availability overview (`GET /disponibilidad/semana`). */
+export interface HorarioDia {
+  dias: string;     // e.g. "Lunes a Viernes"
+  horario: string;  // e.g. "09:00 – 19:00"
+}
 
 /** A weekly or date-specific availability block (`BloqueDisponibilidadOut`). */
 export interface Bloque {
@@ -43,6 +49,19 @@ export interface BloqueoCreate {
 export class DisponibilidadService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
+
+  /** Public weekly availability overview (empty until loaded / on failure). */
+  readonly horarioSemana = signal<HorarioDia[]>([]);
+  private horarioLoaded = false;
+
+  /** GET /disponibilidad/semana — public; loads the weekly overview once. */
+  loadHorarioSemana(): void {
+    if (this.horarioLoaded) return;
+    this.horarioLoaded = true;
+    this.http.get<HorarioDia[]>(`${this.base}/disponibilidad/semana`).pipe(
+      catchError(() => of([] as HorarioDia[])),
+    ).subscribe(list => this.horarioSemana.set(list));
+  }
 
   /** GET /admin/disponibilidad/bloques. */
   listarBloques(): Observable<Bloque[]> {

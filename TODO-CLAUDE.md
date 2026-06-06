@@ -514,6 +514,37 @@ Sistema de bitácora interna donde la podóloga registra observaciones, sugerenc
 
 ---
 
+### Confiabilidad de sincronización con Google Calendar
+La agenda de la podóloga ES Google Calendar (esa fue siempre la idea). Hoy la cita se crea en Calendar con un background task "fire-and-forget" que falla en silencio. El `google_event_id` en la tabla `citas` es la fuente de verdad: lleno = evento existe; NULL = nunca se creó.
+
+**Verificación inicial (acción del usuario)**
+- [ ] Confirmar que en Railway estén las 4 vars: `GOOGLE_CALENDAR_ID`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`. Si falta alguna, NO se sincroniza nada (silenciosamente).
+- [ ] Generar el `GOOGLE_REFRESH_TOKEN` una vez con `scripts/gcal_auth.py` y setearlo en Railway.
+
+**Mejoras de confiabilidad (código)**
+- [ ] **Job de reconciliación** en `scheduler.py`: buscar citas futuras con `google_event_id IS NULL` y estado != cancelada, y reintentar `create_event`; persistir el id al lograrlo. Esto es la verdadera "garantía".
+- [ ] **Alerta de fallo**: si la sincronización falla, registrar en un campo/log visible (ej. `calendar_sync_error`) y/o notificar al admin, en vez de fallar en silencio.
+- [ ] **Endpoint admin** `POST /admin/citas/{id}/sync-calendar` para forzar manualmente la creación del evento de una cita puntual.
+- [ ] **Healthcheck** opcional: endpoint admin que confirme que las credenciales de Calendar son válidas (hace un get trivial a la API).
+
+### Panel Admin — Agenda de Citas (`/admin/citas`)
+Aunque la agenda principal es Google Calendar, una vista propia permite ver el estado de confirmación de cada paciente (que Calendar no muestra).
+
+**Backend**
+- [ ] Endpoint `GET /admin/citas` — listar citas con filtros (fecha desde/hasta, estado), incluyendo datos del paciente y servicio
+- [ ] Incluir en la respuesta: `estado`, `paciente_confirmo` (asistirá/no/sin responder), `google_event_id` (para badge de sincronización), `confirmacion_48h_enviada`/`24h_enviada`
+- [ ] (Opcional) Endpoint para cambiar estado manualmente desde el panel (ya existe `PATCH /citas/{id}/estado`)
+
+**Frontend — panel admin**
+- [ ] Ruta `/admin/citas` (lazy, protegida con `adminAuthGuard`) + link en `AdminNavbarComponent`
+- [ ] Vista de lista/agenda con: fecha, hora, paciente, servicio, estado
+- [ ] **Badge de confirmación del paciente**: ✓ asistirá / ✗ no asistirá / ⏳ sin responder (campo `paciente_confirmo`)
+- [ ] **Badge de sincronización con Calendar**: ✓ sincronizada / ⚠ no sincronizada (campo `google_event_id`)
+- [ ] Filtros por fecha y estado; orden por fecha/hora
+- [ ] (Opcional) Botón "Forzar sincronización" por cita (usa el endpoint de reconciliación de arriba)
+
+---
+
 ### Gestión de Usuarios Admin (baja prioridad — al final de la lista)
 Hoy el admin por defecto se crea por migración (`014_seed_default_data.py`) y se gestiona manualmente en Railway/DB. Esta página es un "nice to have" para administrar usuarios desde la UI sin tocar la base de datos.
 

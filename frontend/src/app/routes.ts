@@ -27,6 +27,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./mi-historial/mi-historial.component').then((m) => m.MiHistorialComponent),
   },
+  {
+    path: 'confirmar/:token',
+    loadComponent: () =>
+      import('./confirmar/confirmar.component').then((m) => m.ConfirmarComponent),
+  },
   // ── Admin ────────────────────────────────────────────────────────────────────
   {
     path: 'admin/login',
