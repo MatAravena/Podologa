@@ -24,20 +24,6 @@ import {
 } from '../services/reservas/reservas.service';
 import { ContactoService } from '../services/contacto/contacto.service';
 
-const SERVICIOS_FALLBACK = [
-  'Podología',
-  'Reiki',
-  'Reflexología',
-  'Esencias Florales',
-  'Auriculoterapia',
-  'Masajes Linfáticos',
-  'Tuina',
-] as const;
-
-const HORARIOS_FALLBACK: HorarioDisponible[] = [
-  '9:00','10:00','11:00','12:00','14:00','15:00','16:00','17:00','18:00'
-].map(h => ({ hora: h, disponible: true }));
-
 @Component({
   selector: 'app-reservas',
   imports: [
@@ -60,20 +46,15 @@ export class ReservasComponent implements OnInit {
   private readonly service = inject(ReservasService);
   readonly contactoService = inject(ContactoService);
 
-  // ── Remote state ────────────────────────────────────────────────
-  readonly serviciosApi    = signal<ServicioApi[]>([]);
-  readonly horariosApi     = signal<HorarioDisponible[]>(HORARIOS_FALLBACK);
+  // ── Remote state (all from the backend) ──────────────────────────
+  readonly serviciosApi     = signal<ServicioApi[]>([]);
+  readonly cargandoServicios = signal(true);
+  readonly horariosApi      = signal<HorarioDisponible[]>([]);
   readonly cargandoHorarios = signal(false);
-  readonly apiOnline       = signal(false);
-  readonly promociones     = signal<PromocionVigenteApi[]>([]);
+  readonly promociones      = signal<PromocionVigenteApi[]>([]);
 
-  /** Combined: API servicios if available, else static fallback */
-  readonly servicios = computed(() => {
-    const api = this.serviciosApi();
-    return api.length
-      ? api
-      : SERVICIOS_FALLBACK.map((n, i) => ({ id: i + 1, nombre: n, descripcion: null, duracion: 60, precio: '0' }));
-  });
+  /** Services loaded from `GET /servicios` (empty while loading / on failure). */
+  readonly servicios = computed(() => this.serviciosApi());
 
   readonly horariosDisponibles = computed(() =>
     this.horariosApi().filter(h => h.disponible)
@@ -108,13 +89,9 @@ export class ReservasComponent implements OnInit {
   ngOnInit(): void {
     this.contactoService.load();
     this.service.getServicios().pipe(
-      catchError(() => of([] as ServicioApi[]))
-    ).subscribe(list => {
-      if (list.length) {
-        this.serviciosApi.set(list);
-        this.apiOnline.set(true);
-      }
-    });
+      catchError(() => of([] as ServicioApi[])),
+      finalize(() => this.cargandoServicios.set(false)),
+    ).subscribe(list => this.serviciosApi.set(list));
 
     // Reload disponibilidad and promotions whenever fecha or servicio changes
     this.form.get('fecha')!.valueChanges.subscribe(() => this.loadDisponibilidad());
@@ -126,7 +103,7 @@ export class ReservasComponent implements OnInit {
 
   private loadPromociones(): void {
     const servicioId = Number(this.form.get('servicio_id')!.value);
-    if (!servicioId || !this.apiOnline()) return;
+    if (!servicioId) return;
     this.service.getPromocionesVigentes(servicioId).pipe(
       catchError(() => of([] as PromocionVigenteApi[])),
     ).subscribe(p => this.promociones.set(p));
@@ -135,13 +112,13 @@ export class ReservasComponent implements OnInit {
   private loadDisponibilidad(): void {
     const fecha = this.form.get('fecha')!.value;
     const servicioId = Number(this.form.get('servicio_id')!.value);
-    if (!fecha || !this.apiOnline()) return;
+    if (!fecha) return;
 
     this.cargandoHorarios.set(true);
     this.form.get('hora')!.reset();
 
     this.service.getDisponibilidad(fecha, servicioId || undefined).pipe(
-      catchError(() => of(HORARIOS_FALLBACK)),
+      catchError(() => of([] as HorarioDisponible[])),
       finalize(() => this.cargandoHorarios.set(false)),
     ).subscribe(h => this.horariosApi.set(h));
   }
@@ -153,42 +130,33 @@ export class ReservasComponent implements OnInit {
     this.enviando.set(true);
     const v = this.form.getRawValue();
 
-    if (this.apiOnline()) {
-      this.service.crearCita({
-        nombre:      v.nombre,
-        apellido:    '',
-        email:       v.email,
-        telefono:    v.telefono,
-        servicio_id: Number(v.servicio_id),
-        fecha:       v.fecha,
-        hora:        v.hora,
-        notas:       v.notas || undefined,
-      }).pipe(
-        catchError(() => {
-          this.snack.open('Error al conectar con el servidor. Intentá de nuevo.', 'Cerrar', { duration: 5000 });
-          return of(null);
-        }),
-        finalize(() => this.enviando.set(false)),
-      ).subscribe(res => {
-        if (res) {
-          this.enviado.set(true);
-          this.snack.open('¡Turno solicitado! Te contactaremos para confirmar.', 'Cerrar', { duration: 6000, panelClass: 'snack-success' });
-        }
-      });
-    } else {
-      // Fallback: simulate while backend is offline
-      setTimeout(() => {
-        this.enviando.set(false);
+    this.service.crearCita({
+      nombre:      v.nombre,
+      apellido:    '',
+      email:       v.email,
+      telefono:    v.telefono,
+      servicio_id: Number(v.servicio_id),
+      fecha:       v.fecha,
+      hora:        v.hora,
+      notas:       v.notas || undefined,
+    }).pipe(
+      catchError(() => {
+        this.snack.open('Error al conectar con el servidor. Intentá de nuevo.', 'Cerrar', { duration: 5000 });
+        return of(null);
+      }),
+      finalize(() => this.enviando.set(false)),
+    ).subscribe(res => {
+      if (res) {
         this.enviado.set(true);
-        this.snack.open('¡Solicitud enviada! Te contactaremos para confirmar tu turno.', 'Cerrar', { duration: 6000, panelClass: 'snack-success' });
-      }, 1000);
-    }
+        this.snack.open('¡Turno solicitado! Te contactaremos para confirmar.', 'Cerrar', { duration: 6000, panelClass: 'snack-success' });
+      }
+    });
   }
 
   resetForm(): void {
     this.enviado.set(false);
     this.form.reset();
-    this.horariosApi.set(HORARIOS_FALLBACK);
+    this.horariosApi.set([]);
   }
 
   private getError(campo: string): string {

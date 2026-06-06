@@ -60,7 +60,8 @@ describe('ReservasComponent', () => {
   it('should load servicios from API on init', () => {
     expect(serviceSpy.getServicios).toHaveBeenCalled();
     expect(component.serviciosApi().length).toBe(2);
-    expect(component.apiOnline()).toBe(true);
+    expect(component.servicios().length).toBe(2);
+    expect(component.cargandoServicios()).toBe(false);
   });
 
   it('should expose only available slots via horariosDisponibles', () => {
@@ -71,7 +72,7 @@ describe('ReservasComponent', () => {
     expect(disponibles.every(h => h.disponible)).toBe(true);
   });
 
-  it('should use fallback servicios when API fails', async () => {
+  it('should show no servicios (empty, no hardcoded fallback) when the API fails', async () => {
     serviceSpy.getServicios.mockReturnValue(throwError(() => new Error('Network error')));
 
     TestBed.resetTestingModule();
@@ -89,11 +90,10 @@ describe('ReservasComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // With API failing, serviciosApi is empty so computed falls back to static list
+    // No fallback data: the list stays empty and loading resolves to false.
     expect(component.serviciosApi().length).toBe(0);
-    expect(component.apiOnline()).toBe(false);
-    const servicios = component.servicios();
-    expect(servicios.length).toBeGreaterThan(0);
+    expect(component.servicios().length).toBe(0);
+    expect(component.cargandoServicios()).toBe(false);
   });
 
   describe('form validation', () => {

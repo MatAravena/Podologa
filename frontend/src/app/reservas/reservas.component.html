@@ -74,6 +74,10 @@
               <mat-icon aria-hidden="true">chevron_right</mat-icon>
               {{ s.nombre }}
             </li>
+          } @empty {
+            <li class="info-services__item">
+              {{ cargandoServicios() ? 'Cargando servicios…' : 'Sin servicios por ahora' }}
+            </li>
           }
         </ul>
       </div>
@@ -177,6 +181,10 @@
             >
               @for (s of servicios(); track s.id) {
                 <mat-option [value]="s.id">{{ s.nombre }}</mat-option>
+              } @empty {
+                <mat-option disabled>
+                  {{ cargandoServicios() ? 'Cargando servicios…' : 'No hay servicios disponibles' }}
+                </mat-option>
               }
             </mat-select>
             <mat-icon matPrefix aria-hidden="true">spa</mat-icon>
@@ -231,6 +239,10 @@
               >
                 @for (h of horariosDisponibles(); track h.hora) {
                   <mat-option [value]="h.hora">{{ h.hora }} hs</mat-option>
+                } @empty {
+                  <mat-option disabled>
+                    {{ cargandoHorarios() ? 'Cargando…' : (form.get('fecha')?.value ? 'Sin horarios disponibles' : 'Elige una fecha primero') }}
+                  </mat-option>
                 }
               </mat-select>
               <mat-icon matPrefix aria-hidden="true">access_time</mat-icon>
