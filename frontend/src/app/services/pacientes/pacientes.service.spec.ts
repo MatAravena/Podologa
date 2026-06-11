@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 
-import { PacientesService, Paciente, PacienteDetalle, Nota, Portal } from './pacientes.service';
+import {
+  PacientesService, Paciente, PacienteDetalle, Nota, Portal, NotificarResponse,
+} from './pacientes.service';
 import { environment } from '../../../environments/environment';
 
 const PACIENTE: Paciente = {
@@ -84,5 +86,22 @@ describe('PacientesService', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/pacientes/tok123/perfil`);
     expect(req.request.method).toBe('GET');
     req.flush(portal);
+  });
+
+  it('notificar should POST /admin/pacientes/{id}/notificar with channels and body', () => {
+    const body = { canales: ['email', 'whatsapp'] as const, incluir_notas: true, proxima_cita: '2026-07-01' };
+    const resp: NotificarResponse = {
+      resultados: [
+        { canal: 'email', enviado: true, detalle: 'Email enviado a ana@test.cl.' },
+        { canal: 'whatsapp', enviado: false, detalle: 'Número de WhatsApp inválido o no registrado.' },
+      ],
+    };
+    let result: NotificarResponse | undefined;
+    service.notificar(1, { ...body, canales: [...body.canales] }).subscribe(r => (result = r));
+    const req = httpMock.expectOne(`${environment.apiUrl}/admin/pacientes/1/notificar`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ ...body, canales: [...body.canales] });
+    req.flush(resp);
+    expect(result).toEqual(resp);
   });
 });

@@ -1,0 +1,115 @@
+<div class="admin-shell">
+  <app-admin-navbar />
+
+  <main class="admin-content">
+
+    <header class="ag-header">
+      <h1 class="ag-header__title">Agenda de citas</h1>
+      <p class="ag-header__sub">
+        La agenda oficial es Google Calendar. Aquí ves además el estado de
+        confirmación de cada paciente.
+      </p>
+    </header>
+
+    <!-- Filters -->
+    <div class="ag-filters">
+      <label class="ag-filters__field">
+        <span class="ag-filters__label">Nombre</span>
+        <input type="search" class="ag-filters__input" placeholder="Buscar paciente…"
+          [value]="nombre()" (input)="nombre.set($any($event.target).value)" />
+      </label>
+
+      <label class="ag-filters__field">
+        <span class="ag-filters__label">Desde</span>
+        <input type="date" class="ag-filters__input"
+          [value]="desde()" (change)="desde.set($any($event.target).value)" />
+      </label>
+
+      <label class="ag-filters__field">
+        <span class="ag-filters__label">Hasta</span>
+        <input type="date" class="ag-filters__input"
+          [value]="hasta()" (change)="hasta.set($any($event.target).value)" />
+      </label>
+
+      <label class="ag-filters__field">
+        <span class="ag-filters__label">Estado</span>
+        <select class="ag-filters__input ag-filters__select"
+          [value]="estado()" (change)="estado.set($any($event.target).value)">
+          @for (o of estados; track o.value) {
+            <option [value]="o.value">{{ o.label }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="ag-filters__actions">
+        <button mat-raised-button class="ag-filters__apply" (click)="load()">
+          <mat-icon>search</mat-icon> Filtrar
+        </button>
+        <button mat-button class="ag-filters__clear" (click)="limpiarFiltros()">Limpiar</button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p class="info-text">Cargando citas…</p>
+    } @else if (!hayResultados()) {
+      <div class="ag-empty">
+        <mat-icon aria-hidden="true">event_busy</mat-icon>
+        <p>No hay citas para los filtros seleccionados.</p>
+      </div>
+    } @else {
+      @for (dia of citasPorDia(); track dia.fecha) {
+        <section class="ag-day" aria-label="Citas del día">
+          <h2 class="ag-day__title">{{ dia.fecha | date:'EEEE d MMMM yyyy' }}</h2>
+
+          <div class="ag-list" role="list">
+            @for (c of dia.citas; track c.id) {
+              <article class="ag-cita" [class]="'ag-cita--' + c.estado" role="listitem">
+                <div class="ag-cita__time">
+                  <span class="ag-cita__hora">{{ hora(c) }}</span>
+                  <span class="ag-cita__dur">{{ c.duracion }} min</span>
+                </div>
+
+                <div class="ag-cita__info">
+                  <span class="ag-cita__paciente">{{ c.paciente_nombre }}</span>
+                  <span class="ag-cita__servicio">{{ c.servicio_nombre ?? 'Servicio eliminado' }}</span>
+                  <div class="ag-cita__contacto">
+                    @if (c.paciente_telefono) { <span>{{ c.paciente_telefono }}</span> }
+                    @if (c.paciente_email) { <span>{{ c.paciente_email }}</span> }
+                  </div>
+                </div>
+
+                <div class="ag-cita__badges">
+                  <!-- Estado -->
+                  <span class="ag-badge ag-badge--estado" [class]="'ag-badge--' + c.estado">
+                    {{ estadoLabel(c.estado) }}
+                  </span>
+
+                  <!-- Patient confirmation -->
+                  @if (c.paciente_confirmo === true) {
+                    <span class="ag-badge ag-badge--ok"><mat-icon>check_circle</mat-icon> Asistirá</span>
+                  } @else if (c.paciente_confirmo === false) {
+                    <span class="ag-badge ag-badge--no"><mat-icon>cancel</mat-icon> No asistirá</span>
+                  } @else {
+                    <span class="ag-badge ag-badge--pend"><mat-icon>schedule</mat-icon> Sin responder</span>
+                  }
+
+                  <!-- Calendar sync -->
+                  @if (c.sincronizada_calendar) {
+                    <span class="ag-badge ag-badge--sync" title="Sincronizada con Google Calendar">
+                      <mat-icon>event_available</mat-icon> En calendario
+                    </span>
+                  } @else {
+                    <span class="ag-badge ag-badge--nosync" title="No está en Google Calendar">
+                      <mat-icon>event_busy</mat-icon> Sin sincronizar
+                    </span>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    }
+
+  </main>
+</div>

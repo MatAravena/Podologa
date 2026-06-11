@@ -53,6 +53,28 @@ export interface Portal {
   notas_clinicas: NotaPortal[];
 }
 
+/** Channel for a manual patient notification. */
+export type CanalNotificacion = 'email' | 'whatsapp';
+
+/** Body for `POST /admin/pacientes/{id}/notificar`. */
+export interface NotificarInput {
+  canales: CanalNotificacion[];
+  incluir_notas: boolean;
+  proxima_cita: string | null; // ISO date (YYYY-MM-DD) or null
+}
+
+/** Per-channel outcome (`CanalResultado`). */
+export interface CanalResultado {
+  canal: CanalNotificacion;
+  enviado: boolean;
+  detalle: string;
+}
+
+/** Response of `POST /admin/pacientes/{id}/notificar`. */
+export interface NotificarResponse {
+  resultados: CanalResultado[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class PacientesService {
   private readonly http = inject(HttpClient);
@@ -91,5 +113,13 @@ export class PacientesService {
   /** GET /pacientes/{token}/perfil — public portal access (no login). */
   perfilPublico(token: string): Observable<Portal> {
     return this.http.get<Portal>(`${this.base}/pacientes/${token}/perfil`);
+  }
+
+  /** POST /admin/pacientes/{id}/notificar — manually send notes / next-date to the patient. */
+  notificar(pacienteId: number, body: NotificarInput): Observable<NotificarResponse> {
+    return this.http.post<NotificarResponse>(
+      `${this.base}/admin/pacientes/${pacienteId}/notificar`,
+      body,
+    );
   }
 }

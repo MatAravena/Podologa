@@ -131,14 +131,14 @@
       role="dialog"
       aria-modal="true"
       aria-label="Vista ampliada de foto"
-      (click)="closeLightbox()"
+      (click)="onLightboxBackdropClick($event)"
       (keydown.escape)="closeLightbox()"
       tabindex="0"
     >
       <button class="sd-lightbox__close" (click)="closeLightbox()" aria-label="Cerrar">
         <mat-icon>close</mat-icon>
       </button>
-      <img [src]="lightbox()!" alt="Vista ampliada" (click)="$event.stopPropagation()" />
+      <img [src]="lightbox()!" alt="Vista ampliada" />
     </div>
   }
 

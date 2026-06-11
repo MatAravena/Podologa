@@ -1,0 +1,205 @@
+@use 'tokens' as *;
+
+.admin-shell { min-height: 100vh; background: #faf8f6; display: flex; flex-direction: column; }
+
+.admin-content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.info-text { color: #9a847a; font-size: 0.9rem; padding: 1rem 0; }
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.ag-header {
+  margin-bottom: 1.25rem;
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 0.25rem;
+  }
+
+  &__sub { color: $text-mid; font-size: 0.9rem; margin: 0; }
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+.ag-filters {
+  display: flex;
+  align-items: flex-end;     // align all fields + buttons on their baseline
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1 1 160px;
+    min-width: 140px;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    color: $text-mid;
+    font-weight: 600;
+  }
+
+  // Shared control style so every field has the same height + look
+  &__input {
+    font: inherit;
+    color: $text;
+    height: 42px;
+    box-sizing: border-box;
+    padding: 0 0.75rem;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: #fff;
+    width: 100%;
+
+    &:focus-visible { outline: 2px solid $pink-dark; outline-offset: 1px; }
+  }
+
+  &__select { cursor: pointer; appearance: auto; }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+  }
+
+  &__apply {
+    height: 42px;
+    background: $pink-dark !important;
+    color: #fff !important;
+    mat-icon { margin-right: 4px; }
+  }
+
+  &__clear { height: 42px; color: $text-mid !important; }
+}
+
+// ── Empty ─────────────────────────────────────────────────────────────────────
+.ag-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-light;
+
+  mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; margin-bottom: 0.5rem; }
+  p { margin: 0; }
+}
+
+// ── Day group ─────────────────────────────────────────────────────────────────
+.ag-day {
+  margin-bottom: 1.75rem;
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $pink-deep;
+    text-transform: capitalize;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid $border;
+  }
+}
+
+.ag-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+// ── Appointment card ──────────────────────────────────────────────────────────
+.ag-cita {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  background: #fff;
+  border: 1px solid $border;
+  border-left: 4px solid $text-light;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+
+  &--confirmada { border-left-color: #4a8a4a; }
+  &--pendiente  { border-left-color: #d4a017; }
+  &--completada { border-left-color: $pink-dark; }
+  &--cancelada  { border-left-color: #c0392b; opacity: 0.7; }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 60px 1fr;
+
+    &__badges { grid-column: 1 / -1; }
+  }
+
+  &__time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  &__hora { font-weight: 700; font-size: 1.05rem; color: $text; }
+  &__dur  { font-size: 0.7rem; color: $text-light; }
+
+  &__info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  &__paciente { font-weight: 600; color: $text; }
+  &__servicio { font-size: 0.875rem; color: $text-mid; }
+  &__contacto {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: $text-light;
+    margin-top: 0.15rem;
+  }
+
+  &__badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: flex-end;
+
+    @media (max-width: 640px) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.ag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; }
+
+  &--estado { background: rgba($text-light, 0.15); color: $text-mid; }
+  &--confirmada { background: rgba(#4a8a4a, 0.12); color: #4a8a4a; }
+  &--pendiente  { background: rgba(#d4a017, 0.15); color: #a87f12; }
+  &--completada { background: rgba($pink-dark, 0.12); color: $pink-deep; }
+  &--cancelada  { background: rgba(#c0392b, 0.12); color: #c0392b; }
+
+  &--ok   { background: rgba(#4a8a4a, 0.12); color: #4a8a4a; }
+  &--no   { background: rgba(#c0392b, 0.12); color: #c0392b; }
+  &--pend { background: rgba(#d4a017, 0.15); color: #a87f12; }
+
+  &--sync   { background: rgba(#4a8a4a, 0.10); color: #4a8a4a; }
+  &--nosync { background: rgba(#c0392b, 0.10); color: #c0392b; }
+}

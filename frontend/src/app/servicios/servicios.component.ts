@@ -52,4 +52,10 @@ export class ServiciosComponent implements OnInit {
 
   openLightbox(url: string): void { this.lightbox.set(url); }
   closeLightbox(): void           { this.lightbox.set(null); }
+
+  onLightboxBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeLightbox();
+    }
+  }
 }

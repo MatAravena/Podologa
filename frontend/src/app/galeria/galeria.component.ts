@@ -46,6 +46,12 @@ export class GaleriaComponent implements OnInit {
     this.selected.set(null);
   }
 
+  onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeLightbox();
+    }
+  }
+
   mediaUrl(post: GaleriaPost): string {
     return this.galeriaService.mediaUrl(post.media_url);
   }

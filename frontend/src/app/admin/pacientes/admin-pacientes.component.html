@@ -99,6 +99,66 @@
               }
             </div>
 
+            <!-- Notify patient -->
+            <section class="pac-notify" aria-label="Enviar notas al paciente">
+              <h3 class="pac-notify__title">
+                <mat-icon aria-hidden="true">send</mat-icon>
+                Enviar al paciente
+              </h3>
+              <p class="pac-notify__hint">
+                Envía al paciente sus notas marcadas como visibles y/o una fecha sugerida
+                para su próxima hora. El envío es manual: tú decides cuándo y por qué canal.
+              </p>
+
+              <form [formGroup]="notificarForm" (ngSubmit)="notificar()" novalidate class="notify-form">
+
+                <fieldset class="notify-form__channels">
+                  <legend class="notify-form__legend">Canales</legend>
+                  @if (emailDisponible()) {
+                    <mat-checkbox formControlName="email">Email <span class="notify-form__dest">({{ pac.email }})</span></mat-checkbox>
+                  } @else {
+                    <span class="notify-form__unavailable">Sin email registrado</span>
+                  }
+                  @if (whatsappDisponible()) {
+                    <mat-checkbox formControlName="whatsapp">WhatsApp <span class="notify-form__dest">({{ pac.telefono }})</span></mat-checkbox>
+                  } @else {
+                    <span class="notify-form__unavailable">Sin WhatsApp válido (móvil chileno)</span>
+                  }
+                </fieldset>
+
+                <div class="notify-form__row">
+                  <mat-checkbox formControlName="incluir_notas">
+                    Incluir notas visibles
+                    <span class="notify-form__count">({{ notasVisiblesCount() }})</span>
+                  </mat-checkbox>
+                </div>
+
+                <div class="notify-form__row notify-form__date">
+                  <label for="proxima-cita" class="notify-form__date-label">Fecha sugerida para la próxima cita (opcional)</label>
+                  <input id="proxima-cita" type="date" class="notify-form__date-input"
+                    formControlName="proxima_cita" />
+                </div>
+
+                <div class="notify-form__actions">
+                  <button
+                    mat-raised-button
+                    type="submit"
+                    class="notify-form__submit"
+                    [disabled]="!puedeNotificar() || enviandoNotif()"
+                  >
+                    <mat-icon>@if (enviandoNotif()) { sync } @else { send }</mat-icon>
+                    @if (enviandoNotif()) { Enviando… } @else { Enviar al paciente }
+                  </button>
+                </div>
+
+                @if (!puedeNotificar() && notasVisiblesCount() === 0) {
+                  <p class="notify-form__warn">
+                    No hay notas visibles ni fecha sugerida: marca una nota como “visible para el paciente” o elige una fecha.
+                  </p>
+                }
+              </form>
+            </section>
+
             <!-- Note form -->
             <section class="pac-notes-form" aria-label="Agregar o editar nota">
               <h3 class="pac-notes-form__title">

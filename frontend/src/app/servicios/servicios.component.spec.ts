@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
-import { signal } from '@angular/core';
 
 import { ServiciosComponent, ServicioApi } from './servicios.component';
 

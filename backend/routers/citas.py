@@ -6,14 +6,16 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
+from auth import get_current_admin
 from database import get_db
 from integrations.google_calendar import calendar_service
 from notifications.citas_notify import send_welcome
-from models import Cita, Paciente, Servicio, EstadoCita, Promocion
+from models import Cita, Paciente, Servicio, EstadoCita, Promocion, User
 from routers.promociones import _is_currently_active
-from schemas import CitaOut, CitaUpdate
+from schemas import CitaAdminOut, CitaOut, CitaUpdate
 
 router = APIRouter(prefix="/citas", tags=["citas"])
+admin_router = APIRouter(prefix="/admin/citas", tags=["citas-admin"])
 
 
 # ── Public booking payload (frontend form) ────────────────────────────────────
@@ -266,3 +268,45 @@ def actualizar_estado(
             )
 
     return cita
+
+
+# ── Admin agenda ──────────────────────────────────────────────────────────────
+
+@admin_router.get("", response_model=List[CitaAdminOut])
+def listar_citas_admin(
+    desde: date | None = None,
+    hasta: date | None = None,
+    estado: EstadoCita | None = None,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    """Appointments for the admin agenda, with confirmation + calendar-sync info."""
+    query = db.query(Cita)
+    if desde is not None:
+        query = query.filter(Cita.fecha >= desde)
+    if hasta is not None:
+        query = query.filter(Cita.fecha <= hasta)
+    if estado is not None:
+        query = query.filter(Cita.estado == estado)
+
+    citas = query.order_by(Cita.fecha.asc(), Cita.hora.asc()).all()
+
+    return [
+        CitaAdminOut(
+            id=c.id,
+            fecha=c.fecha,
+            hora=c.hora,
+            duracion=c.duracion,
+            estado=c.estado,
+            paciente_nombre=c.paciente.nombre if c.paciente else "",
+            paciente_email=c.paciente.email if c.paciente else None,
+            paciente_telefono=c.paciente.telefono if c.paciente else None,
+            servicio_nombre=c.servicio.nombre if c.servicio else None,
+            precio_final=c.precio_final,
+            paciente_confirmo=c.paciente_confirmo,
+            confirmacion_48h_enviada=c.confirmacion_48h_enviada,
+            confirmacion_24h_enviada=c.confirmacion_24h_enviada,
+            sincronizada_calendar=bool(c.google_event_id),
+        )
+        for c in citas
+    ]

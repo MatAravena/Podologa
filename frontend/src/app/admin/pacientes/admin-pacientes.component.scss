@@ -192,6 +192,87 @@
   }
 }
 
+// ── Notify patient ────────────────────────────────────────────────────────────
+.pac-notify {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: $font-heading;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: $text;
+    margin: 0 0 0.5rem;
+
+    mat-icon { color: $pink-dark; }
+  }
+
+  &__hint { color: $text-light; font-size: 0.85rem; line-height: 1.5; margin: 0 0 1rem; }
+}
+
+.notify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  &__channels {
+    border: 1px solid $border;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  &__legend {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $text-mid;
+    padding: 0 0.4rem;
+  }
+
+  &__dest { color: $text-light; font-weight: 400; }
+
+  &__unavailable { color: $text-light; font-size: 0.85rem; font-style: italic; }
+
+  &__count { color: $text-light; }
+
+  &__row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+  &__date { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+
+  &__date-label { font-size: 0.85rem; color: $text-mid; }
+
+  &__date-input {
+    font: inherit;
+    color: $text;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid $border;
+    border-radius: 8px;
+    background: #fff;
+
+    &:focus-visible { outline: 2px solid $pink-dark; outline-offset: 1px; }
+  }
+
+  &__actions { display: flex; justify-content: flex-end; }
+
+  &__submit {
+    background: $pink-dark !important;
+    color: #fff !important;
+  }
+
+  &__warn { color: #b8722f; font-size: 0.8rem; margin: 0; }
+}
+
 // ── Note form ─────────────────────────────────────────────────────────────────
 .pac-notes-form {
   background: #fff;

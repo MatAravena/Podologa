@@ -164,6 +164,73 @@ def send_confirmacion_request(
     _send_html(to_email, subject, html, "CONFIRM-REQUEST")
 
 
+def send_nota_resumen(
+    to_email: str,
+    nombre: str,
+    notas: list[tuple[str, str]] | None,
+    proxima_cita: str | None,
+) -> None:
+    """Email a patient a summary of their visible notes + suggested next appointment.
+
+    `notas` is a list of (tipo_label, contenido) tuples (already filtered to
+    visible ones). `proxima_cita` is a pre-formatted date string or None.
+    Sent manually by the admin — never automatic.
+    """
+    subject = "Tus indicaciones de Libélula Podología y Terapias"
+
+    notas_html = ""
+    if notas:
+        filas = "".join(
+            f"""
+        <tr><td style="padding:14px 16px;border-bottom:1px solid #f3e8e8;">
+          <span style="display:inline-block;font-size:.6875rem;letter-spacing:.04em;text-transform:uppercase;color:#b88334;font-weight:700;margin-bottom:6px;">{tipo}</span>
+          <div style="color:#2d2d2d;font-size:.9375rem;line-height:1.6;white-space:pre-wrap;">{contenido}</div>
+        </td></tr>"""
+            for tipo, contenido in notas
+        )
+        notas_html = f"""
+      <h3 style="margin:24px 0 8px;font-size:1rem;color:#2d2d2d;">Indicaciones y notas</h3>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #f3e8e8;border-radius:12px;overflow:hidden;">{filas}
+      </table>"""
+
+    proxima_html = ""
+    if proxima_cita:
+        proxima_html = f"""
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff5f5;border-radius:12px;margin:20px 0 0;">
+        <tr><td style="padding:18px 24px;text-align:center;">
+          <span style="display:block;color:#9ca3af;font-size:.8125rem;margin-bottom:4px;">Fecha sugerida para tu próxima hora</span>
+          <strong style="color:#7a3040;font-size:1.125rem;">{proxima_cita}</strong>
+        </td></tr>
+      </table>"""
+
+    html = f"""
+<!DOCTYPE html><html lang="es"><body style="margin:0;padding:0;background:#fff5f5;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(200,140,160,.15);">
+    <tr><td style="background:linear-gradient(135deg,#ffb6c1 0%,#ffd0d8 100%);padding:32px 40px;text-align:center;">
+      <h1 style="margin:0;font-size:1.625rem;font-weight:700;color:#2d1218;">🌿 Libélula</h1>
+      <p style="margin:4px 0 0;font-size:.875rem;color:#7a3040;">Podología y Terapias</p>
+    </td></tr>
+    <tr><td style="padding:32px 40px;">
+      <h2 style="margin:0 0 8px;font-size:1.25rem;color:#2d2d2d;">Hola {nombre} 🌷</h2>
+      <p style="margin:0 0 8px;color:#6b7280;line-height:1.6;">
+        Te compartimos las indicaciones que dejó tu podóloga tras tu atención.
+      </p>
+      {notas_html}
+      {proxima_html}
+      <p style="color:#9ca3af;font-size:.8125rem;line-height:1.6;margin:24px 0 0;">
+        Si tienes dudas, puedes responder este correo o escribirnos por WhatsApp.
+      </p>
+    </td></tr>
+    <tr><td style="padding:20px 40px;border-top:1px solid #f3e8e8;text-align:center;color:#9ca3af;font-size:.75rem;">
+      Santiago, Chile &nbsp;·&nbsp;
+      <a href="{settings.APP_URL}" style="color:#d4697e;text-decoration:none;">terapiaslibelula.cl</a>
+    </td></tr>
+  </table>
+</body></html>
+"""
+    _send_html(to_email, subject, html, "NOTA-RESUMEN")
+
+
 def send_reminder(to_email: str, nombre: str, servicio: str, fecha: str, hora: str) -> None:
     """Send 24h-before reminder email."""
     subject = f"Recordatorio: tu hora de {servicio} es mañana"

@@ -75,6 +75,12 @@ export const routes: Routes = [
     canActivate: [adminAuthGuard],
   },
   {
+    path: 'admin/citas',
+    loadComponent: () =>
+      import('./admin/citas/admin-citas.component').then((m) => m.AdminCitasComponent),
+    canActivate: [adminAuthGuard],
+  },
+  {
     path: 'admin',
     redirectTo: 'admin/opiniones',
     pathMatch: 'full',

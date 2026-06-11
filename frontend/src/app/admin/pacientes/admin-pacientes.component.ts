@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule }    from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,7 +21,9 @@ import { catchError, of } from 'rxjs';
 
 import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
 import { AdminAuthService }     from '../admin-auth/admin-auth.service';
-import { PacientesService, Paciente, PacienteDetalle, Nota } from '../../services/pacientes/pacientes.service';
+import {
+  PacientesService, Paciente, PacienteDetalle, Nota, CanalNotificacion,
+} from '../../services/pacientes/pacientes.service';
 
 /** Re-exported for templates/specs. */
 export type NotaApi = Nota;
@@ -85,6 +88,34 @@ export class AdminPacientesComponent implements OnInit {
     visible_paciente:  [false],
   });
 
+  // ── Notificar al paciente (envío manual controlado por la admin) ──────────────
+  readonly enviandoNotif = signal(false);
+
+  readonly notificarForm = this.fb.nonNullable.group({
+    email:         [false],
+    whatsapp:      [false],
+    incluir_notas: [true],
+    proxima_cita:  [''],   // native date input value (YYYY-MM-DD) or ''
+  });
+
+  private readonly notifValue = toSignal(this.notificarForm.valueChanges, {
+    initialValue: this.notificarForm.getRawValue(),
+  });
+
+  readonly emailDisponible    = computed(() => !!this.selected()?.email);
+  readonly whatsappDisponible = computed(() => this.esMovilChileno(this.selected()?.telefono ?? null));
+  readonly notasVisiblesCount = computed(
+    () => this.selected()?.notas_clinicas.filter(n => n.visible_paciente).length ?? 0,
+  );
+
+  /** Enabled only when a channel is chosen AND there is something to send. */
+  readonly puedeNotificar = computed(() => {
+    const v = this.notifValue();
+    const algunCanal = v.email || v.whatsapp;
+    const hayContenido = (v.incluir_notas && this.notasVisiblesCount() > 0) || !!v.proxima_cita;
+    return algunCanal && hayContenido;
+  });
+
   ngOnInit(): void {
     this.loadPacientes();
   }
@@ -106,7 +137,56 @@ export class AdminPacientesComponent implements OnInit {
       catchError(() => of(null))
     ).subscribe(detalle => {
       this.loadingDetalle.set(false);
-      if (detalle) this.selected.set(detalle);
+      if (detalle) {
+        this.selected.set(detalle);
+        // Pre-check channels the patient actually has; admin can toggle.
+        this.notificarForm.reset({
+          email:         !!detalle.email,
+          whatsapp:      this.esMovilChileno(detalle.telefono),
+          incluir_notas: true,
+          proxima_cita:  '',
+        });
+      }
+    });
+  }
+
+  /** FE mirror of the backend Chilean-mobile validation (56 + 9 + 8 digits). */
+  private esMovilChileno(telefono: string | null): boolean {
+    if (!telefono) return false;
+    const digits = telefono.replace(/[+\s\-()]/g, '');
+    if (!/^\d+$/.test(digits)) return false;
+    const normalized = digits.length === 9 && digits.startsWith('9') ? `56${digits}` : digits;
+    return normalized.length === 11 && normalized.startsWith('569');
+  }
+
+  notificar(): void {
+    const pac = this.selected();
+    if (!pac || !this.puedeNotificar() || this.enviandoNotif()) return;
+
+    const v = this.notificarForm.getRawValue();
+    const canales: CanalNotificacion[] = [];
+    if (v.email)    canales.push('email');
+    if (v.whatsapp) canales.push('whatsapp');
+
+    this.enviandoNotif.set(true);
+    this.pacientesService.notificar(pac.id, {
+      canales,
+      incluir_notas: v.incluir_notas,
+      proxima_cita:  v.proxima_cita || null,
+    }).pipe(
+      catchError(() => {
+        this.snack.open('Error al enviar la notificación.', 'Cerrar', { duration: 4000 });
+        this.enviandoNotif.set(false);
+        return of(null);
+      })
+    ).subscribe(res => {
+      this.enviandoNotif.set(false);
+      if (!res) return;
+      const resumen = res.resultados.map(r => {
+        const label = r.canal === 'email' ? 'Email' : 'WhatsApp';
+        return r.enviado ? `${label} enviado ✓` : `${label} falló — ${r.detalle}`;
+      }).join('  ·  ');
+      this.snack.open(resumen, 'Cerrar', { duration: 7000 });
     });
   }
 

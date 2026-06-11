@@ -103,6 +103,40 @@ class PortalPacienteOut(ORMBase):
     notas_clinicas: list[NotaPacienteOut] = []
 
 
+# ─── Notificar paciente (envío manual controlado por la admin) ─────────────────
+
+CANALES_NOTIFICACION = ["email", "whatsapp"]
+
+
+class NotificarPacienteRequest(BaseModel):
+    """Admin asks to send the patient their visible notes and/or a suggested
+    next-appointment date through the chosen channels. Never automatic."""
+    canales: list[str] = Field(..., min_length=1, description='Subconjunto de ["email", "whatsapp"]')
+    incluir_notas: bool = True
+    proxima_cita: date | None = None
+
+    @field_validator("canales")
+    @classmethod
+    def canales_validos(cls, v: list[str]) -> list[str]:
+        # dedupe preserving order
+        deduped = list(dict.fromkeys(v))
+        invalid = [c for c in deduped if c not in CANALES_NOTIFICACION]
+        if invalid:
+            raise ValueError(f"canales debe ser un subconjunto de: {CANALES_NOTIFICACION}")
+        return deduped
+
+
+class CanalResultado(BaseModel):
+    """Outcome of one channel so the admin sees per-channel feedback."""
+    canal: str
+    enviado: bool
+    detalle: str
+
+
+class NotificarPacienteResponse(BaseModel):
+    resultados: list[CanalResultado]
+
+
 # ─── Servicio ─────────────────────────────────────────────────────────────────
 
 class ServicioCreate(BaseModel):
@@ -176,6 +210,25 @@ class CitaOut(ORMBase):
     servicio: ServicioOut | None
     created_at: datetime
     updated_at: datetime
+
+
+class CitaAdminOut(ORMBase):
+    """Flattened view for the admin agenda (/admin/citas)."""
+    id: int
+    fecha: date
+    hora: time
+    duracion: int
+    estado: EstadoCita
+    paciente_nombre: str
+    paciente_email: str | None
+    paciente_telefono: str | None
+    servicio_nombre: str | None
+    precio_final: int | None
+    # Patient self-confirmation: None = sin responder, True = asistirá, False = no
+    paciente_confirmo: bool | None
+    confirmacion_48h_enviada: bool
+    confirmacion_24h_enviada: bool
+    sincronizada_calendar: bool  # True if google_event_id is set
 
 
 # ─── GaleriaPost ──────────────────────────────────────────────────────────────

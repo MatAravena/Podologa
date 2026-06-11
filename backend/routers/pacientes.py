@@ -23,11 +23,14 @@ from auth import get_current_admin
 from config import settings
 from database import get_db
 from models import NotaPaciente, Paciente, User
+from notifications.pacientes_notify import notificar_resumen, tipo_label
 from rate_limit import rate_limit
 from schemas import (
     NotaPacienteCreate,
     NotaPacienteOut,
     NotaPacienteUpdate,
+    NotificarPacienteRequest,
+    NotificarPacienteResponse,
     PacienteDetalleOut,
     PacienteOut,
     PortalPacienteOut,
@@ -142,6 +145,48 @@ def generar_token(
     db.commit()
     db.refresh(paciente)
     return paciente
+
+
+@router.post(
+    "/admin/pacientes/{paciente_id}/notificar",
+    response_model=NotificarPacienteResponse,
+)
+def notificar_paciente(
+    paciente_id: int,
+    payload: NotificarPacienteRequest,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    """Manually send the patient their visible notes and/or a suggested next
+    appointment date through the chosen channels. Controlled by the admin —
+    never automatic. Returns a per-channel result so the UI can show what worked.
+    """
+    paciente = _get_paciente_or_404(paciente_id, db)
+
+    notas: list[tuple[str, str]] = []
+    if payload.incluir_notas:
+        notas = [
+            (tipo_label(n.tipo), n.contenido)
+            for n in paciente.notas_clinicas
+            if n.visible_paciente
+        ]
+
+    # Nothing to send → reject instead of mailing an empty message
+    if not notas and payload.proxima_cita is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nada que enviar: marca notas visibles para incluir o define una fecha sugerida.",
+        )
+
+    resultados = notificar_resumen(
+        email=paciente.email,
+        telefono=paciente.telefono,
+        nombre=paciente.nombre,
+        notas=notas,
+        proxima_cita=payload.proxima_cita,
+        canales=payload.canales,
+    )
+    return NotificarPacienteResponse(resultados=resultados)
 
 
 # ── Public portal endpoint ────────────────────────────────────────────────────

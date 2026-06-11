@@ -17,6 +17,7 @@ import { AppIconComponent } from '../../../shared/icon/app-icon.component';
       </span>
 
       <nav class="admin-bar__nav" aria-label="Navegación del panel admin">
+        <a routerLink="/admin/citas"         routerLinkActive="active" mat-button>Citas</a>
         <a routerLink="/admin/opiniones"     routerLinkActive="active" mat-button>Opiniones</a>
         <a routerLink="/admin/galeria"        routerLinkActive="active" mat-button>Galería</a>
         <a routerLink="/admin/servicios"      routerLinkActive="active" mat-button>Servicios</a>
