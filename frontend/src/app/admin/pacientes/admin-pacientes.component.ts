@@ -22,7 +22,7 @@ import { catchError, of } from 'rxjs';
 import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
 import { AdminAuthService }     from '../admin-auth/admin-auth.service';
 import {
-  PacientesService, Paciente, PacienteDetalle, Nota, CanalNotificacion,
+  PacientesService, Paciente, PacienteDetalle, Nota, CanalNotificacion, PacienteInput,
 } from '../../services/pacientes/pacientes.service';
 
 /** Re-exported for templates/specs. */
@@ -71,6 +71,19 @@ export class AdminPacientesComponent implements OnInit {
   readonly generandoToken = signal(false);
   readonly editingNota    = signal<NotaApi | null>(null);
   readonly busqueda       = signal('');
+
+  // ── Patient create/edit form ──────────────────────────────────────────────
+  /** 'create' = new patient panel; 'edit' = editing the selected one; null = neither. */
+  readonly formMode    = signal<'create' | 'edit' | null>(null);
+  readonly savingPaciente   = signal(false);
+  readonly deletingPaciente = signal(false);
+
+  readonly pacienteForm = this.fb.nonNullable.group({
+    nombre:   ['', [Validators.required, Validators.minLength(2)]],
+    email:    [''],
+    telefono: [''],
+    notas:    [''],
+  });
 
   readonly tiposNota = TIPOS_NOTA;
 
@@ -132,6 +145,7 @@ export class AdminPacientesComponent implements OnInit {
   selectPaciente(p: PacienteApi): void {
     this.loadingDetalle.set(true);
     this.editingNota.set(null);
+    this.formMode.set(null);
     this.notaForm.reset({ tipo: 'seguimiento', visible_paciente: false });
     this.pacientesService.obtener(p.id).pipe(
       catchError(() => of(null))
@@ -146,6 +160,119 @@ export class AdminPacientesComponent implements OnInit {
           incluir_notas: true,
           proxima_cita:  '',
         });
+      }
+    });
+  }
+
+  // ── Patient create / edit / delete ────────────────────────────────────────
+
+  startCreatePaciente(): void {
+    this.selected.set(null);
+    this.formMode.set('create');
+    this.pacienteForm.reset({ nombre: '', email: '', telefono: '', notas: '' });
+  }
+
+  startEditPaciente(): void {
+    const p = this.selected();
+    if (!p) return;
+    this.formMode.set('edit');
+    this.pacienteForm.reset({
+      nombre:   p.nombre,
+      email:    p.email ?? '',
+      telefono: p.telefono ?? '',
+      notas:    p.notas ?? '',
+    });
+  }
+
+  cancelPacienteForm(): void {
+    this.formMode.set(null);
+    this.pacienteForm.reset({ nombre: '', email: '', telefono: '', notas: '' });
+  }
+
+  submitPaciente(): void {
+    if (this.pacienteForm.invalid || this.savingPaciente()) {
+      this.pacienteForm.markAllAsTouched();
+      return;
+    }
+    const v = this.pacienteForm.getRawValue();
+    const body: PacienteInput = {
+      nombre:   v.nombre.trim(),
+      email:    v.email.trim()    || null,
+      telefono: v.telefono.trim() || null,
+      notas:    v.notas.trim()    || null,
+    };
+    if (this.formMode() === 'edit') {
+      this.updatePaciente(body);
+    } else {
+      this.createPaciente(body);
+    }
+  }
+
+  private createPaciente(body: PacienteInput): void {
+    this.savingPaciente.set(true);
+    this.pacientesService.crear(body).pipe(
+      catchError(err => {
+        const msg = err.status === 409
+          ? 'Ya existe un paciente con ese email.'
+          : 'Error al crear el paciente.';
+        this.snack.open(msg, 'Cerrar', { duration: 4000 });
+        this.savingPaciente.set(false);
+        return of(null);
+      })
+    ).subscribe(creado => {
+      this.savingPaciente.set(false);
+      if (creado) {
+        this.pacientes.update(list =>
+          [...list, creado].sort((a, b) => a.nombre.localeCompare(b.nombre))
+        );
+        this.formMode.set(null);
+        this.snack.open('Paciente creado.', 'Cerrar', { duration: 3000 });
+        this.selectPaciente(creado);
+      }
+    });
+  }
+
+  private updatePaciente(body: PacienteInput): void {
+    const current = this.selected();
+    if (!current) return;
+    this.savingPaciente.set(true);
+    this.pacientesService.actualizar(current.id, body).pipe(
+      catchError(err => {
+        const msg = err.status === 409
+          ? 'Ya existe otro paciente con ese email.'
+          : 'Error al guardar los cambios.';
+        this.snack.open(msg, 'Cerrar', { duration: 4000 });
+        this.savingPaciente.set(false);
+        return of(null);
+      })
+    ).subscribe(updated => {
+      this.savingPaciente.set(false);
+      if (updated) {
+        this.selected.update(p => p ? { ...p, ...updated } : p);
+        this.pacientes.update(list =>
+          list.map(p => p.id === updated.id ? { ...p, ...updated } : p)
+              .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        );
+        this.formMode.set(null);
+        this.snack.open('Paciente actualizado.', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  deletePaciente(): void {
+    const p = this.selected();
+    if (!p) return;
+    if (!confirm(`¿Eliminar a ${p.nombre}? Se borrarán también sus notas y citas. Esta acción no se puede deshacer.`)) return;
+    this.deletingPaciente.set(true);
+    this.pacientesService.eliminar(p.id).pipe(
+      catchError(() => { this.snack.open('Error al eliminar el paciente.', 'Cerrar', { duration: 4000 }); return of(null); })
+    ).subscribe(res => {
+      this.deletingPaciente.set(false);
+      if (res !== null || res === undefined) {
+        this.pacientes.update(list => list.filter(x => x.id !== p.id));
+        this.selected.set(null);
+        this.formMode.set(null);
+        this.snack.open('Paciente eliminado.', 'Cerrar', { duration: 3000 });
       }
     });
   }

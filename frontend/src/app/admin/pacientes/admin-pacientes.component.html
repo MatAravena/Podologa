@@ -12,6 +12,10 @@
         <aside class="pac-list" aria-label="Lista de pacientes">
           <div class="pac-list__header">
             <h2 class="pac-list__title">Pacientes ({{ pacientesFiltrados().length }})</h2>
+            <button mat-icon-button class="pac-list__add" (click)="startCreatePaciente()"
+              aria-label="Nuevo paciente">
+              <mat-icon>person_add</mat-icon>
+            </button>
           </div>
 
           <div class="pac-list__search">
@@ -56,8 +60,59 @@
           }
         </aside>
 
-        <!-- ── Right: patient detail ── -->
-        @if (loadingDetalle()) {
+        <!-- ── Right: create/edit form (takes priority) ── -->
+        @if (formMode(); as mode) {
+          <section class="pac-detail" aria-label="Formulario de paciente">
+            <div class="pac-pform">
+              <div class="pac-pform__header">
+                <h2 class="pac-detail__name">
+                  @if (mode === 'create') { Nuevo paciente } @else { Editar paciente }
+                </h2>
+                <button mat-icon-button (click)="cancelPacienteForm()" aria-label="Cancelar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+
+              <form [formGroup]="pacienteForm" (ngSubmit)="submitPaciente()" novalidate class="pac-pform__form">
+                <mat-form-field appearance="outline" class="pac-pform__field">
+                  <mat-label>Nombre y apellido</mat-label>
+                  <input matInput formControlName="nombre" placeholder="Ej: María González" />
+                  @if (pacienteForm.get('nombre')?.invalid && pacienteForm.get('nombre')?.touched) {
+                    <mat-error>El nombre es obligatorio (mínimo 2 caracteres)</mat-error>
+                  }
+                </mat-form-field>
+
+                <div class="pac-pform__row">
+                  <mat-form-field appearance="outline" class="pac-pform__field">
+                    <mat-label>Email (opcional)</mat-label>
+                    <input matInput type="email" formControlName="email" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="pac-pform__field">
+                    <mat-label>Teléfono (opcional)</mat-label>
+                    <input matInput formControlName="telefono" placeholder="+56 9 1234 5678" />
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline" class="pac-pform__field">
+                  <mat-label>Notas internas (opcional)</mat-label>
+                  <textarea matInput formControlName="notas" rows="2"></textarea>
+                </mat-form-field>
+
+                <div class="pac-pform__actions">
+                  <button mat-button type="button" (click)="cancelPacienteForm()">Cancelar</button>
+                  <button mat-raised-button type="submit" class="pac-pform__submit"
+                    [disabled]="savingPaciente() || pacienteForm.invalid">
+                    <mat-icon>@if (savingPaciente()) { sync } @else { save }</mat-icon>
+                    @if (savingPaciente()) { Guardando… }
+                    @else if (mode === 'create') { Crear paciente }
+                    @else { Guardar cambios }
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+        } @else if (loadingDetalle()) {
           <div class="pac-detail pac-detail--loading">
             <p class="info-text">Cargando…</p>
           </div>
@@ -73,6 +128,15 @@
                   @if (pac.telefono) { <span>{{ pac.telefono }}</span> }
                   <span class="pac-detail__since">Desde {{ pac.created_at | date:'MMM yyyy' }}</span>
                 </div>
+              </div>
+              <div class="pac-detail__actions">
+                <button mat-stroked-button (click)="startEditPaciente()" aria-label="Editar paciente">
+                  <mat-icon>edit</mat-icon> Editar
+                </button>
+                <button mat-icon-button color="warn" (click)="deletePaciente()"
+                  [disabled]="deletingPaciente()" aria-label="Eliminar paciente">
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
             </div>
 

@@ -31,8 +31,10 @@ from schemas import (
     NotaPacienteUpdate,
     NotificarPacienteRequest,
     NotificarPacienteResponse,
+    PacienteCreate,
     PacienteDetalleOut,
     PacienteOut,
+    PacienteUpdate,
     PortalPacienteOut,
 )
 
@@ -82,6 +84,68 @@ def obtener_paciente(
     _admin: User = Depends(get_current_admin),
 ):
     return _get_paciente_or_404(paciente_id, db)
+
+
+@router.post("/admin/pacientes", response_model=PacienteOut, status_code=status.HTTP_201_CREATED)
+def crear_paciente(
+    payload: PacienteCreate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    """Create a patient manually (walk-ins who never booked online)."""
+    if payload.email:
+        existing = db.query(Paciente).filter(Paciente.email == payload.email).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe un paciente con ese email.",
+            )
+    paciente = Paciente(**payload.model_dump())
+    db.add(paciente)
+    db.commit()
+    db.refresh(paciente)
+    return paciente
+
+
+@router.patch("/admin/pacientes/{paciente_id}", response_model=PacienteOut)
+def actualizar_paciente(
+    paciente_id: int,
+    payload: PacienteUpdate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    paciente = _get_paciente_or_404(paciente_id, db)
+    data = payload.model_dump(exclude_unset=True)
+
+    # Guard against assigning an email already used by another patient
+    new_email = data.get("email")
+    if new_email and new_email != paciente.email:
+        clash = db.query(Paciente).filter(
+            Paciente.email == new_email, Paciente.id != paciente_id
+        ).first()
+        if clash:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe otro paciente con ese email.",
+            )
+
+    for field, value in data.items():
+        setattr(paciente, field, value)
+    db.commit()
+    db.refresh(paciente)
+    return paciente
+
+
+@router.delete("/admin/pacientes/{paciente_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_paciente(
+    paciente_id: int,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin),
+):
+    """Delete a patient. Their citas and notas are removed via cascade."""
+    paciente = _get_paciente_or_404(paciente_id, db)
+    db.delete(paciente)
+    db.commit()
 
 
 @router.post(

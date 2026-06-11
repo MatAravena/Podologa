@@ -31,6 +31,14 @@ export interface PacienteDetalle extends Paciente {
   notas_clinicas: Nota[];
 }
 
+/** Body for creating/updating a patient. Only `nombre` is required. */
+export interface PacienteInput {
+  nombre: string;
+  email?: string | null;
+  telefono?: string | null;
+  notas?: string | null;
+}
+
 /** Body for creating/updating a note. */
 export interface NotaInput {
   contenido: string;
@@ -88,6 +96,21 @@ export class PacientesService {
   /** GET /admin/pacientes/{id} — full profile with notes. */
   obtener(id: number): Observable<PacienteDetalle> {
     return this.http.get<PacienteDetalle>(`${this.base}/admin/pacientes/${id}`);
+  }
+
+  /** POST /admin/pacientes — create a patient manually (walk-in). */
+  crear(body: PacienteInput): Observable<Paciente> {
+    return this.http.post<Paciente>(`${this.base}/admin/pacientes`, body);
+  }
+
+  /** PATCH /admin/pacientes/{id} — edit a patient's data. */
+  actualizar(id: number, body: Partial<PacienteInput>): Observable<Paciente> {
+    return this.http.patch<Paciente>(`${this.base}/admin/pacientes/${id}`, body);
+  }
+
+  /** DELETE /admin/pacientes/{id} — remove a patient (cascades citas + notas). */
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/admin/pacientes/${id}`);
   }
 
   /** POST /admin/pacientes/{id}/notas — add a clinical note. */
