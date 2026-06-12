@@ -1,0 +1,28 @@
+{
+  "name": "Libélula — Podología y Terapias",
+  "short_name": "Libélula",
+  "description": "Podología clínica y terapias integrativas. Atención profesional, cálida y personalizada.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf8f6",
+  "theme_color": "#c2607a",
+  "icons": [
+    {
+      "src": "/assets/icons/libelulas_icons/dragonfly_icon_128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/libelulas_icons/dragonfly_icon_256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/libelulas_icons/dragonfly_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
