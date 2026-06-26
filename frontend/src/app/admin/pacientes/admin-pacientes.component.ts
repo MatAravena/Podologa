@@ -17,7 +17,7 @@ import { MatCheckboxModule }  from '@angular/material/checkbox';
 import { MatIconModule }      from '@angular/material/icon';
 import { MatChipsModule }     from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { catchError, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 
 import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
 import { AdminAuthService }     from '../admin-auth/admin-auth.service';
@@ -265,10 +265,11 @@ export class AdminPacientesComponent implements OnInit {
     if (!confirm(`¿Eliminar a ${p.nombre}? Se borrarán también sus notas y citas. Esta acción no se puede deshacer.`)) return;
     this.deletingPaciente.set(true);
     this.pacientesService.eliminar(p.id).pipe(
-      catchError(() => { this.snack.open('Error al eliminar el paciente.', 'Cerrar', { duration: 4000 }); return of(null); })
+      map(() => 'ok' as const),
+      catchError(() => { this.snack.open('Error al eliminar el paciente.', 'Cerrar', { duration: 4000 }); return of('error' as const); })
     ).subscribe(res => {
       this.deletingPaciente.set(false);
-      if (res !== null || res === undefined) {
+      if (res === 'ok') {
         this.pacientes.update(list => list.filter(x => x.id !== p.id));
         this.selected.set(null);
         this.formMode.set(null);

@@ -76,6 +76,29 @@ El proyecto migró al test builder de **Vitest** (Angular 21) pero varios specs 
 - [x] Barrido de matchers Jasmine completado — grep de `toBeTrue/toBeFalse/jasmine.*/createSpyObj/spyOn(` en specs → 0 (el único `spyOn` es `vi.spyOn`, API de Vitest). Toda la suite corre en Vitest.
 - [x] Agregados `*.spec.ts` para los 6 servicios nuevos (ver sección de capa de servicios)
 
+### 🧪 Alta cobertura de tests por cada elemento/componente (FE + BE)
+Objetivo: **cada componente del frontend y cada módulo/router/servicio del backend** tiene su propio archivo de test con cobertura alta (meta **≥ 80%** por archivo, incluyendo caminos de error, no solo el happy path). Hoy hay buena base pero quedan huecos.
+
+**Backend — routers/módulos sin test dedicado (o con cobertura parcial):**
+- [ ] `routers/pacientes.py` — CRUD de notas, `generar-token`, portal `GET /pacientes/{token}/perfil` (token válido/expirado/inexistente, rate limit). _(ya existe `test_pacientes_notify.py` solo para notificar)_
+- [ ] `routers/citas.py` — flujo de confirmación pública (`GET/POST /confirmar/{token}`), `PATCH /{id}/estado`, sync de Google Calendar (mockear `calendar_service`)
+- [ ] `scheduler.py` — `_send_confirmaciones` (48h/24h, idempotencia de flags) y `_send_reminders` (solo confirmadas) con DB en memoria y envíos mockeados
+- [ ] `routers/galeria.py` — subir/publicar/eliminar, generar caption (mockear Anthropic + Cloudinary)
+- [ ] `routers/disponibilidad.py` admin — bloques y bloqueos (crear/eliminar, rango de fechas)
+- [ ] `routers/configuracion.py` — `GET /config/contacto` (no expone secretos)
+- [ ] `notifications/` y `whatsapp/` y `social/` — helpers de envío en modo dev (mailer, cloud_api, meta, caption_generator)
+- [ ] `integrations/google_calendar.py` — create/update/delete con cliente mockeado
+- [ ] Medir cobertura real: `pytest --cov` (pytest-cov ya está instalado) y cerrar los archivos < 80%
+
+**Frontend — componentes sin spec (o con spec mínima):**
+- [ ] `admin/pacientes/admin-pacientes.component` — selección, CRUD de notas, generar/copiar token, **panel notificar** (canales según disponibilidad, validación de móvil, feedback por canal)
+- [ ] `admin/disponibilidad/*`, `admin/promociones/*`, `admin/galeria/*`, `admin/servicios/*` — verificar que cada `.component.spec.ts` cubra carga + acciones + estados de error
+- [ ] `servicios/`, `galeria/`, `mi-historial/`, `confirmar/` (página de confirmación) — specs de render + estados (cargando/vacío/error)
+- [ ] `admin/admin-auth/*` (guard, interceptor, navbar) — cubrir guard redirige sin token, interceptor adjunta Bearer
+- [ ] Medir cobertura: `ng test --coverage` y cerrar los componentes < 80%
+
+**Criterio de cierre:** correr cobertura en ambos lados, listar archivos bajo el umbral, y agregar tests hasta superar 80% por archivo (no solo global). Priorizar rutas con datos de salud y dinero (pacientes, citas, promociones).
+
 ### ✅ Renombre `servicios/detalle` → `servicios`
 - [x] Carpeta `servicios/detalle/` → `servicios/`; archivos `servicio-detalle.component.*` → `servicios.component.*`
 - [x] `ServicioDetalleComponent` → `ServiciosComponent`, selector `app-servicio-detalle` → `app-servicios`, interfaz `ServicioDetalleApi` → `ServicioApi`
@@ -92,17 +115,18 @@ La mayoría de estos bugs venían de que `environment.ts` apuntaba a `http://loc
 - [ ] **Acción del usuario:** correr el backend en `8000` (`npm run backend`) y cerrar la instancia vieja en `8003`; reiniciar `ng serve` para tomar el nuevo `environment.ts`
 - [ ] **Verificar end-to-end** tras reiniciar: admin/servicios lista+edita, home lista solo DB, admin/pacientes funciona, portal `/mi-historial/:token`
 
-### Notificaciones a pacientes _(no mandatorio)_
-El envío es **opcional y controlado por la admin** mediante un checkbox — nunca automático.
-- [ ] **Checkbox "Enviar al paciente"** en el editor de notas / al guardar — la admin decide caso por caso si se notifica
-- [ ] Sub-opciones (checkboxes): **enviar por email** y/o **enviar por WhatsApp**
-- [ ] **Validación previa al envío:**
-  - Email: validar formato (`EmailStr` en backend ya lo cubre; validar también en FE antes de habilitar el checkbox)
-  - Teléfono: validar que sea **número chileno válido** (formato `+56 9 XXXX XXXX`, móvil de 9 dígitos empezando en 9) — si no es válido, deshabilitar la opción WhatsApp y mostrar aviso
-- [ ] Enviar el **contenido de las notas marcadas como visibles** + la **fecha ideal sugerida para la próxima cita**
-- [ ] Reutilizar infraestructura existente: `notifications/mailer.py` (email) y `whatsapp/cloud_api.py` (WhatsApp)
-- [ ] Endpoint `POST /admin/pacientes/{id}/notificar` con body `{ canal: ["email"|"whatsapp"], incluir_notas: bool, proxima_cita: date | null }`
-- [ ] Mostrar feedback de éxito/error por canal (ej: "Email enviado ✓, WhatsApp falló — número inválido")
+### ✅ Notificaciones a pacientes _(no mandatorio)_ — COMPLETADO
+El envío es **opcional y controlado por la admin** mediante un panel "Enviar al paciente" — nunca automático. Envío **síncrono** (no background task) para devolver feedback por canal.
+- [x] **Panel "Enviar al paciente"** en el detalle del paciente (`/admin/pacientes`) — la admin decide caso por caso si se notifica
+- [x] Sub-opciones (checkboxes): **enviar por email** y/o **enviar por WhatsApp** (solo se muestran si el canal está disponible para ese paciente)
+- [x] **Validación previa al envío:**
+  - Email: `EmailStr` en backend; en FE el canal email solo aparece si el paciente tiene email
+  - Teléfono: validación de **móvil chileno** (56 + 9 + 8 dígitos) en backend (`validar_movil_chileno`) y FE (`esMovilChileno`); si no es válido, no se muestra la opción WhatsApp (aviso "Sin WhatsApp válido")
+- [x] Envía el **contenido de las notas marcadas como visibles** + la **fecha sugerida para la próxima cita** (date opcional)
+- [x] Reutiliza infraestructura existente: `notifications/mailer.py` (`send_nota_resumen`) y `whatsapp/cloud_api.py` (WhatsApp); orquestado en `notifications/pacientes_notify.py`
+- [x] Endpoint `POST /admin/pacientes/{id}/notificar` con body `{ canales: ["email"|"whatsapp"], incluir_notas: bool, proxima_cita: date | null }` → 400 si no hay nada que enviar (sin notas visibles ni fecha)
+- [x] Feedback de éxito/error por canal (`CanalResultado`) — la UI muestra "Email enviado ✓  ·  WhatsApp falló — …"
+- [x] Tests: `tests/test_pacientes_notify.py` (20 backend) + caso `notificar` en `pacientes.service.spec.ts`; build FE verde, suite 184/184
 
 ### 🔒 Seguridad — datos de salud (auditoría 2026-05-31)
 Los datos contienen información personal de salud → protección reforzada.
@@ -527,21 +551,22 @@ La agenda de la podóloga ES Google Calendar (esa fue siempre la idea). Hoy la c
 - [ ] **Endpoint admin** `POST /admin/citas/{id}/sync-calendar` para forzar manualmente la creación del evento de una cita puntual.
 - [ ] **Healthcheck** opcional: endpoint admin que confirme que las credenciales de Calendar son válidas (hace un get trivial a la API).
 
-### Panel Admin — Agenda de Citas (`/admin/citas`)
+### ✅ Panel Admin — Agenda de Citas (`/admin/citas`) — COMPLETADO
 Aunque la agenda principal es Google Calendar, una vista propia permite ver el estado de confirmación de cada paciente (que Calendar no muestra).
 
 **Backend**
-- [ ] Endpoint `GET /admin/citas` — listar citas con filtros (fecha desde/hasta, estado), incluyendo datos del paciente y servicio
-- [ ] Incluir en la respuesta: `estado`, `paciente_confirmo` (asistirá/no/sin responder), `google_event_id` (para badge de sincronización), `confirmacion_48h_enviada`/`24h_enviada`
-- [ ] (Opcional) Endpoint para cambiar estado manualmente desde el panel (ya existe `PATCH /citas/{id}/estado`)
+- [x] Endpoint `GET /admin/citas` — listar citas con filtros (`desde`/`hasta`/`estado`), datos de paciente y servicio aplanados (`CitaAdminOut`)
+- [x] Respuesta incluye: `estado`, `paciente_confirmo`, `sincronizada_calendar` (de `google_event_id`), `confirmacion_48h_enviada`/`24h_enviada`
+- [~] (Opcional) Cambiar estado manualmente — ya existe `PATCH /citas/{id}/estado`; falta botón en UI
 
 **Frontend — panel admin**
-- [ ] Ruta `/admin/citas` (lazy, protegida con `adminAuthGuard`) + link en `AdminNavbarComponent`
-- [ ] Vista de lista/agenda con: fecha, hora, paciente, servicio, estado
-- [ ] **Badge de confirmación del paciente**: ✓ asistirá / ✗ no asistirá / ⏳ sin responder (campo `paciente_confirmo`)
-- [ ] **Badge de sincronización con Calendar**: ✓ sincronizada / ⚠ no sincronizada (campo `google_event_id`)
-- [ ] Filtros por fecha y estado; orden por fecha/hora
-- [ ] (Opcional) Botón "Forzar sincronización" por cita (usa el endpoint de reconciliación de arriba)
+- [x] Ruta `/admin/citas` (lazy, `adminAuthGuard`) + link "Citas" en `AdminNavbarComponent`
+- [x] Vista de agenda agrupada por día: fecha, hora, paciente, servicio, contacto, estado
+- [x] **Badge de confirmación del paciente**: ✓ asistirá / ✗ no asistirá / ⏳ sin responder
+- [x] **Badge de sincronización con Calendar**: ✓ en calendario / ⚠ sin sincronizar
+- [x] Filtros por fecha (desde/hasta) y estado; orden por fecha/hora
+- [ ] (Opcional) Botón "Forzar sincronización" por cita (depende del endpoint de reconciliación, aún pendiente)
+- [ ] (Opcional) Botón para cambiar estado (completada/cancelada) desde la agenda
 
 ---
 

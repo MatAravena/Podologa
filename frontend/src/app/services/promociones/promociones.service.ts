@@ -8,7 +8,7 @@ import { Servicio } from '../servicios/servicios.service';
 export interface Promocion {
   id: number;
   servicio_id: number | null;
-  porcentaje_descuento: string;
+  porcentaje_descuento: number;
   descripcion: string | null;
   fecha_inicio: string;
   fecha_fin: string;

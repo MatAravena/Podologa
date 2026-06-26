@@ -185,7 +185,7 @@ class Promocion(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     servicio_id = Column(Integer, ForeignKey("servicios.id", ondelete="SET NULL"), nullable=True, index=True)  # None = applies to all services
-    porcentaje_descuento = Column(Numeric(5), nullable=False)  # e.g. 20.00 = 20%
+    porcentaje_descuento = Column(Integer, nullable=False)  # whole-number percent, e.g. 20 = 20%
     descripcion = Column(String(500), nullable=True)
     fecha_inicio = Column(Date, nullable=False)
     fecha_fin = Column(Date, nullable=False)

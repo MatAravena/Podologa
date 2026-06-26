@@ -235,7 +235,7 @@ class TestPromociones:
         s = _make_servicio(db)
         payload = {
             "servicio_id": s.id,
-            "porcentaje_descuento": "15.00",
+            "porcentaje_descuento": 15,
             "fecha_inicio": str(TODAY),
             "fecha_fin": str(TODAY + timedelta(days=30)),
         }
@@ -245,7 +245,7 @@ class TestPromociones:
         s = _make_servicio(db)
         payload = {
             "servicio_id": s.id,
-            "porcentaje_descuento": "15.00",
+            "porcentaje_descuento": 15,
             "fecha_inicio": str(TODAY),
             "fecha_fin": str(TODAY + timedelta(days=30)),
         }

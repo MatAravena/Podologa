@@ -6,7 +6,7 @@ import { PromocionesService, Promocion } from './promociones.service';
 import { environment } from '../../../environments/environment';
 
 const MOCK: Promocion = {
-  id: 1, servicio_id: null, porcentaje_descuento: '20', descripcion: null,
+  id: 1, servicio_id: null, porcentaje_descuento: 20, descripcion: null,
   fecha_inicio: '2026-01-01', fecha_fin: '2026-12-31', hora_inicio: null, hora_fin: null,
   activo: true, created_at: '2026-01-01', servicio: null,
 };

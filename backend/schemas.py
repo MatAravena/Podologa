@@ -306,7 +306,7 @@ class FechaBloqueoOut(ORMBase):
 
 class PromocionCreate(BaseModel):
     servicio_id: int | None = None  # None = global discount on all services
-    porcentaje_descuento: Decimal = Field(..., gt=Decimal("0"), le=Decimal("100"), decimal_places=2)
+    porcentaje_descuento: int = Field(..., gt=0, le=100)
     descripcion: str | None = Field(default=None, max_length=500)
     fecha_inicio: date
     fecha_fin: date
@@ -324,7 +324,7 @@ class PromocionCreate(BaseModel):
 
 
 class PromocionUpdate(BaseModel):
-    porcentaje_descuento: Decimal | None = Field(default=None, gt=Decimal("0"), le=Decimal("100"), decimal_places=2)
+    porcentaje_descuento: int | None = Field(default=None, gt=0, le=100)
     descripcion: str | None = Field(default=None, max_length=500)
     fecha_inicio: date | None = None
     fecha_fin: date | None = None
@@ -336,7 +336,7 @@ class PromocionUpdate(BaseModel):
 class PromocionOut(ORMBase):
     id: int
     servicio_id: int | None  # None = applies to all services
-    porcentaje_descuento: Decimal
+    porcentaje_descuento: int
     descripcion: str | None
     fecha_inicio: date
     fecha_fin: date

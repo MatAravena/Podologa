@@ -64,7 +64,9 @@ class TestBootstrap:
         )
         assert resp.status_code == 403
 
-    def test_bootstrap_duplicate_username(self, client, admin_user):
+    def test_bootstrap_refused_when_admin_exists(self, client, admin_user):
+        # Hardened bootstrap: once ANY admin exists, bootstrap is refused (403)
+        # even with the right secret — prevents creating admins via a leaked SECRET_KEY.
         resp = client.post(
             "/auth/bootstrap",
             json={
@@ -74,4 +76,4 @@ class TestBootstrap:
                 "bootstrap_secret": settings.SECRET_KEY,
             },
         )
-        assert resp.status_code == 409
+        assert resp.status_code == 403

@@ -47,7 +47,7 @@ export interface ConfirmacionApi {
 export interface PromocionVigenteApi {
   id: number;
   servicio_id: number;
-  porcentaje_descuento: string;
+  porcentaje_descuento: number;
   descripcion: string | null;
   fecha_inicio: string;
   fecha_fin: string;

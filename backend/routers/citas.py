@@ -83,9 +83,8 @@ def crear_cita(
     precio_final = None
     promocion_id = None
     if active_promo and servicio.precio:
-        from decimal import Decimal as D
-        descuento = D(str(active_promo.porcentaje_descuento)) / D("100")
-        precio_final = (servicio.precio * (D("1") - descuento)).quantize(D("0.01"))
+        # Whole Chilean pesos (no decimals) — precio and porcentaje are integers.
+        precio_final = servicio.precio * (100 - active_promo.porcentaje_descuento) // 100
         promocion_id = active_promo.id
 
     cita = Cita(

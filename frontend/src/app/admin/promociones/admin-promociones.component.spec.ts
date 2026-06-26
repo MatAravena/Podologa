@@ -19,7 +19,7 @@ const MOCK_SERVICIOS: ServicioApi[] = [
 const MOCK_PROMOCIONES: PromocionApi[] = [
   {
     id: 1, servicio_id: 1,
-    porcentaje_descuento: '20',
+    porcentaje_descuento: 20,
     descripcion: 'Promo verano',
     fecha_inicio: '2020-01-01', fecha_fin: '2099-12-31',
     hora_inicio: null, hora_fin: null,
@@ -28,7 +28,7 @@ const MOCK_PROMOCIONES: PromocionApi[] = [
   },
   {
     id: 2, servicio_id: 2,
-    porcentaje_descuento: '10',
+    porcentaje_descuento: 10,
     descripcion: null,
     fecha_inicio: '2020-01-01', fecha_fin: '2020-12-31', // expired
     hora_inicio: null, hora_fin: null,

@@ -20,7 +20,7 @@ def _seed_servicio(db) -> Servicio:
     return s
 
 
-def _seed_promo(db, servicio_id: int, dias_inicio: int = -1, dias_fin: int = 10, descuento: str = "20.00") -> Promocion:
+def _seed_promo(db, servicio_id: int, dias_inicio: int = -1, dias_fin: int = 10, descuento: int = 20) -> Promocion:
     p = Promocion(
         servicio_id=servicio_id,
         porcentaje_descuento=descuento,
@@ -48,7 +48,7 @@ class TestVigentes:
         resp = client.get("/promociones/vigentes")
         assert resp.status_code == 200
         assert len(resp.json()) == 1
-        assert resp.json()[0]["porcentaje_descuento"] == "20.00"
+        assert resp.json()[0]["porcentaje_descuento"] == 20
 
     def test_does_not_return_future_promo(self, client, db):
         s = _seed_servicio(db)
@@ -62,7 +62,7 @@ class TestVigentes:
         s = _seed_servicio(db)
         p = Promocion(
             servicio_id=s.id,
-            porcentaje_descuento="15.00",
+            porcentaje_descuento=15,
             fecha_inicio=_past(10),
             fecha_fin=_past(1),  # ended yesterday
             activo=True,
@@ -77,7 +77,7 @@ class TestVigentes:
         s = _seed_servicio(db)
         p = Promocion(
             servicio_id=s.id,
-            porcentaje_descuento="20.00",
+            porcentaje_descuento=20,
             fecha_inicio=_past(1),
             fecha_fin=_future(10),
             activo=False,
@@ -119,20 +119,20 @@ class TestAdminPromos:
         s = _seed_servicio(db)
         payload = {
             "servicio_id": s.id,
-            "porcentaje_descuento": "30.00",
+            "porcentaje_descuento": 30,
             "descripcion": "Promo de prueba",
             "fecha_inicio": str(_past(1)),
             "fecha_fin": str(_future(30)),
         }
         resp = client.post("/promociones", json=payload, headers=auth_headers)
         assert resp.status_code == 201
-        assert resp.json()["porcentaje_descuento"] == "30.00"
+        assert resp.json()["porcentaje_descuento"] == 30
 
     def test_create_requires_auth(self, client, db):
         s = _seed_servicio(db)
         payload = {
             "servicio_id": s.id,
-            "porcentaje_descuento": "10.00",
+            "porcentaje_descuento": 10,
             "fecha_inicio": str(date.today()),
             "fecha_fin": str(_future(5)),
         }
@@ -143,7 +143,7 @@ class TestAdminPromos:
         s = _seed_servicio(db)
         payload = {
             "servicio_id": s.id,
-            "porcentaje_descuento": "10.00",
+            "porcentaje_descuento": 10,
             "fecha_inicio": str(_future(10)),
             "fecha_fin": str(_future(5)),  # before inicio!
         }
@@ -156,11 +156,11 @@ class TestAdminPromos:
 
         resp = client.patch(
             f"/promociones/{promo.id}",
-            json={"porcentaje_descuento": "50.00"},
+            json={"porcentaje_descuento": 50},
             headers=auth_headers,
         )
         assert resp.status_code == 200
-        assert resp.json()["porcentaje_descuento"] == "50.00"
+        assert resp.json()["porcentaje_descuento"] == 50
 
     def test_admin_can_delete(self, client, db, auth_headers):
         s = _seed_servicio(db)
