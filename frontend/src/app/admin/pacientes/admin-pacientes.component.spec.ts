@@ -196,4 +196,47 @@ describe('AdminPacientesComponent', () => {
     expect(component.tipoLabel('sugerencia')).toContain('Sugerencia');
     expect(component.tipoLabel('desconocido')).toBe('desconocido');
   });
+
+  it('startEditPaciente patches the form from the selected patient', () => {
+    init();
+    selectFirst();
+    component.startEditPaciente();
+    expect(component.formMode()).toBe('edit');
+    expect(component.pacienteForm.value.nombre).toBe('Ana Pérez');
+  });
+
+  it('updates a note (PATCH notas)', () => {
+    init();
+    selectFirst();
+    component.startEditNota(DETALLE.notas_clinicas[0]);
+    component.notaForm.patchValue({ contenido: 'Editada' });
+    component.submitNota();
+    const req = http.expectOne(`${API}/admin/pacientes/1/notas/10`);
+    expect(req.request.method).toBe('PATCH');
+    req.flush({ ...DETALLE.notas_clinicas[0], contenido: 'Editada' });
+    expect(component.selected()?.notas_clinicas[0].contenido).toBe('Editada');
+  });
+
+  it('regenerates an existing token only after confirm', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    init();
+    selectFirst({ ...DETALLE, access_token: 'old' });
+    component.generarToken();
+    http.expectOne(`${API}/admin/pacientes/1/generar-token`).flush({ ...PACIENTES[0], access_token: 'fresh' });
+    expect(component.selected()?.access_token).toBe('fresh');
+  });
+
+  it('notificar resets the sending flag on error', () => {
+    init();
+    selectFirst();
+    component.notificarForm.patchValue({ email: true });
+    component.notificar();
+    http.expectOne(`${API}/admin/pacientes/1/notificar`)
+      .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
+    expect(component.enviandoNotif()).toBe(false);
+  });
+
+  it('portalUrl builds a /mi-historial link', () => {
+    expect(component.portalUrl('abc')).toContain('/mi-historial/abc');
+  });
 });

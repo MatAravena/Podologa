@@ -131,6 +131,60 @@ describe('StarRatingComponent', () => {
     });
   });
 
+  describe('mouse interaction (interactive)', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('interactive', true);
+      fixture.detectChanges();
+    });
+
+    function mouseEvent(clientX: number): MouseEvent {
+      return {
+        clientX,
+        currentTarget: { getBoundingClientRect: () => ({ left: 0, width: 20 }) },
+      } as unknown as MouseEvent;
+    }
+
+    it('hovering the left half sets a half-star preview', () => {
+      component.onMouseMove(mouseEvent(5), 4); // 5 < 10 → 3.5
+      expect(component.hoverValue()).toBe(3.5);
+      expect(component.displayValue()).toBe(3.5);
+    });
+
+    it('hovering the right half sets a full-star preview', () => {
+      component.onMouseMove(mouseEvent(15), 4); // 15 >= 10 → 4
+      expect(component.hoverValue()).toBe(4);
+    });
+
+    it('mouseleave clears the hover preview', () => {
+      component.onMouseMove(mouseEvent(15), 4);
+      component.onMouseLeave();
+      expect(component.hoverValue()).toBeNull();
+    });
+
+    it('clicking emits the chosen value', () => {
+      const emitted: number[] = [];
+      component.valueChange.subscribe((v: number) => emitted.push(v));
+      component.onStarClick(mouseEvent(5), 2);  // → 1.5
+      component.onStarClick(mouseEvent(15), 2); // → 2
+      expect(emitted).toEqual([1.5, 2]);
+    });
+  });
+
+  describe('display mode ignores interaction', () => {
+    beforeEach(() => fixture.detectChanges()); // interactive defaults to false
+
+    it('onMouseMove / onStarClick / onKeydown are no-ops', () => {
+      const emitted: number[] = [];
+      component.valueChange.subscribe((v: number) => emitted.push(v));
+      const ev = { clientX: 5, currentTarget: { getBoundingClientRect: () => ({ left: 0, width: 20 }) } } as unknown as MouseEvent;
+      component.onMouseMove(ev, 3);
+      component.onStarClick(ev, 3);
+      component.onKeydown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      expect(component.hoverValue()).toBeNull();
+      expect(emitted).toEqual([]);
+    });
+  });
+
   describe('showLabel', () => {
     it('does not show label by default', () => {
       fixture.componentRef.setInput('value', 4.5);

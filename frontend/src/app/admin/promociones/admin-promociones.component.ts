@@ -21,7 +21,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule }      from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { DecimalPipe }          from '@angular/common';
-import { catchError, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 
 import { AdminAuthService }   from '../admin-auth/admin-auth.service';
 import { AdminNavbarComponent } from '../admin-auth/admin-navbar/admin-navbar.component';
@@ -182,17 +182,18 @@ export class AdminPromocionesComponent implements OnInit {
 
     this.deleting.set(promo.id);
     this.promocionesService.eliminar(promo.id).pipe(
+      map(() => 'ok' as const),
       catchError(err => {
         this.snack.open(
           err.status === 401 ? 'Sesión expirada.' : 'Error al eliminar.',
           'Cerrar', { duration: 4000 },
         );
         if (err.status === 401) this.auth.logout();
-        return of(null);
+        return of('error' as const);
       }),
     ).subscribe(res => {
       this.deleting.set(null);
-      if (res !== undefined) {
+      if (res === 'ok') {
         this.promociones.update(list => list.filter(p => p.id !== promo.id));
         this.snack.open('Promoción eliminada.', 'Cerrar', { duration: 3000 });
       }

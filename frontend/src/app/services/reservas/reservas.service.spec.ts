@@ -115,4 +115,38 @@ describe('ReservasService', () => {
       expect(result).toEqual(mockResponse);
     });
   });
+
+  describe('getPromocionesVigentes', () => {
+    it('GETs /promociones/vigentes without params by default', () => {
+      service.getPromocionesVigentes().subscribe();
+      const req = httpMock.expectOne(r => r.url === `${environment.apiUrl}/promociones/vigentes`);
+      expect(req.request.params.has('servicio_id')).toBe(false);
+      req.flush([]);
+    });
+
+    it('includes servicio_id when provided', () => {
+      service.getPromocionesVigentes(7).subscribe();
+      const req = httpMock.expectOne(
+        r => r.url === `${environment.apiUrl}/promociones/vigentes` && r.params.get('servicio_id') === '7'
+      );
+      req.flush([]);
+    });
+  });
+
+  describe('confirmation', () => {
+    it('getConfirmacion GETs /citas/confirmar/:token', () => {
+      service.getConfirmacion('tok').subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/citas/confirmar/tok`);
+      expect(req.request.method).toBe('GET');
+      req.flush({});
+    });
+
+    it('responderConfirmacion POSTs the asistira flag', () => {
+      service.responderConfirmacion('tok', false).subscribe();
+      const req = httpMock.expectOne(`${environment.apiUrl}/citas/confirmar/tok`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ asistira: false });
+      req.flush({});
+    });
+  });
 });

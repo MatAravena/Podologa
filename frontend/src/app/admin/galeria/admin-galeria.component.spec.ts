@@ -97,4 +97,65 @@ describe('AdminGaleriaComponent', () => {
     component.form.patchValue({ titulo: 'Mi post', descripcion: '', publicar: false });
     expect(component.form.valid).toBe(true);
   });
+
+  const GAL = `${environment.apiUrl}/galeria`;
+
+  it('onSubmit does nothing without a selected file', () => {
+    component.form.patchValue({ titulo: 'Sin archivo' });
+    component.onSubmit();
+    httpMock.expectNone(GAL);
+  });
+
+  it('onSubmit uploads the post (POST /galeria) and prepends it', () => {
+    (component as unknown as { selectedFile: File }).selectedFile =
+      new File([new Uint8Array([1])], 'x.jpg', { type: 'image/jpeg' });
+    component.form.patchValue({ titulo: 'Nuevo post', descripcion: 'd', publicar: false });
+    component.onSubmit();
+
+    const req = httpMock.expectOne(GAL);
+    expect(req.request.method).toBe('POST');
+    const created: GaleriaPostApi = { id: 9, titulo: 'Nuevo post', descripcion: 'd', media_url: '/uploads/n.jpg', media_type: 'image', published: false, created_at: 'x' };
+    req.flush(created);
+
+    expect(component.posts()[0].id).toBe(9);
+    expect(component.uploading()).toBe(false);
+  });
+
+  it('generateAiCaption fills the caption from the API', () => {
+    component.openCaptionPanel(MOCK_POSTS[0]);
+    component.generateAiCaption();
+    const req = httpMock.expectOne(`${GAL}/1/generar-caption`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ caption: 'Caption IA ✨', ai_generated: true });
+    expect(component.captionText()).toBe('Caption IA ✨');
+    expect(component.aiGenerated()).toBe(true);
+    expect(component.generatingCaption()).toBe(false);
+  });
+
+  it('confirmPublish posts and reloads on success', () => {
+    component.openCaptionPanel(MOCK_POSTS[1]);
+    component.confirmPublish();
+    const req = httpMock.expectOne(`${GAL}/2/publicar`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ ...MOCK_POSTS[1], published: true });
+    // success path calls loadPosts() again
+    httpMock.expectOne(GAL).flush(MOCK_POSTS);
+    expect(component.captionPost()).toBeNull();
+    expect(component.publishing()).toBeNull();
+  });
+
+  it('deletePost DELETEs after confirm and removes it', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.deletePost(MOCK_POSTS[0]);
+    const req = httpMock.expectOne(`${GAL}/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+    expect(component.posts().some(p => p.id === 1)).toBe(false);
+  });
+
+  it('deletePost does nothing when confirm is cancelled', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    component.deletePost(MOCK_POSTS[0]);
+    httpMock.expectNone(`${GAL}/1`);
+  });
 });

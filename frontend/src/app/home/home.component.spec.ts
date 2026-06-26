@@ -152,4 +152,46 @@ describe('HomeComponent (global page test)', () => {
     component.escribirOtraOpinion();
     expect(component.enviado()).toBe(false);
   });
+
+  it('onSubmit does nothing when the form is invalid (no rating)', () => {
+    component.form.reset();
+    component.calificacion.set(0);
+    component.onSubmit();
+    http.expectNone(r => r.method === 'POST' && r.url.includes('/opiniones'));
+    expect(component.form.touched).toBe(true);
+  });
+
+  it('onSubmit resets enviando and shows an error when the POST fails', () => {
+    component.form.get('nombre')!.setValue('María');
+    component.form.get('apellido')!.setValue('García');
+    component.form.get('comentario')!.setValue('Comentario suficientemente largo para pasar.');
+    component.form.get('serviciosGroup.Podología')!.setValue(true);
+    component.calificacion.set(4);
+
+    component.onSubmit();
+    http.expectOne(r => r.method === 'POST' && r.url.includes('/opiniones'))
+      .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
+
+    expect(component.enviando()).toBe(false);
+    expect(component.enviado()).toBe(false);
+  });
+
+  it('servicioId maps a name to its id (and null when unknown)', () => {
+    expect(component.servicioId('Podología')).toBe(1);
+    expect(component.servicioId('No existe')).toBeNull();
+  });
+
+  it('onFotoChange rejects files larger than 2 MB', () => {
+    const big = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.jpg', { type: 'image/jpeg' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [big] });
+    component.onFotoChange({ target: input } as unknown as Event);
+    expect(component.fotoPreview()).toBeNull();
+  });
+
+  it('removeFoto clears the preview', () => {
+    component.fotoPreview.set('data:image/png;base64,xxx');
+    component.removeFoto();
+    expect(component.fotoPreview()).toBeNull();
+  });
 });

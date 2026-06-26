@@ -88,4 +88,58 @@ describe('AdminOpinionesComponent', () => {
       .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
     expect(component.opiniones().length).toBe(before);
   });
+
+  it('confirmDelete on 401 logs the admin out', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.confirmDelete(MOCK_OPINIONES[0]);
+    httpMock.expectOne(`${environment.apiUrl}/opiniones/1`)
+      .flush({ detail: 'unauth' }, { status: 401, statusText: 'Unauthorized' });
+    expect(authSpy.logout).toHaveBeenCalled();
+  });
+
+  it('startCreate opens the create form; cancel resets it', () => {
+    component.startCreate();
+    expect(component.creating()).toBe(true);
+    expect(component.editing()).toBeNull();
+    component.cancel();
+    expect(component.creating()).toBe(false);
+  });
+
+  it('submitForm creates an opinion (POST) and prepends it', () => {
+    component.startCreate();
+    component.form.setValue({
+      nombre: 'Nueva', apellido: 'Clienta', email: '', texto: 'Una reseña suficientemente larga', puntuacion: 5,
+    });
+    component.submitForm();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/opiniones`);
+    expect(req.request.method).toBe('POST');
+    const created: OpinionApi = { ...MOCK_OPINIONES[0], id: 99, nombre: 'Nueva', apellido: 'Clienta' };
+    req.flush(created);
+
+    expect(component.opiniones()[0].id).toBe(99);
+    expect(component.creating()).toBe(false);
+    expect(component.saving()).toBe(false);
+  });
+
+  it('submitForm does nothing when the form is invalid', () => {
+    component.startCreate();
+    component.form.setValue({ nombre: '', apellido: '', email: '', texto: '', puntuacion: 5 });
+    component.submitForm();
+    httpMock.expectNone(`${environment.apiUrl}/opiniones`);
+  });
+
+  it('startEdit + submitForm updates the opinion (PATCH)', () => {
+    component.startEdit(MOCK_OPINIONES[0]);
+    expect(component.editing()?.id).toBe(1);
+    component.form.patchValue({ texto: 'Texto editado y bien largo' });
+    component.submitForm();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/opiniones/1`);
+    expect(req.request.method).toBe('PATCH');
+    req.flush({ ...MOCK_OPINIONES[0], texto: 'Texto editado y bien largo' });
+
+    expect(component.opiniones().find(o => o.id === 1)?.texto).toBe('Texto editado y bien largo');
+    expect(component.editing()).toBeNull();
+  });
 });

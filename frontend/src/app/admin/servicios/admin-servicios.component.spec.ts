@@ -125,4 +125,77 @@ describe('AdminServiciosComponent', () => {
     expect(component.servicios()[0].nombre).toBe('Podología General');
     expect(component.selected()?.nombre).toBe('Podología General');
   });
+
+  it('startCreate opens the create form; cancelCreate closes it', () => {
+    component.startCreate();
+    expect(component.creating()).toBe(true);
+    expect(component.selected()).toBeNull();
+    component.cancelCreate();
+    expect(component.creating()).toBe(false);
+  });
+
+  it('create() POSTs a new service and selects it', () => {
+    component.startCreate();
+    component.form.setValue({
+      nombre: 'Auriculoterapia', descripcion: '', subtitulo: '', descripcion_larga: '',
+      icono: 'ayuda', icono_color: 'dorado_mostaza', duracion: 45, precio: 18000,
+    });
+    component.create();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/servicios`);
+    expect(req.request.method).toBe('POST');
+    const created = { ...MOCK_SERVICIOS[1], id: 3, nombre: 'Auriculoterapia' };
+    req.flush(created);
+
+    expect(component.servicios().some(s => s.id === 3)).toBe(true);
+    expect(component.creating()).toBe(false);
+    expect(component.selected()?.id).toBe(3);
+  });
+
+  it('create() on 401 logs the admin out', () => {
+    component.startCreate();
+    component.form.setValue({
+      nombre: 'Nuevo', descripcion: '', subtitulo: '', descripcion_larga: '',
+      icono: '', icono_color: '', duracion: 30, precio: 1000,
+    });
+    component.create();
+    httpMock.expectOne(`${environment.apiUrl}/servicios`)
+      .flush({ detail: 'unauth' }, { status: 401, statusText: 'Unauthorized' });
+    expect(authSpy.logout).toHaveBeenCalled();
+  });
+
+  it('deleteServicio() DELETEs after confirm and removes it', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.select(MOCK_SERVICIOS[0]);
+    component.deleteServicio(MOCK_SERVICIOS[0]);
+    const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+    expect(component.servicios().some(s => s.id === 1)).toBe(false);
+    expect(component.selected()).toBeNull();
+  });
+
+  it('onFileChange() uploads a photo (POST /fotos)', () => {
+    component.select(MOCK_SERVICIOS[0]);
+    const file = new File([new Uint8Array([1, 2, 3])], 'foto.jpg', { type: 'image/jpeg' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [file] });
+    component.onFileChange({ target: input } as unknown as Event);
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1/fotos`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ ...MOCK_SERVICIOS[0], fotos_urls: '["https://example.com/a.jpg","https://cdn/new.jpg"]' });
+    expect(component.fotos().length).toBe(2);
+    expect(component.uploadingFoto()).toBe(false);
+  });
+
+  it('deleteFoto() removes a photo by index after confirm (DELETE /fotos/idx)', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.select(MOCK_SERVICIOS[0]);
+    component.deleteFoto(0);
+    const req = httpMock.expectOne(`${environment.apiUrl}/servicios/1/fotos/0`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ ...MOCK_SERVICIOS[0], fotos_urls: null });
+    expect(component.fotos().length).toBe(0);
+  });
 });

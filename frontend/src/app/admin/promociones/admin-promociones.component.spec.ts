@@ -110,4 +110,62 @@ describe('AdminPromocionesComponent', () => {
     });
     expect(component.form.valid).toBe(true);
   });
+
+  function fillValid(over: Partial<Record<string, string>> = {}) {
+    component.form.setValue({
+      servicio_id: '1', porcentaje_descuento: '15', descripcion: '',
+      fecha_inicio: '2026-01-01', fecha_fin: '2026-12-31', hora_inicio: '', hora_fin: '',
+      ...over,
+    });
+  }
+
+  it('onSubmit POSTs a new promo and prepends it', () => {
+    fillValid();
+    component.onSubmit();
+    const req = httpMock.expectOne(`${environment.apiUrl}/promociones`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.servicio_id).toBe(1);
+    const created = { ...MOCK_PROMOCIONES[0], id: 99 };
+    req.flush(created);
+    expect(component.promociones()[0].id).toBe(99);
+    expect(component.saving()).toBe(false);
+  });
+
+  it('onSubmit blocks when no service and global toggle off', () => {
+    fillValid({ servicio_id: '' });
+    component.globalToggle.set(false);
+    component.onSubmit();
+    httpMock.expectNone(`${environment.apiUrl}/promociones`);
+  });
+
+  it('previewServicios computes discounted prices from the entered percentage', () => {
+    component.form.patchValue({ porcentaje_descuento: '50' });
+    const preview = component.previewServicios();
+    expect(preview.length).toBe(2);
+    expect(preview[0].precioConDescuento).toBe(Math.round(Number(MOCK_SERVICIOS[0].precio) * 0.5));
+  });
+
+  it('toggleActivo PATCHes the promo', () => {
+    component.toggleActivo(MOCK_PROMOCIONES[0]);
+    const req = httpMock.expectOne(`${environment.apiUrl}/promociones/${MOCK_PROMOCIONES[0].id}`);
+    expect(req.request.method).toBe('PATCH');
+    req.flush({ ...MOCK_PROMOCIONES[0], activo: false });
+    expect(component.promociones().find(p => p.id === MOCK_PROMOCIONES[0].id)?.activo).toBe(false);
+  });
+
+  it('deletePromo removes the promo on success', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.deletePromo(MOCK_PROMOCIONES[0]);
+    httpMock.expectOne(`${environment.apiUrl}/promociones/${MOCK_PROMOCIONES[0].id}`).flush(null);
+    expect(component.promociones().some(p => p.id === MOCK_PROMOCIONES[0].id)).toBe(false);
+  });
+
+  it('deletePromo keeps the promo when the request fails', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const before = component.promociones().length;
+    component.deletePromo(MOCK_PROMOCIONES[0]);
+    httpMock.expectOne(`${environment.apiUrl}/promociones/${MOCK_PROMOCIONES[0].id}`)
+      .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
+    expect(component.promociones().length).toBe(before);
+  });
 });

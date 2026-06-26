@@ -101,4 +101,80 @@ describe('AdminDisponibilidadComponent', () => {
     expect(component.diaOpciones.length).toBe(7);
     expect(component.diaOpciones[0]).toEqual({ value: 0, label: 'Lunes' });
   });
+
+  const BLOQUES_URL  = `${environment.apiUrl}/admin/disponibilidad/bloques`;
+  const BLOQUEOS_URL = `${environment.apiUrl}/admin/disponibilidad/bloqueos`;
+
+  it('agregarBloque POSTs a weekly block', () => {
+    component.bloqueForm.patchValue({ tipo: 'semanal', dia_semana: 2 });
+    component.agregarBloque();
+    const req = httpMock.expectOne(BLOQUES_URL);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.dia_semana).toBe(2);
+    const nuevo: BloqueApi = { id: 9, dia_semana: 2, fecha_especifica: null, hora_inicio: '09:00:00', hora_fin: '18:00:00', activo: true, created_at: 'x' };
+    req.flush(nuevo);
+    expect(component.bloques().some(b => b.id === 9)).toBe(true);
+  });
+
+  it('agregarBloque (specific) without a date shows an error and does not POST', () => {
+    component.bloqueForm.patchValue({ tipo: 'fecha', fecha_especifica: '' });
+    component.agregarBloque();
+    httpMock.expectNone(BLOQUES_URL);
+  });
+
+  it('agregarBloque (specific) POSTs with fecha_especifica', () => {
+    component.bloqueForm.patchValue({ tipo: 'fecha', fecha_especifica: '2026-08-01' });
+    component.agregarBloque();
+    const req = httpMock.expectOne(BLOQUES_URL);
+    expect(req.request.body.fecha_especifica).toBe('2026-08-01');
+    req.flush({ id: 10, dia_semana: null, fecha_especifica: '2026-08-01', hora_inicio: '09:00:00', hora_fin: '18:00:00', activo: true, created_at: 'x' });
+    expect(component.bloques().some(b => b.id === 10)).toBe(true);
+  });
+
+  it('eliminarBloque DELETEs after confirm', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.eliminarBloque(1);
+    const req = httpMock.expectOne(`${BLOQUES_URL}/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+    expect(component.bloques().some(b => b.id === 1)).toBe(false);
+  });
+
+  it('agregarBloqueo blocks a single date', () => {
+    component.bloqueoForm.setValue({ fecha: '2026-09-10', fecha_hasta: '', motivo: 'Vacaciones' });
+    component.agregarBloqueo();
+    const req = httpMock.expectOne(BLOQUEOS_URL);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.fecha).toBe('2026-09-10');
+    req.flush({ id: 5, fecha: '2026-09-10', motivo: 'Vacaciones', activo: true, created_at: 'x' });
+    expect(component.bloqueos().some(b => b.id === 5)).toBe(true);
+  });
+
+  it('agregarBloqueo blocks a date range (one POST per day)', () => {
+    component.bloqueoForm.setValue({ fecha: '2026-09-10', fecha_hasta: '2026-09-12', motivo: '' });
+    component.agregarBloqueo();
+    const reqs = httpMock.match(BLOQUEOS_URL);
+    expect(reqs.length).toBe(3); // 10, 11, 12
+    reqs.forEach((r, i) => r.flush({ id: 100 + i, fecha: `2026-09-1${i}`, motivo: null, activo: true, created_at: 'x' }));
+    expect(component.bloqueos().length).toBe(1 + 3);
+  });
+
+  it('rangoBloqueo computes the number of days inclusive', () => {
+    component.bloqueoForm.patchValue({ fecha: '2026-09-10', fecha_hasta: '2026-09-12' });
+    expect(component.rangoBloqueo()).toBe(3);
+  });
+
+  it('bloqueoForm is invalid when fecha_hasta is before fecha', () => {
+    component.bloqueoForm.patchValue({ fecha: '2026-09-10', fecha_hasta: '2026-09-05' });
+    expect(component.bloqueoForm.get('fecha_hasta')?.errors?.['fechaHastaInvalida']).toBe(true);
+  });
+
+  it('eliminarBloqueo DELETEs after confirm', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    component.eliminarBloqueo(1);
+    const req = httpMock.expectOne(`${BLOQUEOS_URL}/1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+    expect(component.bloqueos().some(b => b.id === 1)).toBe(false);
+  });
 });
